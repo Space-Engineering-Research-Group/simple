@@ -7,17 +7,26 @@ def mask(frame,lower_red,upper_red):
     mask=cv2.inRange(hsv_image,lower_red,upper_red)
     #かネールサイズは実験で決める（これは仮の値）
     mask=cv2.medianBlur(mask,11)
-    return mask
-
-def get_countour(mask,frame_width):
     #第２引数と第三引数は機能を鑑みて変える
     countours,_=cv2.findContours(mask,cv2.RETA_TREE,cv2.CHAIN_APPROX_SIMPLE)
-    max_countour=max(countours,key=cv2.countourArea)
+    #ここでコーンの輪郭を導き出して、それをもとに面積（ピクセル数）を求めたり、重心を求めたりする
+    return max(countours,key=cv2.countourArea)
+
+def get_distance(max_countour,x):
     M=cv2.moments(max_countour)
-    if M["m00"] !=0:
-        cx=int(M["m10"]/M["m00"])
-        distance=cx-frame_width
-        return distance
+    if M["m00"] != 0:
+        cx = int(M["m10"] / M["m00"])
+        dx=cx-x
+        if -50>x:
+            sign=-1
+            dx=-dx
+        elif x>50:
+            sign=1
+        else:
+            sign=0
+        
+        return (sign,dx)
     else:
-        #whileで１００００より小さくなったら抜け出せるようにするプログラムを書く
+        #0になるときはあんまりないと思うからこれ書くかしょうじきちょっとまよってる。処理をするんだとしたら３６０少しずつ回りながらコーンがあるところまで回転かな
         return 10000
+
