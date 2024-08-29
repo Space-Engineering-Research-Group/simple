@@ -12,16 +12,11 @@ def mask(frame,lower_red,upper_red):
 def get_countour(mask,frame_width):
     #第２引数と第三引数は機能を鑑みて変える
     countours,_=cv2.findContours(mask,cv2.RETA_TREE,cv2.CHAIN_APPROX_SIMPLE)
-
     max_countour=max(countours,key=cv2.countourArea)
-
     M=cv2.moments(max_countour)
-
     if M["m00"] !=0:
         cx=int(M["m10"]/M["m00"])
-
         distance=cx-frame_width
-
         return distance
     else:
         #whileで１００００より小さくなったら抜け出せるようにするプログラムを書く
