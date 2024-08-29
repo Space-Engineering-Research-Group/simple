@@ -16,7 +16,6 @@ class Camera(ICamera):
 
     def get_frame(self):
         self.ret,self.frame=self.cap.read()
-
         if self.ret:
             return self.frame
         #ここのエラー処理を忘れないようにする（後で考える）
