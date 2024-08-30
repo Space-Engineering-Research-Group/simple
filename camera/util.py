@@ -7,6 +7,8 @@ def find_cone(frame,lower_red,upper_red):
     mask=cv2.inRange(hsv_image,lower_red,upper_red)
     #かネールサイズは実験で決める（これは仮の値）
     mask=cv2.medianBlur(mask,11)
+    #閾値は実験で決める（これは仮の値）
+    cannied_mask=cv2.Canny(mask,80.0,175.0)
     #第２引数と第三引数は機能を鑑みて変える
     contours,_=cv2.findContours(mask,cv2.RETA_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
     #ここでコーンの輪郭を導き出して、それをもとに面積（ピクセル数）を求めたり、重心を求めたりする
@@ -30,21 +32,21 @@ def get_distance(contour,x):
     M=cv2.moments(contour)
     cx = int(M["m10"] / M["m00"])
     dx=cx-x
-    if -50>x:
+    #ここの５０は仮の値(実験でかえる)
+    if -50>dx:
         sign=-1 
-        dx=-dx
-    elif x>50:
+    elif dx>50:
         sign=1
     else:
         sign=0
         
-    return (sign,dx)
+    return sign
 
 
-def to_stop(contour,area_frame):
+def to_stop(contour,frame_area):
     #area_frameはカメラの画面全体のピクセル数事前にx*yを計算しておく
     area=cv2.contourArea(contour)
     #コーンの面積が画面全体の８割を超えたら停止するためにTrueを返す
-    if area>0.8*area_frame:
+    if area>0.8*frame_area:
         return True
     return False
