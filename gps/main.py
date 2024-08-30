@@ -22,26 +22,25 @@ class Gps(IGps):
 
 
     def run_gps(self):
-      
-        while True:
-            try:
-                sentence = self.__uart.readline()
-                #バッファにgpsのデータASCIIにしてを蓄積
-                if sentence:
-                    self.__data_buffer += sentence.decode('ascii', errors='ignore')
+      try:
+        sentence = self.__uart.readline()
+
+        #バッファにgpsのデータASCIIにしてを蓄積
+        if sentence:
+                self.__data_buffer += sentence.decode('ascii', errors='ignore')
         
-                   #改行ごとに分けて、一番最初のデータをsentenceに格納
-                    while '\n' in self.__data_buffer:
-                        sentence, self.__data_buffer = self.__data_buffer.split('\n', 1)
+                #改行ごとに分けて、一番最初のデータをsentenceに格納
+                while '\n' in self.__data_buffer:
+                    sentence, self.__data_buffer = self.__data_buffer.split('\n', 1)
 
-                        #一文字ずつ分析していき、アップデートする
-                        for x in sentence:
-                            if 10 <= ord(x) <= 126:
-                                if self.__gps.update(x):
-                                    # 更新されたGPSデータをログするなどの処理を後で書く
-                                    pass
+                    #一文字ずつ分析していき、アップデートする
+                    for x in sentence:
+                         if 10 <= ord(x) <= 126:
+                            if self.__gps.update(x):
+                            # 更新されたGPSデータをログするなどの処理を後で書く
+                             pass
 
-            except Exception as e:
+      except Exception as e:
                 print(f"GPSからの読み取りエラー: {e}")
 
     #経度緯度を出す
