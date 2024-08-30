@@ -38,11 +38,12 @@ try:
             motors.stop()
             break
         if i==4:
+            motors.stop()
             #エラーの発生のさせ方わからない
             raise 
         #モーターを９０度回転させるのに必要な秒数
         sleep(5)
-    
+    i=False
     while True:
         gps.run_gps()
         gps_info=gps.get_coordinates()
@@ -72,9 +73,11 @@ try:
             if result:
                 print("コーンにたどり着きました")
                 motors.stop()
+                i=True
                 break
             sleep(1)
-        
+        if i:
+            break
 
 
 except:
