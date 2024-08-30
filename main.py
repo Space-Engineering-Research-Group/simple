@@ -76,9 +76,9 @@ try:
                 motors.stop()
                 i=True
                 break
+            sleep(1)
         if i:
             break
-            sleep(1)
 
     gps.run_gps()
     gps_info=gps.get_coordinates()
