@@ -23,18 +23,18 @@ class Gps(IGps):
 
     def run_gps(self):
       try:
-        sentence = self.__uart.readline()
+        self.__sentence = self.__uart.readline()
 
         #バッファにgpsのデータASCIIにしてを蓄積
-        if sentence:
-                self.__data_buffer += sentence.decode('ascii', errors='ignore')
+        if self.__sentence:
+                self.__data_buffer += self.__sentence.decode('ascii', errors='ignore')
         
                 #改行ごとに分けて、一番最初のデータをsentenceに格納
                 while '\n' in self.__data_buffer:
-                    sentence, self.__data_buffer = self.__data_buffer.split('\n', 1)
+                    self.__sentence, self.__data_buffer = self.__data_buffer.split('\n', 1)
 
                     #一文字ずつ分析していき、アップデートする
-                    for x in sentence:
+                    for x in self.__sentence:
                          if 10 <= ord(x) <= 126:
                             if self.__gps.update(x):
                             # 更新されたGPSデータをログするなどの処理を後で書く
@@ -53,3 +53,11 @@ class Gps(IGps):
         return (latitude, longitude)
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
+
+   
+    def __del__(self):
+        self.__sentence = None
+        if self.__uart:
+            #uartが偽の値ならエラー起こるので存在確認している
+            self.__uart.close() 
+        print("gpsのデータを削除しました")
