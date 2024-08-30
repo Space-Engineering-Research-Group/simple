@@ -50,6 +50,6 @@ class Gps(IGps):
         latitude = self.__gps.latitude[0] if self.__gps.latitude[0] is not None else None
         longitude = self.__gps.longitude[0] if self.__gps.longitude[0] is not None else None
 
-        return latitude, longitude
+        return (latitude, longitude)
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
