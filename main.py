@@ -40,8 +40,9 @@ try:
             break
         if i==4:
             motors.stop()
-            #エラーの発生のさせ方わからない
-            raise 
+            print("コーンが見つかりません")
+            import sys
+            sys.exit()            
         #モーターを９０度回転させるのに必要な秒数
         sleep(5)
     i=False
