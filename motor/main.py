@@ -20,12 +20,10 @@ class Imotor(abc.ABC):
     
 class motor(Imotor):
     def __init__(self, foward_left_pin, back_left_pin, foward_right_pin, back_right_pin):
-        try:
-            self.left_motor = Motor(foward_left_pin, back_left_pin)
-            self.right_motor = Motor(foward_right_pin, back_right_pin)
-        except Exception as e:
-            print(f"モーターの初期化中にエラー発生:{e}")
-            raise     
+        
+        self.left_motor = Motor(foward_left_pin, back_left_pin)
+        self.right_motor = Motor(foward_right_pin, back_right_pin)
+        
 
     def foward(self):
         self.left_motor.foward()
