@@ -22,6 +22,7 @@ class Camera(ICamera):
         ret,frame=self.cap.read()
         if ret:
             return frame
-        #ここのエラー処理を忘れないようにする（後で考える）
-        return np.array([])
-    
+        else:
+            print("カメラから映像を取得できません")
+            #エラー処理の内容は後で決める
+            raise 
