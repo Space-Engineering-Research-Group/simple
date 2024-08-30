@@ -25,7 +25,7 @@ class motor(Imotor):
         self.right_motor = Motor(forward_right_pin, back_right_pin)
         
 
-    def foward(self):
+    def forward(self):
         self.left_motor.forward()
         self.right_motor.forward()
     
@@ -45,4 +45,6 @@ class motor(Imotor):
     def stop(self):
         self.left_motor.stop()
         self.right_motor.stop()
+
+        
     

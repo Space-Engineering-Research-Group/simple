@@ -82,3 +82,7 @@ except:
     print(sys.exc_info()[1])
     import traceback
     print(traceback.format_tb(sys.exc_info()[2]))
+
+finally:
+    camera.release()
+    gps.delete()   
