@@ -24,8 +24,6 @@ class Camera(ICamera):
         if ret:
             return frame
         else:
-            print("カメラから映像を取得できません")
-            #エラーの内容はchatgptのやつコピペしただけ
             raise RuntimeError("カメラから映像を取得できません")
     
     def release(self):
