@@ -20,18 +20,21 @@ class Gps(IGps):
         self.__gps = micropyGPS.MicropyGPS(9, "dd")
         self.__data_buffer = ""
 
+
     def run_gps(self):
       
         while True:
             try:
                 sentence = self.__uart.readline()
-                
+                #バッファにgpsのデータASCIIにしてを蓄積
                 if sentence:
                     self.__data_buffer += sentence.decode('ascii', errors='ignore')
-                   
+        
+                   #改行ごとに分けて、一番最初のデータをsentenceに格納
                     while '\n' in self.__data_buffer:
                         sentence, self.__data_buffer = self.__data_buffer.split('\n', 1)
 
+                        #一文字ずつ分析していき、アップデートする
                         for x in sentence:
                             if 10 <= ord(x) <= 126:
                                 if self.__gps.update(x):
@@ -41,6 +44,7 @@ class Gps(IGps):
             except Exception as e:
                 print(f"GPSからの読み取りエラー: {e}")
 
+    #経度緯度を出す
     def get_coordinates(self) -> tuple[float, float]:
 
        #２つの変数がnotNoneなら値を入れ、elseならNoneを入れる
@@ -48,3 +52,5 @@ class Gps(IGps):
         longitude = self.__gps.longitude[0] if self.__gps.longitude[0] is not None else None
 
         return latitude, longitude
+    
+  #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
