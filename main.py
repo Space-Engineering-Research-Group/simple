@@ -25,8 +25,9 @@ try:
     #~~~センサ、サーボのコードは後で書く~~~#
 
 
-
-    #パラシュートを外すために回転
+    #パラシュートから逃げる
+    motors.forward()
+    sleep(2)
     motors.turn_left()
     i=0
     while True:
