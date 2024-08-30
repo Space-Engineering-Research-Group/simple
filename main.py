@@ -14,6 +14,7 @@ gps=Gps()
 gps_deta=[]
 camera=Camera()
 width,height=camera.get_frame()
+frame_area=width*height
 #ここの具体的な値はコーンの検査をして考える。大会前日とか？
 lower_red=[170,100,255]
 upper_red=[180,255,255]
@@ -31,3 +32,8 @@ while True:
         raise 
     
 while True:
+    frame=camera.get_frame()
+    contour=find_cone(frame,lower_red,upper_red)
+    result=to_stop(contour,frame_area)
+    if result:
+        
