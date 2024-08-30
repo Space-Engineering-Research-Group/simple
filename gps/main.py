@@ -55,7 +55,7 @@ class Gps(IGps):
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
 
    
-    def __del__(self):
+    def delete(self):
         self.__sentence = None
         if self.__uart:
             #uartが偽の値ならエラー起こるので存在確認している
