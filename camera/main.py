@@ -11,13 +11,14 @@ class ICamera(ABC):
 
 class Camera(ICamera):
     def __init__(self):
-        self.cap=cv2.VideoCapture(0)
-        self.width =self.cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+        self.capture=cv2.VideoCapture(0)
 
     def get_frame(self):
-        self.ret,self.frame=self.cap.read()
-        if self.ret:
-            return self.frame
+        width =self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
+        height=self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
+        ret,frame=self.cap.read()
+        if ret:
+            return (frame,width,height)
         #ここのエラー処理を忘れないようにする（後で考える）
         return np.array([])
     
