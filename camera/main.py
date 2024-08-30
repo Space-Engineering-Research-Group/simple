@@ -27,7 +27,7 @@ class Camera(ICamera):
             print("カメラから映像を取得できません")
             #エラーの内容はchatgptのやつコピペしただけ
             raise RuntimeError("カメラから映像を取得できません")
-
+    
     def release(self):
         if self.capture.isOpened():
             self.capture.release
