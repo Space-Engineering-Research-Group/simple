@@ -19,15 +19,15 @@ class Imotor(abc.ABC):
         raise NotImplementedError()
     
 class motor(Imotor):
-    def __init__(self, foward_left_pin, back_left_pin, foward_right_pin, back_right_pin):
+    def __init__(self, forward_left_pin, back_left_pin, forward_right_pin, back_right_pin):
         
-        self.left_motor = Motor(foward_left_pin, back_left_pin)
-        self.right_motor = Motor(foward_right_pin, back_right_pin)
+        self.left_motor = Motor(forward_left_pin, back_left_pin)
+        self.right_motor = Motor(forward_right_pin, back_right_pin)
         
 
     def foward(self):
-        self.left_motor.foward()
-        self.right_motor.foward()
+        self.left_motor.forward()
+        self.right_motor.forward()
     
     def backward(self):
         self.left_motor.backward()
