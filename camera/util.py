@@ -47,3 +47,4 @@ def to_stop(contour,area_frame):
     #コーンの面積が画面全体の８割を超えたら停止するためにTrueを返す
     if area>0.8*area_frame:
         return True
+    return False
