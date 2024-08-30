@@ -3,6 +3,7 @@ try:
     from .gps import *
     from .motor import *
     from time import sleep,time
+    from csv  import writer
 
     #ピンの具体的な値は後で決める
     forward_left_pin=1
@@ -78,7 +79,14 @@ try:
             sleep(1)
         if i:
             break
-
+        
+    gps.run_gps()
+    gps_info=gps.get_coordinates()
+    gps_deta.append(gps_info)
+    #ファイル名自分たちで決める
+    with open('ファイル名', 'w', newline='') as file:
+        writer = writer(file)
+        writer.writerows(gps_deta)
 
 except:
     import sys
