@@ -3,6 +3,7 @@ try:
     from .gps import *
     from .motor import *
     from time import sleep,time
+    from csv import writer
 
     #ピンの具体的な値は後で決める
     forward_left_pin=1
@@ -10,6 +11,7 @@ try:
     forward_right_pin=1
     back_right_pin=1
     motors=motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
+
     gps=Gps()
     gps_deta=[]
     camera=Camera()
@@ -26,7 +28,8 @@ try:
 
 
 
-
+    motors.forward()
+    sleep(1)
     motors.turn_left()
     i=0
     while True:
@@ -41,7 +44,7 @@ try:
             raise 
         #モーターを９０度回転させるのに必要な秒数
         sleep(5)
-    
+    i=False
     while True:
         gps.run_gps()
         gps_info=gps.get_coordinates()
@@ -50,7 +53,7 @@ try:
         frame=camera.get_frame()
         contour=find_cone(frame,lower_red,upper_red)
         sign=get_distance(contour,x)
-        
+        #motors.stopも必要があれば入れる
         if sign==1:
             motors.turn_left()
         elif sign==-1:
@@ -71,9 +74,19 @@ try:
             if result:
                 print("コーンにたどり着きました")
                 motors.stop()
+                i=True
                 break
+        if i:
+            break
             sleep(1)
-        
+
+    gps.run_gps()
+    gps_info=gps.get_coordinates()
+    gps_deta.append(gps_info)
+    with open('', 'w', newline='') as file:
+        writer = writer(file)
+        writer.writerows(gps_deta)
+
 
 
 
