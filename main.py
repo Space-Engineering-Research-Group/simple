@@ -38,6 +38,7 @@ try:
         sleep(2)
     
     #明るさを検知してから１０秒後にサーボを回す
+    #この１０秒は仮の値である
     sleep(10)
     servo.rotate()
     sleep(2)
