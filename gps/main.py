@@ -5,21 +5,17 @@ import micropyGPS
 class IGps(abc.ABC):
     @abc.abstractmethod
     def run_gps(self):
-        
-        raise NotImplementedError()
-
+        pass
     @abc.abstractmethod
     def get_coordinates(self) -> tuple[float, float]:
-       
-        raise NotImplementedError()
+       pass
 
-class Gps(IGps):
+class Gps(IGps):s
     def __init__(self):
         #ここのポートと通信速度、タイムアウトの値は仮に設定した
         self.__uart = serial.Serial('/dev/serial0', 9600, timeout=10)
         self.__gps = micropyGPS.MicropyGPS(9, "dd")
         self.__data_buffer = ""
-
 
     def run_gps(self):
       try:
@@ -54,7 +50,6 @@ class Gps(IGps):
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
 
-   
     def delete(self):
         self.__sentence = None
         if self.__uart:
