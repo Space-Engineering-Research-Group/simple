@@ -31,7 +31,7 @@ try:
     motors=motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
 
     while True:
-        bright=cds.get_brightness
+        bright=cds.get_brightness()
         if bright > brightness_threshold:
             break
 
