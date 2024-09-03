@@ -10,7 +10,7 @@ try:
     back_left_pin=1
     forward_right_pin=1
     back_right_pin=1
-    motors=motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
+    motors=Motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
     gps=Gps()
     gps_deta=[]
     camera=Camera()
