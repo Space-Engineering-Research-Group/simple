@@ -2,15 +2,16 @@ try:
     from .camera import *
     from .gps import *
     from .motor import *
+    from .cds import *
+    from .servo import *
     from time import sleep,time
     from csv  import writer
 
-    #ピンの具体的な値は後で決める
-    forward_left_pin=1
-    back_left_pin=1
-    forward_right_pin=1
-    back_right_pin=1
-    motors=Motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
+    cds=Cds()
+    #明るさの閾値は曇りの日に明るさを取得して決める
+    brightness_threshold=0.3
+    #ピンの値は回路班が後で決めるので仮の値
+    servo=Servo(1)
     gps=Gps()
     gps_deta=[]
     camera=Camera()
@@ -22,8 +23,24 @@ try:
     
     x=width/2
 
+    #pinの値は後で回路班が決めるので仮の値
+    forward_left_pin=1
+    back_left_pin=1
+    forward_right_pin=1
+    back_right_pin=1
+    motors=motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
 
-    #~~~センサ、サーボのコードは後で書く~~~#
+    while True:
+        bright=cds.get_brightness
+        if bright > brightness_threshold:
+            break
+
+        sleep(2)
+    
+    #明るさを検知してから１０秒後にサーボを回す
+    sleep(10)
+    servo.rotate()
+    sleep(2)
 
 
     #パラシュートから逃げる

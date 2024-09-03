@@ -1,5 +1,5 @@
 import abc
-from GPIOZERO from servo
+from gpiozero from servo
 
 class Iservo(abc.ABC):
      @abc.abstractmethod
@@ -7,5 +7,10 @@ class Iservo(abc.ABC):
           pass
      
 class Servo(Iservo):
-     def __init__(self):
-               self._servo = servo 
+     def __init__(self,pin):
+          #maxpulseとminpulseも必要があれば指定
+          self.servo=Servo(pin)
+     
+     def rotate(self):
+          #必要に応じて変える
+          self.servo.max()
