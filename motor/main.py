@@ -18,7 +18,7 @@ class Imotor(abc.ABC):
     def turn_left(self):
         raise NotImplementedError()
     
-class motor(Imotor):
+class Motor(Imotor):
     def __init__(self, forward_left_pin, back_left_pin, forward_right_pin, back_right_pin):
         
         self.left_motor = Motor(forward_left_pin, back_left_pin)
