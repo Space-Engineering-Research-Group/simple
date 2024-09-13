@@ -24,11 +24,11 @@ try:
     x=width/2
 
     #pinの値は後で回路班が決めるので仮の値
-    forward_left_pin=1
-    back_left_pin=1
-    forward_right_pin=1
-    back_right_pin=1
-    motors=motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
+    forward_left_pin=17
+    back_left_pin=18
+    forward_right_pin=23
+    back_right_pin=24
+    motors=Motor(forward_left_pin,back_left_pin,forward_right_pin,back_right_pin)
 
     while True:
         bright=cds.get_brightness()
