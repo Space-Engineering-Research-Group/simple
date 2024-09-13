@@ -1,4 +1,4 @@
-from gpiozero import Motor
+from gpiozero import OutputDevise
 import abc
 
 class Imotor(abc.ABC):
@@ -18,33 +18,37 @@ class Imotor(abc.ABC):
     def turn_left(self):
         raise NotImplementedError()
     
+    #高井君のスレッドみろ
 class Motor(Imotor):
-    def __init__(self, forward_left_pin, back_left_pin, forward_right_pin, back_right_pin):
+    def __init__(self, dir1_1, dir1_2, dir2_1, dir2_2):
         
-        self.left_motor = Motor(forward_left_pin, back_left_pin)
-        self.right_motor = Motor(forward_right_pin, back_right_pin)
-        
+       self._dir11 = OutputDevise(dir1_1)
+       self._dir12 = OutputDevise(dir1_2)
+       self._dir21 = OutputDevise(dir2_1)
+       self._dir22 = OutputDevise(dir2_2)
 
-    def forward(self):
-        self.left_motor.forward()
-        self.right_motor.forward()
-    
-    def backward(self):
-        self.left_motor.backward()
-        self.right_motor.backward()
+    def forword(self):
+        self._dir11.on()
+        self._dir12.off()
+        #逆になるにで、反対になる
+        self._dir21.off()
+        self._dir22.on()
 
-    def turn_right(self):
-        self.left_motor.forward()
-        self.right_motor.backward()  
+    def backword(self):
+        self._dir11.off()
+        self._dir12.on()
+        #逆になるにで、反対になる
+        self._dir21.on()
+        self._dir22.off()
 
-    def turn_left(self):
-        self.left_motor.backward()
-        self.right_motor.forward()
-       
-    
     def stop(self):
-        self.left_motor.stop()
-        self.right_motor.stop()
+        self._dir11.off()
+        self._dir12.off()
+        self._dir21.off()
+        self._dir22.off()
+
+
+
 
         
     
