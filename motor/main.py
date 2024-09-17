@@ -1,52 +1,66 @@
-from gpiozero import OutputDevise
-import abc
+from gpiozero import PWMOutputDevise,DigitalOutputDevice
+from abc import ABC,abstractmethod
 
 class Imotor(abc.ABC):
-    @abc.abstractmethod
+    @abstractmethod
     def forward(self):
-        raise NotImplementedError() 
+        pass
+
     
-    @abc.abstractmethod
-    def backward(self):
-        raise NotImplementedError()
-    
-    @abc.abstractmethod
+    @abstractmethod
     def turn_right(self):
-        raise NotImplementedError()
+        pass
     
-    @abc.abstractmethod
+    @abstractmethod
     def turn_left(self):
-        raise NotImplementedError()
+        pass
+
+    @abstractmethod
+    def release(self):
+        pass
     
-    #高井君のスレッドみろ
+    
 class Motor(Imotor):
-    def __init__(self, dir1_1, dir1_2, dir2_1, dir2_2):
+    def __init__(self,rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM):
+        self.right_in1=DigitalOutputDevice(rdir_1)
+        self.right_in2=DigitalOutputDevice(rdir_2)
+        self.right_PWM=PWMOutputDevise(rPWM)
+        self.right_PWM.value=204/255
         
-       self._dir11 = OutputDevise(dir1_1)
-       self._dir12 = OutputDevise(dir1_2)
-       self._dir21 = OutputDevise(dir2_1)
-       self._dir22 = OutputDevise(dir2_2)
+        self.left_in1=DigitalOutputDevice(ldir_1)
+        self.left_in2=DigitalOutputDevice(ldir_2)
+        self.left_PWM=PWMOutputDevise(lPWM)
 
-    def forword(self):
-        self._dir11.on()
-        self._dir12.off()
-        #逆になるにで、反対になる
-        self._dir21.off()
-        self._dir22.on()
+        self.right_PWM.value=204/255
+        self.left_PWM.value=204/255
+    def forward(self):
+        self.right_in1.on()
+        self.right_in2.off()
 
-    def backword(self):
-        self._dir11.off()
-        self._dir12.on()
-        #逆になるにで、反対になる
-        self._dir21.on()
-        self._dir22.off()
+        self.left_in1.off()
+        self.left_in2.on()
 
-    def stop(self):
-        self._dir11.off()
-        self._dir12.off()
-        self._dir21.off()
-        self._dir22.off()
+    def turn_right(self):
+        self.right_in1.off()
+        self.right_in2.on()
 
+        self.left_in1.off()
+        self.left_in2.on()
+
+    def turn_left(self):
+        self.right_in1.on()
+        self.right_in2.off()
+
+        self.left_in1.on()
+        self.left_in2.off()
+
+    #main.pyファイルを書き直しておく
+    def release(self):
+        self.right_in1.off()
+        self.right_in2.off()
+
+        self.left_in1.off()
+        self.left_in2.off()
 
 
 
