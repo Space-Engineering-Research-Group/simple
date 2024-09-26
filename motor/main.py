@@ -1,7 +1,7 @@
 from gpiozero import PWMOutputDevise,DigitalOutputDevice
 from abc import ABC,abstractmethod
 
-class Imotor(abc.ABC):
+class Imotor(ABC):
     @abstractmethod
     def forward(self):
         pass
