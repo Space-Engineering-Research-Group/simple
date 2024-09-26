@@ -10,10 +10,11 @@ class IGps(abc.ABC):
     def get_coordinates(self) -> tuple[float, float]:
        pass
 
-class Gps(IGps):s
+class Gps(IGps):
     def __init__(self):
         #ここのポートと通信速度、タイムアウトの値は仮に設定した
-        self.__uart = serial.Serial('/dev/serial0', 9600, timeout=10)
+        self.__gps_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
+        self.__xbee_uart = serial.Serial('/dev/ttyUSB0', 9600, timeout=10)
         self.__gps = micropyGPS.MicropyGPS(9, "dd")
         self.__data_buffer = ""
 
@@ -32,10 +33,11 @@ class Gps(IGps):s
                     #一文字ずつ分析していき、アップデートする
                     for x in self.__sentence:
                          if 10 <= ord(x) <= 126:
-                            if self.__gps.update(x):
-                            # 更新されたGPSデータをログするなどの処理を後で書く
-                             pass
-
+                             if self.__gps.update(x):
+                                 latitude = self.__gps.latitude[0]
+                                 longitude = self.__gps.longitude[0]
+                                 if latitude is not None and longitude is not None:
+                                     self.__xbee_uart.write(f"Lat: {latitude:.6f}, Lon: {longitude:.6f}\n".encode('utf-8'))
       except Exception as e:
                 print(f"GPSからの読み取りエラー: {e}")
 
@@ -52,7 +54,9 @@ class Gps(IGps):s
 
     def delete(self):
         self.__sentence = None
-        if self.__uart:
-            #uartが偽の値ならエラー起こるので存在確認している
-            self.__uart.close() 
+        if self.__gps_uart:
+            self.__gps_uart.close()
+        if self.__xbee_uart:
+            self.__xbee_uart.close()    
+
         print("gpsのデータを削除しました")
