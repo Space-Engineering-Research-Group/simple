@@ -20,7 +20,7 @@ class Gps(IGps):
 
     def run_gps(self):
       try:
-        self.__sentence = self.__uart.readline()
+        self.__sentence = self.__gps_uart.readline()
 
         #バッファにgpsのデータASCIIにしてを蓄積
         if self.__sentence:
@@ -53,13 +53,8 @@ class Gps(IGps):
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
 
-    #これはLinuxの環境で書くため、すべてをコメントにしてます。
-    # def receive_data(self):
-    #     while True:
-    #         if self.__xbee_uart.in_waiting:
-    #             data = self.__xbee_uart.readline().decode('utf-8').strip()
-    #             return data
-
+   #受信側のコードは別
+   
     def delete(self):
         self.__sentence = None
         if self.__gps_uart:
