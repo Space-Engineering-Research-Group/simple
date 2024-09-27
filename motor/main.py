@@ -25,7 +25,6 @@ class Motor(Imotor):
         self.right_in1=DigitalOutputDevice(rdir_1)
         self.right_in2=DigitalOutputDevice(rdir_2)
         self.right_PWM=PWMOutputDevise(rPWM)
-        self.right_PWM.value=204/255
         
         self.left_in1=DigitalOutputDevice(ldir_1)
         self.left_in2=DigitalOutputDevice(ldir_2)
