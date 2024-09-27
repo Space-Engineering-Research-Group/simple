@@ -37,9 +37,10 @@ class Gps(IGps):
                                  latitude = self.__gps.latitude[0]
                                  longitude = self.__gps.longitude[0]
                                  if latitude is not None and longitude is not None:
+                                     #もう一つのxbeeに送る
                                      self.__xbee_uart.write(f"Lat: {latitude:.6f}, Lon: {longitude:.6f}\n".encode('utf-8'))
       except Exception as e:
-                print(f"GPSからの読み取りエラー: {e}")
+                print(f"GPS:error {e}")
 
     #経度緯度を出す
     def get_coordinates(self) -> tuple[float, float]:
@@ -52,6 +53,13 @@ class Gps(IGps):
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
 
+    #これはLinuxの環境で書くため、すべてをコメントにしてます。
+    # def receive_data(self):
+    #     while True:
+    #         if self.__xbee_uart.in_waiting:
+    #             data = self.__xbee_uart.readline().decode('utf-8').strip()
+    #             return data
+
     def delete(self):
         self.__sentence = None
         if self.__gps_uart:
@@ -60,3 +68,5 @@ class Gps(IGps):
             self.__xbee_uart.close()    
 
         print("gpsのデータを削除しました")
+
+    
