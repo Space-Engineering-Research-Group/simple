@@ -43,19 +43,9 @@ class Gps(IGps):
             print(f"GPS communication error: {e}")                               
       except Exception as e:
                 print(f"GPS:error {e}")
-
-    #経度緯度を出す
-    def get_coordinates(self) -> tuple[float, float]:
-
-       #２つの変数がnotNoneなら値を入れ、elseならNoneを入れる
-        latitude = self.__gps.latitude[0] if self.__gps.latitude[0] is not None else None
-        longitude = self.__gps.longitude[0] if self.__gps.longitude[0] is not None else None
-
-        return (latitude, longitude)
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
-
-   #受信側のコードは別
+   #受信側のコードは別にある
    
     def delete(self):
         self.__sentence = None
