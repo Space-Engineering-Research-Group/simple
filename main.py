@@ -11,7 +11,7 @@ try:
     #明るさの閾値は曇りの日に明るさを取得して決める
     brightness_threshold=0.3
     #ピンの値は回路班が後で決めるので仮の値
-    servo=Servo(1)
+    servo=Servo(12)
     gps=Gps()
     gps_deta=[]
     camera=Camera()
@@ -23,7 +23,7 @@ try:
     
     x=width/2
 
-    #pinの値は後で回路班が決めるので仮の値
+    #pin,pwmの値は決まった
     rdir_1=35
     rdir_2=37
     rPWM=33
@@ -31,6 +31,7 @@ try:
     ldir_2=40
     lPWM=36
     motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM)
+
 
     while True:
         bright=cds.get_brightness()
@@ -68,8 +69,6 @@ try:
     i=False
     while True:
         gps.run_gps()
-        gps_info=gps.get_coordinates()
-        gps_deta.append(gps_info)
 
         frame=camera.get_frame()
         contour=find_cone(frame,lower_red,upper_red)
@@ -102,12 +101,6 @@ try:
             break
         
     gps.run_gps()
-    gps_info=gps.get_coordinates()
-    gps_deta.append(gps_info)
-    #ファイル名自分たちで決める
-    with open('ファイル名', 'w', newline='') as file:
-        writer = writer(file)
-        writer.writerows(gps_deta)
 
 except:
     import sys
