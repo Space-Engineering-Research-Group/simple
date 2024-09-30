@@ -39,6 +39,8 @@ class Gps(IGps):
                                  if latitude is not None and longitude is not None:
                                      #もう一つのxbeeに送る
                                      self.__xbee_uart.write(f"Lat: {latitude:.6f}, Lon: {longitude:.6f}\n".encode('utf-8'))
+      except serial.SerialException as e:
+            print(f"GPS communication error: {e}")                               
       except Exception as e:
                 print(f"GPS:error {e}")
 
@@ -62,6 +64,6 @@ class Gps(IGps):
         if self.__xbee_uart:
             self.__xbee_uart.close()    
 
-        print("gpsのデータを削除しました")
+        print("gps of data is delete")
 
     
