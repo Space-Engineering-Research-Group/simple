@@ -6,10 +6,7 @@ class IGps(abc.ABC):
     @abc.abstractmethod
     def run_gps(self):
         pass
-    @abc.abstractmethod
-    def get_coordinates(self) -> tuple[float, float]:
-       pass
-
+   
 class Gps(IGps):
     def __init__(self):
         #ここのポートと通信速度、タイムアウトの値は仮に設定した
@@ -17,7 +14,7 @@ class Gps(IGps):
         self.__xbee_uart = serial.Serial('/dev/ttyUSB0', 9600, timeout=10)
         self.__gps = micropyGPS.MicropyGPS(9, "dd")
         self.__data_buffer = ""
-
+    
     def run_gps(self):
       try:
         self.__sentence = self.__gps_uart.readline()
@@ -49,9 +46,9 @@ class Gps(IGps):
    
     def delete(self):
         self.__sentence = None
-        if self.__gps_uart:
+        if self.__gps_uart and self.__gps_uart.is_open:
             self.__gps_uart.close()
-        if self.__xbee_uart:
+        if self.__xbee_uart and self.__xbee_uart.is_open:
             self.__xbee_uart.close()    
 
         print("gps of data is delete")
