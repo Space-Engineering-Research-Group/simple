@@ -45,6 +45,7 @@ class Gps(IGps):
                 print(f"GPS:error {e}")
     
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
+  
    #受信側のコードは別にある
    
     def delete(self):
