@@ -7,9 +7,9 @@ class IGps(abc.ABC):
     @abc.abstractmethod
     def run_gps(self):
         pass
-<<<<<<< HEAD
+
    
-=======
+
     
     @abc.abstractmethod
     def get_coordinate_xy(self):
@@ -27,25 +27,13 @@ class IGps(abc.ABC):
     def delete(self):
         pass
 
->>>>>>> gps-is-all
+
 class Gps(IGps):
     def __init__(self):
         # ポート設定
         self.__gps_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
         self.__gps = micropyGPS.MicropyGPS(9, "dd")
-<<<<<<< HEAD
-        self.__data_buffer = ""
-    
-    def run_gps(self):
-      try:
-        self.__sentence = self.__gps_uart.readline()
 
-        #バッファにgpsのデータASCIIにしてを蓄積
-        if self.__sentence:
-                self.__data_buffer += self.__sentence.decode('ascii', errors='ignore')
-=======
->>>>>>> gps-is-all
-        
         # データバッファ
         self.__data_buffer = ""
         self.__dataz_buffer = ""
@@ -118,7 +106,6 @@ class Gps(IGps):
         
         return None
     
-<<<<<<< HEAD
   #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
    #受信側のコードは別にある
    
@@ -128,10 +115,9 @@ class Gps(IGps):
             self.__gps_uart.close()
         if self.__xbee_uart and self.__xbee_uart.is_open:
             self.__xbee_uart.close()    
-=======
+
     def move_direction(self):
         direction=0
->>>>>>> gps-is-all
 
 
 
