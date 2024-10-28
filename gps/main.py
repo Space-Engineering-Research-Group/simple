@@ -106,8 +106,9 @@ class Gps(IGps):
         direction=0
 
 
-        
+
         return direction
+    
     #どれを基準とした方向なのかを聴く
     #真北を0度、基準としている
     #一般的なgpsと同じ
