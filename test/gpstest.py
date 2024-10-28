@@ -24,7 +24,7 @@ class Gps:
                                  latitude = self.__gps.latitude[0]
                                  longitude = self.__gps.longitude[0]
                                  altitude = self.__gps.altitude
-                                 if latitude is not None and longitude is not None and altitude is not None:
+                                 if latitude is not None and longitude is not None and altitude is None:
                                     self.__xbee_uart.write(f"Lat: {latitude:.6f}, Lon: {longitude:.6f}, alt: {altitude:.6f}\n".encode('utf-8'))
                                     print(f'lat is {latitude} lon is {longitude} alt is {altitude}\n')
                                     return altitude
@@ -36,9 +36,9 @@ class Gps:
    
     def delete(self):
         self.__sentence = None
-        if self.__gps_uart:
+        if self.__gps_uart  and self.__gps_uart.is_open:
             self.__gps_uart.close()
-        if self.__xbee_uart:
+        if self.__xbee_uart and self.__xbee_uart.is_open:
             self.__xbee_uart.close()    
         print("gps of data is delete")
 
