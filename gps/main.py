@@ -41,7 +41,8 @@ class Gps(IGps):
 
     def update_gps(self):
         try:
-            sentence = self.gps_uart.readline()  # GPSデバイスから1行のデータを読み取る
+            sentence = self.gps_uart.readline()# GPSデバイスから1行のデータを読み取る
+            #readline()の仕組み
             if sentence:
                 for x in sentence.decode('ascii', errors='ignore'):
                     self.gps.update(x)  # 1文字をupdateメソッドに渡して解析
@@ -101,8 +102,8 @@ class Gps(IGps):
    #受信側のコードは別にある
 
     def move_direction(self):
-        gps.course  使う
-        return direction
+        move_direction = micropyGPS().course 
+        return move_direction
     
 
     
