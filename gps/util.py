@@ -7,6 +7,9 @@ def get_distance(goal_lat,goal_lon,latitude,longitude):
     now = (latitude,longitude)
     distance = distance(goal,now).meters
 
+    #誤差が生じるので、その分埋める。
+    #仮の4mとしている
+    distance = distance - 4
     return distance
 
 def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction): 
