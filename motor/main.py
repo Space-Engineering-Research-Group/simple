@@ -1,5 +1,8 @@
-from gpiozero import PWMOutputDevise,DigitalOutputDevice
+from gpiozero import PWMOutputDevice,DigitalOutputDevice
+from gpiozero.pins.pigpio import PiGPIOFactory
 from abc import ABC,abstractmethod
+
+factory = PiGPIOFactory()
 
 class Imotor(ABC):
     @abstractmethod
@@ -22,13 +25,13 @@ class Imotor(ABC):
     
 class Motor(Imotor):
     def __init__(self,rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM):
-        self.right_in1=DigitalOutputDevice(rdir_1)
-        self.right_in2=DigitalOutputDevice(rdir_2)
-        self.right_PWM=PWMOutputDevise(rPWM)
+        self.right_in1=DigitalOutputDevice(rdir_1,pin_factory=factory)
+        self.right_in2=DigitalOutputDevice(rdir_2,pin_factory=factory)
+        self.right_PWM=PWMOutputDevice(rPWM,pin_factory=factory)
         
-        self.left_in1=DigitalOutputDevice(ldir_1)
-        self.left_in2=DigitalOutputDevice(ldir_2)
-        self.left_PWM=PWMOutputDevise(lPWM)
+        self.left_in1=DigitalOutputDevice(ldir_1,pin_factory=factory)
+        self.left_in2=DigitalOutputDevice(ldir_2,pin_factory=factory)
+        self.left_PWM=PWMOutputDevice(lPWM,pin_factory=factory)
 
         self.right_PWM.value=204/255
         self.left_PWM.value=204/255
