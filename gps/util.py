@@ -1,5 +1,6 @@
 import math
 from geopy.distance import distance
+from geopy.distance import geodesic
 
 def get_distance(goal_lat,goal_lon,latitude,longitude):
 
@@ -13,9 +14,17 @@ def get_distance(goal_lat,goal_lon,latitude,longitude):
     return distance
 
 def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction): 
+    #度をmに変換
+    dlat = geodesic((latitude, longitude), (goal_lat, longitude)).meters  
+    dlon = geodesic((latitude, longitude), (latitude, goal_lon)).meters
+
+    # 南北方向での符号を調整
+    if goal_lat < latitude:
+        dlat = -dlat
     
-    dlat = goal_lat - latitude
-    dlon = goal_lon - longitude
+    # 東西方向での符号を調整
+    if goal_lon < longitude:
+        dlon = -dlon
 
     rotation_angle = math.degrees(math.atan2(dlon, dlat))
 
