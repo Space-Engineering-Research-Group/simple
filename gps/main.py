@@ -109,6 +109,7 @@ class Gps(IGps):
     
     def move_direction(self):
         move_direction = self.__gps.course
+        
         return move_direction
     
     def delete(self):
