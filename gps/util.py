@@ -34,9 +34,7 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
     if z_rot <= 180 :
         if rotation >= 0:
             return rotation
-        else:
-            return rotation
-        
+
     if z_rot >= 180 :
         if rotation >= 0:
             return rotation - 360
