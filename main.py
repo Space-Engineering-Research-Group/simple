@@ -70,11 +70,16 @@ i=0
 while True:
     latitude, longitude = gps.get_coordinate_xy()
     move_direction = gps.move_direction()
-    distance = get_distance(goal_lat,goal_lon,latitude,longitude)
-    rotation_angle = get(goal_lat,goal_lon,latitude,longitude,move_direction)
 
+    distance = get_distance(goal_lat,goal_lon,latitude,longitude) 
+    distance = distance - 4
+    rotation_angle = get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction)
+    
+    #ここに、回転を行うコードを書く
 
-    break
+    #このdistanceは誤差があるので注意(get_distanceモジュール内で埋めてはいるが)
+    if distance <= 5:
+        break
 
 while True:
     i=i+1
