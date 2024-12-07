@@ -40,3 +40,5 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
             return rotation - 360
         else:
             return rotation + 360
+
+            
