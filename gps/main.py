@@ -27,30 +27,33 @@ class IGps(abc.ABC):
 
 class Gps(IGps):
     def __init__(self):
-        # ポート設定
-        self.__gps_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
-        self.__gps = micropyGPS.MicropyGPS(9, "dd")
-
-        # データバッファ
-        self.__data_buffer = ""
-        self.__dataz_buffer = ""
+        try:
+            self.__gps_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
+            self.__xbee_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
+            self.__gps = micropyGPS.MicropyGPS(9, "dd")
+        except Exception as e:
+            # 初期化中にエラーが起きた場合にリソースを解放
+            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                self.__gps_uart.close()
+            if hasattr(self, '_Gps__xbee_uart') and self.__xbee_uart and self.__xbee_uart.is_open:
+                self.__xbee_uart.close()
+            raise e  # 再度例外を送出    
         
-        # 前回の高度と時刻
         self.prev_altitude = None
         self.prev_time = None
 
     def update_gps(self):
         try:
-            sentence = self.gps_uart.readline()# GPSデバイスから1行のデータを読み取る
-            #readline()の仕組み
-            if sentence:
-                for x in sentence.decode('ascii', errors='ignore'):
-                    self.gps.update(x)  # 1文字をupdateメソッドに渡して解析
+            self.sentence = self.__gps_uart.readline()
+            
+            if self.sentence:
+                for x in self.sentence.decode('ascii', errors='ignore'):
+                    self.gps.update(x)  
 
         except serial.SerialException as e:
-            print(f"GPS通信エラー: {e}")  # シリアル通信に関するエラーを処理
+            print(f"GPS通信エラー: {e}")  
         except Exception as e:
-            print(f"GPS更新エラー: {e}")  # その他のエラーを処理
+            print(f"GPS更新エラー: {e}")  
 
 
 
@@ -60,7 +63,7 @@ class Gps(IGps):
             latitude = self.__gps.latitude[0]
             longitude = self.__gps.longitude[0]
             if latitude is not None and longitude is not None:
-                print(f'Latitude: {latitude}, Longitude: {longitude}')
+            
                 return latitude, longitude
 
         except serial.SerialException as e:
@@ -73,23 +76,29 @@ class Gps(IGps):
     def get_speed_z(self):
         try:
             self.update_gps()
-            altitude = self.__gps.altitude[0]
+        except Exception as e:
+            print(f"Error updating GPS: {e}")
+
+            altitude = self.__gps.altitude[0] if self.__gps.altitude else None
+            if altitude is None:
+                raise ValueError("altitude is None.")
             current_time = time.time()
-                                
-            if altitude is not None:
-                 if self.prev_altitude is not None and self.prev_time is not None:
-                        # z座標の速度を計算 (m/s)
-                    time_diff = current_time - self.prev_time
-                    if time_diff > 0:
-                        speed_z = (altitude - self.prev_altitude) / time_diff
-                            # print(f"Vertical Speed (Z-axis): {speed_z} m/s")
-                        self.prev_altitude = altitude
-                        self.prev_time = current_time
-                        return speed_z
-                    else:
-                        # 初回のデータ取得
-                     self.prev_altitude = altitude
-                     self.prev_time = current_time
+
+            if altitude is not None:                    
+                if self.prev_altitude is not None and self.prev_time is not None:
+                    raise ValueError("self.prev_altitude is None and self.prev_time is None.")
+                        
+                time_diff = current_time - self.prev_time
+                if time_diff > 0:
+                    speed_z = (altitude - self.prev_altitude) / time_diff
+                            
+                    self.prev_altitude = altitude
+                    self.prev_time = current_time
+                    return speed_z
+                else:
+                    
+                    self.prev_altitude = altitude
+                    self.prev_time = current_time
                                 
         except serial.SerialException as e:
             print(f"GPS communication error: {e}")
@@ -98,23 +107,14 @@ class Gps(IGps):
         
         return None
     
-  #gpsのデータは、役割が違う改行された複数の文で構成されているため、改行ごとにわける必要がある
-   #受信側のコードは別にある
-
     def move_direction(self):
-        move_direction = micropyGPS().course 
+        move_direction = self.__gps.course
         return move_direction
     
-
-    
-    #どれを基準とした方向なのかを聴く
-    #真北を0度、基準としている
-    #一般的なgpsと同じ
-    
-
     def delete(self):
-        self.__sentence = None
+        self.sentence = None
         if self.__gps_uart and self.__gps_uart.is_open:
             self.__gps_uart.close()
         if self.__xbee_uart and self.__xbee_uart.is_open:
             self.__xbee_uart.close()    
+            
