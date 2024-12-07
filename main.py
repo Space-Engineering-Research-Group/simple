@@ -19,6 +19,9 @@ frame_area=width*height
 #ここの具体的な値はコーンの検査をして考える。大会前日とか？
 lower_red=[170,100,255]
 upper_red=[180,255,255]
+#赤いコーンの座標をここに書く。大会当日にかく
+goal_lat = 0
+goal_lon = 0
     
 x=width/2
 
@@ -63,6 +66,16 @@ motors.forward()
 sleep(2)
 motors.turn_left()
 i=0
+
+while True:
+    latitude, longitude = gps.get_coordinate_xy()
+    move_direction = gps.move_direction()
+    distance = get_distance(goal_lat,goal_lon,latitude,longitude)
+    rotation_angle = get(goal_lat,goal_lon,latitude,longitude,move_direction)
+
+
+    break
+
 while True:
     i=i+1
     frame=camera.get_frame()
@@ -77,6 +90,7 @@ while True:
         sys.exit()            
     #モーターを９０度回転させるのに必要な秒数
     sleep(5)
+
 
 i=False
 while True:
