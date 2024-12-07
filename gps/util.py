@@ -1,10 +1,12 @@
 import math
+from geopy.distance import distance
+
 def get_distance(goal_lat,goal_lon,latitude,longitude):
 
-    dlat = goal_lat - latitude
-    dlon = goal_lon - longitude
-    distance = math.sqrt(dlat ** 2 + dlon ** 2)
-    
+    goal = (goal_lat,goal_lon)
+    now = (latitude,longitude)
+    distance = distance(goal,now).meters
+
     return distance
 
 def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction): 
