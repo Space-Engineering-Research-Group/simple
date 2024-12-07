@@ -13,4 +13,18 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
     dlon = goal_lon - longitude
 
     rotation_angle = math.degrees(math.atan2(dlon, dlat))
-    return rotation_angle
+
+    rotation = rotation_angle - move_direction
+    z_rot = math.abc(rotation)
+
+    if z_rot <= 180 :
+        if rotation >= 0:
+            return rotation
+        else:
+            return rotation
+        
+    if z_rot >= 180 :
+        if rotation >= 0:
+            return rotation - 360
+        else:
+            return rotation + 360
