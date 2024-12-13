@@ -1,7 +1,7 @@
 import cv2
 import numpy as np
 
-def find_object(frame,lower_red1,upper_red1,lower_red2,upper_red2):
+def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
     img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
     clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
     img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
@@ -40,7 +40,7 @@ def get_distance(contour,x):
     cx = int(M["m10"] / M["m00"])
     dx=cx-x
     #ここの５０は仮の値(実験でかえる)
-    if -50>dx:
+    if dx<-50:
         sign=-1 
     elif dx>50:
         sign=1
