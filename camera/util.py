@@ -1,5 +1,4 @@
 import cv2
-import numpy as np
 
 def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
     img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
