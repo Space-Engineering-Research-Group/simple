@@ -74,7 +74,10 @@ class Gps(IGps):
         except serial.SerialException as e:
             print(f"gps comminucation error:{e}")    
         alt = self.__gps.altitude[0]
+
         return alt 
+    
+
     
     def move_direction(self):
         move_direction = self.__gps.course
