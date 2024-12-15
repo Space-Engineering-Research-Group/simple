@@ -73,8 +73,7 @@ while True:
     move_direction = gps.move_direction()
 
     distance = get_distance(goal_lat,goal_lon,latitude,longitude) 
-    #多分ここ間違ってる
-    distance = distance - 4
+    
     #ここはgpsの誤差を見て決める。出来るだけ近くに行けるような値にする。
     if distance <= 5:
         break
