@@ -25,10 +25,9 @@ class Xbee(IXBee):
                 self.__xbee_uart.close()
             raise e  # 再度例外を送出    
         
-        self.prev_altitude = None
-        self.prev_time = None
 
     def xbee_send(date):
+        #また今度かく
         pass
 
     def xbee_delete(self):
