@@ -1,39 +1,46 @@
 import cv2
 import numpy as np
 
-def find_cone(frame,lower_red,upper_red):
-    hsv_image=cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
-    #ここの変数二つの定義を忘れない
-    mask=cv2.inRange(hsv_image,lower_red,upper_red)
-    #かネールサイズは実験で決める（これは仮の値）
-    mask=cv2.medianBlur(mask,11)
-    #閾値は実験で決める（これは仮の値）
-    cannied_mask=cv2.Canny(mask,80.0,175.0)
-    #第２引数と第三引数は機能を鑑みて変える
-    contours,_=cv2.findContours(mask,cv2.RETA_EXTERNAL,cv2.CHAIN_APPROX_SIMPLE)
-    #ここでコーンの輪郭を導き出して、それをもとに面積（ピクセル数）を求めたり、重心を求めたりする
-    
-    for contour in contours:
-        area=cv2.contourArea(contour)
-        #１００の数値は適当。近づいた時のピクセル数がどのくらいになっているかが分からない。コーン全体が入らなくなったときに、どのくらいの距離にあるかを考えるべき。
-        if area >100:
-            return contour
-        hull=cv2.convexHull(contour)
-        hull_area=cv2.contourArea(hull)
-        solidity=area/hull_area
-        #個々の数字は実験ののち決める
-        if 0.8<solidity<1.0:
-            return contour
+def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
+    img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
+    clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
+    img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
+    img_bgr = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
+    img_hsv=cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
+
+    mask1 = cv2.inRange(img_hsv, lower_red1, upper_red1)
+    mask2=cv2.inRange(img_hsv,lower_red2,upper_red2)
+    mask=cv2.bitwise_or(mask1,mask2)          
+    mask = cv2.medianBlur(mask, 11)
+    mask[0, :] = 0            
+    mask[-1, :] = 0            
+    mask[:, 0] = 0            
+    mask[:, -1] = 0 
+    mask=cv2.Canny(mask,80.0,175.0)
+    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+
+
+    if contours:
+        # 最大面積のコンターを返す
+        max_contour = max(contours, key=cv2.contourArea)
+        return max_contour
+    return None
+
+def judge_cone(contour,frame_area):
+    area=cv2.contourArea(contour)
+    raito=(area/frame_area)*100
+    #個々の値も適当
+    if raito >= 0.04:
+        return True
+    return False
+
         
-    return []
-
-
 def get_distance(contour,x):
     M=cv2.moments(contour)
     cx = int(M["m10"] / M["m00"])
     dx=cx-x
     #ここの５０は仮の値(実験でかえる)
-    if -50>dx:
+    if dx<-50:
         sign=-1 
     elif dx>50:
         sign=1
@@ -46,7 +53,8 @@ def get_distance(contour,x):
 def to_stop(contour,frame_area):
     #area_frameはカメラの画面全体のピクセル数事前にx*yを計算しておく
     area=cv2.contourArea(contour)
-    #コーンの面積が画面全体の８割を超えたら停止するためにTrueを返す
-    if area>0.8*frame_area:
+    raito=area/frame_area
+
+    if raito >=0.8:
         return True
     return False

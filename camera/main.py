@@ -1,11 +1,15 @@
 import cv2
-import numpy as np
-
 from abc import ABC,abstractmethod
 
 class ICamera(ABC):
     @abstractmethod
+    def get_size(self):
+        pass
+
     def get_frame(self):
+        pass
+
+    def release(self):
         pass
 
 
@@ -13,7 +17,7 @@ class Camera(ICamera):
     def __init__(self):
         self.capture=cv2.VideoCapture(0)
         if not self.capture.isOpened():
-            raise RuntimeError("カメラを開けませんでした")
+            raise RuntimeError("Failed to open the camera.")
     def get_size(self):
         width =self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         height=self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
@@ -24,7 +28,7 @@ class Camera(ICamera):
         if ret:
             return frame
         else:
-            raise RuntimeError("カメラから映像を取得できません")
+            raise RuntimeError("Failed to capture a frame from the camera.")
     
     def release(self):
         if self.capture.isOpened():
