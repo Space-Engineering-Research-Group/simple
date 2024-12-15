@@ -6,18 +6,37 @@ from .cds import *
 from .servo import *
 from time import sleep,time
 
-cds=Cds()
+fplan=[True,True,True]
+plan1="A"
+plan2="A"
+
+try:
+    cds=Cds()
+except Exception as e:
+    #xbeeで送信するコード
+    fplan[0]=False
+
+
 #明るさの閾値は曇りの日に明るさを取得して決める
 brightness_threshold=0.3
 #ピンの値は回路班が後で決めるので仮の値
 servo=Servo(12)
 
-gps=Gps()
+try:
+    gps=Gps()
+except Exception as e:
+    fplan[1]=False
+
 gps_deta=[]
 goal_lat = 0
 goal_lon = 0
 
-camera=Camera()
+try:
+    camera=Camera()
+except RuntimeError as e:
+    #xbeeでデータを送信する
+    fplan[2]=False
+
 width,height=camera.get_size()
 center=width/2
 frame_area=width*height
@@ -38,29 +57,54 @@ ldir_2=40
 lPWM=36
 motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM)
 
-#なんとなく起動してから箱に入れるまでの時間。これじゃしょぼそうだから、明るさが低いところから高いところに行くのと、高いところから低いところに行くのを設楽っていう風にしてもいい。これは、箱が完全に密封されている想定。
-sleep(20)
-
-while True:
-    bright=cds.get_brightness()
-    if bright > brightness_threshold:
-        break
-
-    sleep(2)
+if fplan[0] is False:
+    if fplan[1] is True:
+        plan1="B"
+    else:
+        plan1="D"
+else:
+    if fplan[1] is False:
+        plan1="C"
     
-#明るさを検知してから３秒後にgpsでz軸の速度を取得し始める。（3秒は何となく）
-speeds=[300,300]
 while True:
-    speeds.append(gps.get_speed_z())
-    a=0
-    for i in speeds[-3:]:
-        if i<0.5:
-            a=a+1
+    try:
+
+        if plan1 is "A":
+            #なんとなく起動してから箱に入れるまでの時間。これじゃしょぼそうだから、明るさが低いところから高いところに行くのと、高いところから低いところに行くのを設楽っていう風にしてもいい。これは、箱が完全に密封されている想定。
+            sleep(20)
     
-    if a==3:
-        break
-    #個々の数字も場合によっては変える。
-    sleep(2)
+            while True:
+                p=0
+                bright=0
+                while True:
+                    try:
+                        bright=cds.get_brightness()
+                        break
+                    except ValueError as e:
+                    #xbeeによる値取
+                        p=p+1
+                        if p==5:
+                            raise ValueError ("Five consecutive abnormal values")
+                        sleep(1)
+                
+                if bright > brightness_threshold:
+                    break
+
+                sleep(2)
+    
+            #明るさを検知してから３秒後にgpsでz軸の速度を取得し始める。（3秒は何となく）
+            speeds=[300,300]
+            while True:
+                speeds.append(gps.get_speed_z())
+                a=0
+                for i in speeds[-3:]:
+                    if i<0.5:
+                        a=a+1
+    
+                if a==3:
+                    break
+                #個々の数字も場合によっては変える。
+                sleep(2)
 
 servo.rotate()
 sleep(2)
@@ -73,7 +117,7 @@ while True:
     move_direction = gps.move_direction()
 
     distance = get_distance(goal_lat,goal_lon,latitude,longitude) 
-    
+
     #ここはgpsの誤差を見て決める。出来るだけ近くに行けるような値にする。
     if distance <= 5:
         break
