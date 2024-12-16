@@ -6,8 +6,12 @@ from .cds import *
 from .servo import *
 from time import sleep,time
 
+
+#左から順に光センサ、GPS、カメラが生きてたらTrueを示すようにする。
 fplan=[True,True,True]
+#plan1は機体の落下、着地まで
 plan1="A"
+#plan2は機体がGPSとカメラを使ってコーンに近づくシーン
 plan2="A"
 
 try:
@@ -28,8 +32,10 @@ except Exception as e:
     fplan[1]=False
 
 gps_deta=[]
+#ここは大会の時に測る。
 goal_lat = 0
 goal_lon = 0
+ground=0
 
 try:
     camera=Camera()
@@ -57,19 +63,19 @@ ldir_2=40
 lPWM=36
 motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM)
 
-if fplan[0] is False:
-    if fplan[1] is True:
-        plan1="B"
-    else:
-        plan1="D"
-else:
-    if fplan[1] is False:
-        plan1="C"
     
 while True:
-    try:
+    if fplan[0] is False:
+        if fplan[1] is True:
+            plan1="B"
+        else:
+            plan1="D"
+    else:
+        if fplan[1] is False:
+            plan1="C"
 
-        if plan1 is "A":
+    if plan1 is "A" or "C":
+        try:
             #なんとなく起動してから箱に入れるまでの時間。これじゃしょぼそうだから、明るさが低いところから高いところに行くのと、高いところから低いところに行くのを設楽っていう風にしてもいい。これは、箱が完全に密封されている想定。
             sleep(20)
     
@@ -81,7 +87,7 @@ while True:
                         bright=cds.get_brightness()
                         break
                     except ValueError as e:
-                    #xbeeによる値取
+                        #xbeeによる送信
                         p=p+1
                         if p==5:
                             raise ValueError ("Five consecutive abnormal values")
@@ -89,17 +95,26 @@ while True:
                 
                 if bright > brightness_threshold:
                     break
-
+                
                 sleep(2)
+        except ValueError as e:
+            #xbeeで送信する
+            fplan[0]=False
+            continue
+        except IOError as e:
+            #xbeeで送信する。
+            fplan[0]=False
+            continue
+        except Exception as e:
+            #xbeeで送信する。
+            fplan[0]=False
+            continue
     
-            #明るさを検知してから３秒後にgpsでz軸の速度を取得し始める。（3秒は何となく）
-            speeds=[300,300]
+    if 
+    #明るさを検知してから３秒後にgpsでz軸の速度を取得し始める。（3秒は何となく）
+    dis=[300,300]
             while True:
-                speeds.append(gps.get_speed_z())
-                a=0
-                for i in speeds[-3:]:
-                    if i<0.5:
-                        a=a+1
+                alt=
     
                 if a==3:
                     break
