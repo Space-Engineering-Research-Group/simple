@@ -21,9 +21,9 @@ class Xbee(IXbee):
                 self.__xbee_uart.close()
             raise e  # 再度例外を送出    
     
-
     def xbee_send(self,data):
         try:
+            data = str(data)
             if not isinstance(data, str):
                 raise ValueError("Data must be a string.")
 
