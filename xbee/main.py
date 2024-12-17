@@ -31,14 +31,14 @@ class Xbee(IXbee):
                 self.__xbee_uart.write(data.encode('utf-8'))
                 status = "Success"
             else:
-                status = "XBee not connected or not open"
+                 status = "XBee not connected or not open"
 
         except Exception as e:
-            status = f"Error: {str(e)}"
+                    status = f"Error: {str(e)}"
 
         finally:
-            with open('/home/pi/space_data.txt', 'a') as log_file:
-                log_file.write(f" Data: {data} | Status: {status}\n")
+             with open('/home/pi/space_data.txt', 'a') as log_file:
+                 log_file.write(f" Data: {data} | Status: {status}\n")
 
     def xbee_delete(self):
         if self.__xbee_uart and self.__xbee_uart.is_open:
