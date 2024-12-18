@@ -35,6 +35,7 @@ class Motor(Imotor):
 
         self.right_PWM.value=204/255
         self.left_PWM.value=204/255
+        
     def forward(self):
         self.right_in1.on()
         self.right_in2.off()
