@@ -21,7 +21,7 @@ class Xbee(IXbee):
                 self.__xbee_uart.close()
             raise e  # 再度例外を送出    
     
-    def xbee_send(self,data):
+    def xbee_send(self,data,jude):
         try:
             data = str(data)
             if not isinstance(data, str):
@@ -42,5 +42,6 @@ class Xbee(IXbee):
 
     def xbee_delete(self):
         if self.__xbee_uart and self.__xbee_uart.is_open:
-            self.__xbee_uart.close()       
+            self.__xbee_uart.close()      
+     
 
