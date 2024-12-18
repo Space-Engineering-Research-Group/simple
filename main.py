@@ -14,11 +14,13 @@ plan1="A"
 #plan2は機体がGPSとカメラを使ってコーンに近づくシーン
 plan2="A"
 
-try:
-    cds=Cds()
-except Exception as e:
-    #xbeeで送信するコード
-    fplan[0]=False
+for i in range(4):
+    try:
+        cds=Cds()
+        break
+    except Exception as e:
+        #xbeeで送信するコード
+        fplan[0]=False
 
 
 #明るさの閾値は曇りの日に明るさを取得して決める
@@ -26,10 +28,13 @@ brightness_threshold=0.3
 #ピンの値は回路班が後で決めるので仮の値
 servo=Servo(12)
 
-try:
-    gps=Gps()
-except Exception as e:
-    fplan[1]=False
+for i in range(5):
+    try:
+        gps=Gps()
+        break
+    except Exception as e:
+        if i is 4:
+            fplan[1]=False
 
 gps_deta=[]
 #ここは大会の時に測る。
@@ -37,11 +42,14 @@ goal_lat = 0
 goal_lon = 0
 ground=0
 
-try:
-    camera=Camera()
-except RuntimeError as e:
-    #xbeeでデータを送信する
-    fplan[2]=False
+for i in range(5):
+    try:
+        camera=Camera()
+        break
+    except IOError as e:
+        #xbeeでデータを送信する
+        if i is 4:
+            fplan[2]=False
 
 width,height=camera.get_size()
 center=width/2
@@ -141,93 +149,110 @@ while True:
     #ここに、回転を行うコードを書く
 
 kazu=1
-
 while True:
-    if kazu ==1:
-        p=0
-        while True:
-            p=p+1
-            frame=camera.get_frame()
-            contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-            if contour:
-                judge=judge_cone(contour,frame_area)
-                if judge == True:
-                    break
-
-            #ここの数字は、カメラの画角、モーターの回転するのにかかる秒数、後はカメラのFPS?をかんがみてきめる　　
-            if p==24:
-                motors.stop()
-                print("コーンが見つかりません")
-                import sys
-                sys.exit()            
-            #ここの数字は上をきじゅんにして、何秒間に一回撮影する必要があるのかとかを考える。
-            sleep(5)
-
-    elif kazu == 2:
-        g=True #エラーって感じのところはgを使って抜け出すようにする。
-        m=False #コーンに接近成功した場合は、mで判断するようにする。
-        while m:
-        
-            if sign==1:
-                motors.turn_left()
-            elif sign==-1:
-                motors.turn_right()
-            sign=-1
-            while sign!=0:
-                frame=camera.get_frame()
-                contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-                if contour is None:
-                    g=False
-                    break
-                judge=judge_cone(contour)
-                if judge is False:
-                    g=False
-                    break
-                sign=get_distance(contour,center)
-                if sign==0:
-                    break
-                #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
-                elif sign==1:
-                    motors.turn_left()
-                    #ここの秒数も適当
-                    sleep(2)
-                else :
-                    motors.turn_right()
-                    #個々の秒数も適当
-                    sleep(2)
-                        
-            if g is False:
-                kazu=1
-                break
-
-            motors.forward()  
-            start_time=time()
-            while time()-start_time<5:
-                frame=camera.get_frame()
-                contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
-                if contour is None:
-                    g=False
-                    break
-                judge=judge_cone(contour,frame_area)
-                if judge is False:
-                    g=False
-                    break
-
-                result=to_stop(contour,frame_area)
-                if result:
-                    m=True
-                    break
-                #個々の秒数は適当
-                sleep(1)
-            if g is False:
-                kazu=1
-                break
-            if m:
-                kazu=3
-                break
+    if fplan[1] is False:
+        if fplan[2] is True:
+            plan2="C"
+        else:
+            plan2="D"
     else:
+        if fplan[2] is False:
+            plan2="B"
+    try:
+        while True:
+            if kazu ==1:
+                p=0
+                while True:
+                    p=p+1
+                    for i in range(5):
+                        try:
+                            frame=camera.get_frame()
+                            break
+                        except RuntimeError as e:
+                            if i is 5:
+                                #xbeeで送信
+                                fplan[2]=False
+                                raise RuntimeError(e)
+                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                    if contour:
+                        judge=judge_cone(contour,frame_area)
+                        if judge == True:
+                            kazu=2
+                            break
+
+                    #ここの数字は、カメラの画角、モーターの回転するのにかかる秒数、後はカメラのFPS?をかんがみてきめる　　
+                    if p==24:
+                        motors.stop()
+                        print("コーンが見つかりません")
+                        raise RuntimeError ("Failed to detect the cone 24 times in a row.")       
+                    #ここの数字は上をきじゅんにして、何秒間に一回撮影する必要があるのかとかを考える。
+                    sleep(5)
+
+            elif kazu == 2:
+                g=True #エラーって感じのところはgを使って抜け出すようにする。
+            m=False #コーンに接近成功した場合は、mで判断するようにする。
+            while m:
+        
+                if sign==1:
+                    motors.turn_left()
+                elif sign==-1:
+                    motors.turn_right()
+                sign=-1
+                while sign!=0:
+                    frame=camera.get_frame()
+                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                    if contour is None:
+                        g=False
+                        break
+                    judge=judge_cone(contour)
+                    if judge is False:
+                        g=False
+                        break
+                    sign=get_distance(contour,center)
+                    if sign==0:
+                        break
+                    #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
+                    elif sign==1:
+                        motors.turn_left()
+                        #ここの秒数も適当
+                        sleep(2)
+                    else :
+                        motors.turn_right()
+                        #個々の秒数も適当
+                        sleep(2)
+                        
+                if g is False:
+                    kazu=1
+                    break
+
+                motors.forward()  
+                start_time=time()
+                while time()-start_time<5:
+                    frame=camera.get_frame()
+                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
+                    if contour is None:
+                        g=False
+                        break
+                    judge=judge_cone(contour,frame_area)
+                    if judge is False:
+                        g=False
+                        break
+
+                    result=to_stop(contour,frame_area)
+                    if result:
+                        m=True
+                        break
+                    #個々の秒数は適当
+                    sleep(1)
+                if g is False:
+                    kazu=1
+                    break
+                if m:
+                    kazu=3
+                    break
+        else:
         #ここで終了したことを送る。
-        break
+            break
 #エラー起きてるけど、finallyとか使うのは確実なのでとりあえずつけとく
 finally:        
     motors.stop()

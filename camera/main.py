@@ -17,7 +17,7 @@ class Camera(ICamera):
     def __init__(self):
         self.capture=cv2.VideoCapture(0)
         if not self.capture.isOpened():
-            raise RuntimeError("Failed to open the camera.")
+            raise IOError("Failed to open the camera.")
     def get_size(self):
         width =self.capture.get(cv2.CAP_PROP_FRAME_WIDTH)
         height=self.capture.get(cv2.CAP_PROP_FRAME_HEIGHT)
