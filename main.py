@@ -32,7 +32,7 @@ brightness_threshold=0.3
 for i in range(5):
     try:
         servo=Servo(12)
-    except nantoka as e:
+    except Exception as e:
         if i ==4:
             ins[2]=False
 
@@ -83,7 +83,7 @@ lPWM=36
 for i in range(4):
     try:
         motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM)
-    except nantoka as e:
+    except Exception as e:
         if i ==4:
             ins[5]=False
     
@@ -161,6 +161,8 @@ while True:
     else:
         if fplan[2] is False:
             plan2="B"
+    
+    result=None
 
     while True:
         latitude, longitude = gps.get_coordinate_xy()
@@ -264,7 +266,10 @@ while True:
         #xbeeで送信する。
         import sys
         sys.exit(1)
-    except 
+    except Exception as e:
+        #xbeeで送信する。
+        import sys
+        sys.exit(1)
 #エラー起きてるけど、finallyとか使うのは確実なのでとりあえずつけとく
 finally:        
     motors.stop()
