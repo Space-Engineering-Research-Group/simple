@@ -24,11 +24,13 @@ class Camera(ICamera):
         return (width,height)
 
     def get_frame(self):
-        ret,frame=self.capture.read()
-        if ret:
-            return frame
-        else:
-            raise RuntimeError("Failed to capture a frame from the camera.")
+        for i in range(5):
+            ret,frame=self.capture.read()
+            if ret:
+                return frame
+            else:
+                if i ==4:
+                    raise RuntimeError("Failed to capture a frame from the camera.")
     
     def release(self):
         if self.capture.isOpened():

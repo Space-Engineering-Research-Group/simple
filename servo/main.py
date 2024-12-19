@@ -1,5 +1,5 @@
 import abc
-from gpiozero from Servo
+from gpiozero import Servo
 
 class Iservo(abc.ABC):
      @abc.abstractmethod
