@@ -24,24 +24,35 @@ class Xbee(IXbee):
     def xbee_send(self,data,jude):
         try:
             data = str(data)
+            jude = str(jude)
             if not isinstance(data, str):
                 raise ValueError("Data must be a string.")
 
             if self.__xbee_uart and self.__xbee_uart.is_open:
                 self.__xbee_uart.write(data.encode('utf-8'))
-                status = "Success"
             else:
                  status = "XBee not connected or not open"
 
         except Exception as e:
                     status = f"Error: {str(e)}"
 
+        #1_インスタンス化、2_cds、3_sarvo、4_gps、5_camera、6_motor
+                    
         finally:
-             with open('/home/pi/space_data.txt', 'a') as log_file:
-                 log_file.write(f" Data: {data} | Status: {status}\n")
-
+             if "1" in jude:
+                  if status:
+                      with open('/home/pi/space_data.txt', 'a') as log_file:
+                       log_file.write(f" Data: {data} | Status: {status}\n")
+                  else:
+                      with open('/home/pi/space_data.txt', 'a') as log_file:
+                       log_file.write(f" Data: {data}")
+                          
+                       
+                       
+            
     def xbee_delete(self):
         if self.__xbee_uart and self.__xbee_uart.is_open:
             self.__xbee_uart.close()      
      
 
+ 
