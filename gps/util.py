@@ -37,5 +37,13 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
             return rotation - 360
         else:
             return rotation + 360
-
+        
+def landing(grand,alt):
+    #高度の誤差範囲
+    a = 2
+    dif = alt - grand
+    if dif == a:
+        return True
+    else:
+        return False      
             
