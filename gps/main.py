@@ -75,6 +75,7 @@ class Gps(IGps):
             pass
         
         alt = self.__gps.altitude[0]
+        #使用するgpsの表記がmだったらそのままで、feetだったらmに直す
 
         return alt 
     
