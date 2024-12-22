@@ -125,14 +125,14 @@ while True:
             sleep(20)
     
             while True:
+                cds_log=[2,0,0]
                 p=0
                 bright=0
-                while True:
-                    try:
-                        bright=cds.get_brightness()
-                        break
-                    except RuntimeError :
+                try:
+                    bright=cds.get_brightness()
+                except RuntimeError :
                         tools[0]=False
+
                         
                 
                 if bright > brightness_threshold:
