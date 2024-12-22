@@ -1,6 +1,9 @@
 import abc
 import serial
 import micropyGPS
+import math
+import time
+
 
 class IGps(abc.ABC):
     @abc.abstractmethod
@@ -58,24 +61,44 @@ class Gps(IGps):
         except serial.SerialException as e:
             raise RuntimeError("GPS communication error")from e
         except Exception as e:
-            raise RuntimeError(f"Failed _ GPS update_gps: {str(e)}")from e
+            raise RuntimeError(f"Failed _ GPS update_gps: {str(e)}")
         
 
     def get_coordinate_xy(self):
         try:
+            lali = [] #latitude_list
+            loli = [] #longitude_list
             self.update_gps()
-            latitude = self.__gps.latitude[0]
-            longitude = self.__gps.longitude[0]
-            if latitude is not None and longitude is not None:
+            for i in range(30):
+                start_time = time.time()
+                while True:
+                    current_time = time.time()
+
+                    latitude = self.__gps.latitude[0]
+                    longitude = self.__gps.longitude[0]
+                    if latitude is None and longitude is None:      
+                        raise ValueError("lat , lon is None")
+                    
+                    time_difference = current_time - start_time
+
+                    if time_difference > 0.11:
+                        m_latitude, m_longitude = self.dms_to_decimal(latitude,longitude)
+                        if m_latitude is None and m_longitude is None:
+                            raise ValueError("m_lat , m_lon is None")
             
-                return latitude, longitude
+                        lali.append(m_latitude)
+                        loli.append(m_longitude)
+                        break
+
+            ave_lat = sum(lali)/len(lali)
+            ave_lon = sum(loli)/len(loli)               
+            return ave_lat, ave_lon
 
         except serial.SerialException as e:
-            raise RuntimeError("GPS communication error")from e
+            raise RuntimeError("GPS communication error")
         except Exception as e:
-            raise RuntimeError(f"Failed _ GPS xy_coordinates: {str(e)}")from e
+            raise RuntimeError(f"Failed _ GPS xy_coordinates: {str(e)}")
         
-        return None, None
 
     def z_coordinate(self):
         try:
@@ -85,9 +108,9 @@ class Gps(IGps):
             return alt 
         
         except serial.SerialException as e:
-            raise RuntimeError("GPS communication error")from e
+            raise RuntimeError("GPS communication error")
         except Exception as e:
-            raise RuntimeError(f"Failed _ GPS z_coordinate: {str(e)}")from e
+            raise RuntimeError(f"Failed _ GPS z_coordinate: {str(e)}")
     
 
     def move_direction(self):
@@ -96,9 +119,9 @@ class Gps(IGps):
             return move_direction
         except AttributeError as e:
                                #move_direction = None,undefined のとき
-            raise RuntimeError("Failed to get GPS course.") from e
+            raise RuntimeError("Failed to get GPS course.") 
         except Exception as e:
-            raise RuntimeError("Failed _ GPS course.") from e
+            raise RuntimeError("Failed _ GPS course.") 
     
     def delete(self):
         self.sentence = None
@@ -108,4 +131,19 @@ class Gps(IGps):
                 if self.__gps_uart.is_open:
                     self.__gps_uart.close()
             except serial.SerialException as e:
-                raise RuntimeError("Failed to close the serial port.") from e
+                raise RuntimeError("Failed to close the serial port.") 
+
+    def dms_to_decimal(self,lat,lon):
+
+            # 度と分に分割する
+        lat_degrees = int(lat / 100)  # 整数部分（度）
+        lat_minutes = lat % 100  # 小数部分（分）
+
+        lon_degrees = int(lon / 100)  # 整数部分（度）
+        lon_minutes = lon % 100  # 小数部分（分）
+
+        # 10進法に変換
+        m_latitude = lat_degrees + lat_minutes / 60
+        m_longitude = lon_degrees + lon_minutes / 60
+
+        return m_latitude, m_longitude
