@@ -147,3 +147,16 @@ class Gps(IGps):
         m_longitude = lon_degrees + lon_minutes / 60
 
         return m_latitude, m_longitude
+    
+    def log_errors(self):
+        list=[]
+        for count,message in zip(self.error_counts,self.error_messages):
+            list.append(f"{count}*{message}")
+        if self.a==0:
+            self.error_log=",".join(list)
+        elif 5 in self.error_counts:
+            index=self.error_counts.index(5)
+            result=list[:index]+list[index+1:]
+            result=",".join(result)
+            self.error_log=f"cds:Error--{list[index]} other errors--{result}"
+            raise RuntimeError
