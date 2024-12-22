@@ -1,50 +1,54 @@
-
 from .camera import *
 from .gps import *
 from .motor import *
+from gpiozero.pins.pigpio import PiGPIOFactory
 from .cds import *
 from .servo import *
+from .xbee import *
 from time import sleep,time
 
 
-#左から順に光センサ、GPS、カメラが生きてたらTrueを示すようにする。
-fplan=[True,True,True]
+#左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
+tools=[True,True,True,True,True,True]
 #plan1は機体の落下、着地まで
 plan1="A"
-#plan2は機体がGPSとカメラを使ってコーンに近づくシーン
+#plan2はパラシュートを回避するシーン
 plan2="A"
+#plan3は機体がGPSとカメラを使ってコーンに近づくシーン
+plan3="A"
 
-ins=["ins",True,True,True,True,True]
 
-for i in range(4):
-    try:
-        cds=Cds()
-        break
-    except Exception as e:
-        if i == 4:
-            fplan[0]=False
-            ins[1]=False
+ins_error=[]
+try:
+    cds=Cds()
+except RuntimeError:
+        tools[0]=False
+finally:
+    if cds.error_counts:
+        ins_error.append(cds.error_log)
 
 
 #明るさの閾値は曇りの日に明るさを取得して決める
 brightness_threshold=0.3
 #ピンの値は回路班が後で決めるので仮の値
-for i in range(5):
-    try:
-        servo=Servo(12)
-    except Exception as e:
-        if i ==4:
-            ins[2]=False
+
+try:
+    servo=Servo(12)
+except RuntimeError:
+    tools[4]=False
+finally:
+    if servo.error_counts:
+        ins_error.append(servo.error_log)
 
 
-for i in range(5):
-    try:
-        gps=Gps()
-        break
-    except Exception as e:
-        if i is 4:
-            fplan[1]=False
-            ins[3]=False
+
+try:
+    gps=Gps()
+except RuntimeError:
+    tools[1]=False
+finally:
+    if gps.error_counts:
+        ins_error.append(gps.error_log)
 
 gps_deta=[]
 #ここは大会の時に測る。
@@ -52,18 +56,19 @@ goal_lat = 0
 goal_lon = 0
 ground=0
 
-for i in range(5):
-    try:
-        camera=Camera()
-        break
-    except IOError as e:
-        if i is 4:
-            fplan[2]=False
-            ins[4]=False
-
-width,height=camera.get_size()
+width=640
+height=480
+FPS=10
 center=width/2
 frame_area=width*height
+try:
+    camera=Camera(width,height,FPS)
+except RuntimeError:
+    tools[2]=False
+finally:
+    if camera.error_counts:
+        ins_error.append(camera.error_log)
+
 
 #ここの具体的な値はコーンの検査をして考える。
 lower_red1 = np.array([0, 100, 100])   # 下の範囲1 (0〜10度)
@@ -80,21 +85,38 @@ ldir_1=38
 ldir_2=40
 lPWM=36
 
-for i in range(4):
-    try:
-        motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM)
-    except Exception as e:
-        if i ==4:
-            ins[5]=False
-    
+factory = PiGPIOFactory()
+
+try:
+    motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory)
+except Exception :
+    tools[3]=False
+finally:
+    if motors.error_counts:
+        ins_error.append(motors.error_log)
+
+try:
+    xbee=Xbee()
+except RuntimeError:
+    tools[5]=False
+finally:
+    if xbee.error_counts:
+        ins_error.append(xbee.error_log)
+
+#ここで、ログを送信する
+ins_log=[1,tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error]
+xbee.xbee_send(ins_log,"1")
+
+
+bright_ness_judge=False
 while True:
-    if fplan[0] is False:
-        if fplan[1] is True:
+    if tools[0] is False:
+        if tools[1] is True:
             plan1="B"
         else:
             plan1="D"
     else:
-        if fplan[1] is False:
+        if tools[1] is False:
             plan1="C"
 
     if plan1 in ["A","C"]:
@@ -109,12 +131,9 @@ while True:
                     try:
                         bright=cds.get_brightness()
                         break
-                    except ValueError as e:
-                        #xbeeによる送信
-                        p=p+1
-                        if p==5:
-                            raise ValueError ("Five consecutive abnormal values")
-                        sleep(1)
+                    except RuntimeError :
+                        tools[0]=False
+                        
                 
                 if bright > brightness_threshold:
                     break
