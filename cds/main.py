@@ -46,13 +46,13 @@ class Cds(Icds):
                 return brightness
             except IOError as e:
                 error=f"cds: Error reading brightness--detail{e}"
-                self.handle_error('IOError', error)
+                self.handle_error(error)
             except ValueError as e:
                 error=f"{e}"
-                self.handle_error('ValueError', error)
+                self.handle_error(error)
             except Exception as e:
                 error=f"cds: Unexpected error while reading brightness --detail{e}"
-                self.handle_error('Exception', error)
+                self.handle_error(error)
             finally:
                 if (len(self.error_messages)and a==1)or 5 in self.error_counts:
                     self.log_errors()
