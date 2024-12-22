@@ -104,7 +104,7 @@ finally:
         ins_error.append(xbee.error_log)
 
 #ここで、ログを送信する
-ins_log=[1,tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error]
+ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error]
 xbee.xbee_send(ins_log,"1")
 
 
