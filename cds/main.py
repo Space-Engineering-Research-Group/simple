@@ -12,10 +12,11 @@ class Cds(Icds):
         self.error_counts = []
         self.error_messages = []
         self.error_log="cds Error Log"
+        self.a=1
         while True:
             try:
                 self.cds = MCP3008(channel=0)
-                a=0
+                self.a=0
                 break
             except IOError as e:
                 error=f"cds:Error initializing MCP3008--detail{e}"
@@ -24,7 +25,7 @@ class Cds(Icds):
                 error=f"cds: Unexpected error during initialization --detail{e}"
                 self.handle_error(error)
             finally:
-                if len(self.error_messages):
+                if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
                     self.log_errors()
                     
                         
@@ -34,6 +35,8 @@ class Cds(Icds):
     def get_brightness(self):
         self.error_counts=[]
         self.error_messages=[]
+        self.error_log="cds Error Log"
+        self.a=1
         while True:
             try:
                 brightness = self.cds.value
@@ -51,7 +54,7 @@ class Cds(Icds):
                 error=f"cds: Unexpected error while reading brightness --detail{e}"
                 self.handle_error('Exception', error)
             finally:
-                if len(self.error_messages):
+                if (len(self.error_messages)and a==1)or 5 in self.error_counts:
                     self.log_errors()
                         
             sleep(1)
@@ -69,11 +72,14 @@ class Cds(Icds):
         list=[]
         for count,message in zip(self.error_counts,self.error_messages):
             list.append(f"{count}*{message}")
-        if a==0:
+        if self.a==0:
             self.error_log=",".join(list)
         elif 5 in self.error_counts:
-            index=self.error_counts.index(5)
-            result=list[:index]+list[index+1:]
-            result=",".join(result)
-            self.error_log=f"cds:Error--{list[index]} other errors--{result}"
+            if len(list) == 1:
+                self.error_log=f"cds:Error--{list[0]}"
+            else:
+                index=self.error_counts.index(5)
+                result=list[:index]+list[index+1:]
+                result=",".join(result)
+                self.error_log=f"cds:Error--{list[index]} other errors--{result}"
             raise RuntimeError
