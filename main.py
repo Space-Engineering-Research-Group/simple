@@ -129,13 +129,13 @@ while True:
                 p=0
                 bright=0
                 try:
-                    bright=cds.get_brightness()
+                    cds.get_brightness()
                 except RuntimeError :
                         tools[0]=False
 
                         
                 
-                if bright > brightness_threshold:
+                if bright > cds.brightness_threshold:
                     break
                 
                 sleep(2)
