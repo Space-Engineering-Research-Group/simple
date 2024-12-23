@@ -41,7 +41,7 @@ class Xbee(IXbee):
         self.error_log = "xbee:Error"
         self.a = 1
         while True:
-            #まだ完成していない、、、考え中
+            #まだ完成していない、、、考え中 　selfa=0 を書くこと
 
             try:
                 data = str(data)
