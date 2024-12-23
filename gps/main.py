@@ -26,6 +26,18 @@ class IGps(abc.ABC):
     def delete(self):
         pass
 
+    @abc.abstractmethod
+    def dms_to_decimal(self,lat,lon):
+        pass
+    
+    @abc.abstractmethod
+    def log_errors(self):
+        pass
+
+    @abc.abstractmethod
+    def handle_error(self,error):
+        pass
+
 
 class Gps(IGps):
     def __init__(self):
