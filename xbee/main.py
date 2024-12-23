@@ -34,6 +34,7 @@ class Xbee(IXbee):
                 if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
                     self.log_errors()
                     break
+            sleep(1)    
      
     def xbee_send(self,data,jude):
         self.error_counts = []
@@ -67,6 +68,7 @@ class Xbee(IXbee):
                     else:
                         with open('/home/pi/space_data.txt', 'a') as log_file:
                             log_file.write(f" Data: {data}")
+            sleep(1)                
                           
                        
                        
