@@ -145,6 +145,7 @@ class Gps(IGps):
         
 
     def z_coordinate(self,grand_z): #grand_zは全体のmainコードで定義
+        #誤差あれば、30回取得するコードにする
         self.error_counts=[]
         self.error_messages=[]
         self.error_log="gps Error Log"
