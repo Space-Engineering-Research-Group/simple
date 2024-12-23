@@ -101,13 +101,14 @@ class Gps(IGps):
                 loli = [] #longitude_list
                 for i in range(30):
                     start_time = time.time()
-                    while True:
-                        self.update_gps()
 
-                        latitude = self.__gps.latitude[0]
-                        longitude = self.__gps.longitude[0]
-                        if latitude is None and longitude is None:      
-                            raise ValueError( "lat , lon is None")
+                    self.update_gps()
+                    latitude = self.__gps.latitude[0]
+                    longitude = self.__gps.longitude[0]
+                    if latitude is None and longitude is None:      
+                        raise ValueError( "lat , lon is None")
+                        
+                    while True:
                         current_time = time.time()
                     
                         time_difference = current_time - start_time
@@ -144,32 +145,33 @@ class Gps(IGps):
 
         
 
-    def z_coordinate(self,grand_z): #grand_zは全体のmainコードで定義
-        #誤差あれば、30回取得するコードにする
+    def z_coordinate(self): 
         self.error_counts=[]
         self.error_messages=[]
         self.error_log="gps Error Log"
         self.a=1
         while True:
             try:
+                alt_list = []
                 while True:
+                    self.update_gps()
                     start_time = time.time()
-                    while True:
-                        self.update_gps()
-
+                    #1秒間に3回取得する
+                    for 3 in range(3):
                         alt = self.__gps.altitude[0] #単位はmである
                         if alt is None:
                             raise ValueError("alt is None")
-
-                        time_difference = time.time() - start_time
-
-                        if time_difference > 1:
-                            break
-
-                    z_difference = grand_z - alt
-                    if z_difference <= 2.15:
-                        self.a=0
-                        return True
+                        alt_list.append(alt)
+                        sleep(0.2)
+                        while True:
+                            #1秒経過するまで待つ
+                            current_time = time.time()
+                            time_difference = current_time - start_time
+                            if time_difference > 1:
+                                ave_alt = sum(alt_list)/len(alt_list)
+                                self.a=0
+                                return ave_alt
+                            
             except ValueError as e:
                 error = f"Failed _ GPS z_coordinate:--detail{e}"
                 self.handle_error(error)        
@@ -188,15 +190,30 @@ class Gps(IGps):
     
 
     def move_direction(self):
+         #誤差あれば、30回取得するコードにする
         self.error_counts=[]
         self.error_messages=[]
         self.error_log="gps Error Log"
         self.a=1
         while True:
             try:
-                move_direction = self.__gps.course
+                direction = [] 
+                for i in range(30):
+                    start_time = time.time()
+                    self.update_gps()
+
+                    move_direction = self.__gps.course
+                    if move_direction is None:
+                        raise AttributeError("move_direction is None")
+                    while True:
+                        current_time = time.time()
+                        time_difference = current_time - start_time
+                        if time_difference > 0.11:
+                            direction.append(move_direction)
+                            break
+                ave_direction = sum(direction)/len(direction)
                 self.a=0
-                return move_direction
+                return ave_direction
             except AttributeError as e:
                                #move_direction = None,undefined のとき
                 error = f"Failed to get GPS course.:--detail{e}" 
