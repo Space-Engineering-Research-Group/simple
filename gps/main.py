@@ -170,7 +170,9 @@ class Gps(IGps):
                     if z_difference <= 2.15:
                         self.a=0
                         return True
-        
+            except ValueError as e:
+                error = f"Failed _ GPS z_coordinate:--detail{e}"
+                self.handle_error(error)        
             except serial.SerialException as e:
                 error = f"GPS communication error:--detail{e}"
                 self.handle_error(error)
