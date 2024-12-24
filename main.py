@@ -184,7 +184,11 @@ while True:
     result=None
 
     while True:
+        motors.stop()
         latitude, longitude = gps.get_coordinate_xy()
+        motors.forward(speed)
+        sleep(3) #仮
+        motors.stop()
         move_direction = gps.move_direction()
 
         distance = get_distance(goal_lat,goal_lon,latitude,longitude) 
@@ -193,7 +197,9 @@ while True:
         if distance <= 5:
             break
         rotation_angle = get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction)
-    
+        motors.forward(speed)
+
+
         #ここに、回転を行うコードを書く
 
 
@@ -294,4 +300,5 @@ finally:
     motors.stop()
     gps.run_gps()
     camera.release()
-    gps.delete()   
+    gps.delete()
+
