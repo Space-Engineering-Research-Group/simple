@@ -218,7 +218,7 @@ sleep(2)
 if tools[2]=True:
     
 
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ここでパラシュートの回避
+#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ここでパラシュートの回避 4
 
 
 kazu=1
@@ -233,22 +233,21 @@ while True:
             plan2="B"
     
     result=None
-
+#gps
+ 
     while True:
-        motors.stop()
-        latitude, longitude = gps.get_coordinate_xy()
-        motors.forward(speed)
-        sleep(3) #仮
-        motors.stop()
-        move_direction = gps.move_direction()
+        gps = [5]
+        pre_lat,pre_lon = gps.get_coordinate_xy()
+        motors.forward()
+        sleep(30)#30は適当の値
+        now_lat,now_lon = gps.get_coordinate_xy()
+        distance=get_distance(pre_lat,pre_lon,now_lat,now_lon)
+        if distance<1.4:
+            raise RuntimeError('stack error or motor error')
+        
+    
 
-        distance = get_distance(goal_lat,goal_lon,latitude,longitude) 
-
-        #ここはgpsの誤差を見て決める。出来るだけ近くに行けるような値にする。
-        if distance <= 5:
-            break
-        rotation_angle = get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction)
-        motors.forward(speed)
+            
 
 
         #ここに、回転を行うコードを書く
