@@ -199,10 +199,9 @@ class Gps(IGps):
                         
             sleep(1)
     
-    
 
-    def move_direction(self):
-         #誤差あれば、30回取得するコードにする
+    def move_direction(self,past_lat, past_lon, now_lat, now_lon):
+        import math
         self.error_counts=[]
         self.error_messages=[]
         self.error_log="gps Error Log"
@@ -211,27 +210,23 @@ class Gps(IGps):
             try:
                 direction = [] 
                 for i in range(30):
-                    start_time = time.time()
-                    self.update_gps()
+                    if past_lat is None and past_lon is None and now_lat is None and now_lon is None:
+                        raise ValueError("past_lat , past_lon , now_lat , now_lon is None")
+                    past_lat, past_lon, now_lat, now_lon = map(math.radians, [past_lat, past_lon, now_lat, now_lon])
+                    delta_lon = now_lon - past_lon
+                    delta_lat = now_lat - past_lat
+                    bearing = math.atan2(delta_lon, delta_lat)
+                    bearing = math.degrees(bearing)  # ラジアンから度に変換
+                    direction.append(bearing)
 
-                    move_direction = self.__gps.course
-                    if move_direction is None:
-                        raise AttributeError("move_direction is None")
-                    while True:
-                        current_time = time.time()
-                        time_difference = current_time - start_time
-                        if time_difference > 0.11:
-                            direction.append(move_direction)
-                            break
                 ave_direction = sum(direction)/len(direction)
                 self.a=0
                 return ave_direction
-            except AttributeError as e:
-                               #move_direction = None,undefined のとき
-                error = f"Failed to get GPS course.:--detail{e}" 
+            except ValueError as e:
+                error = f"Failed move_direction :--detail{e}" 
                 self.handle_error(error)
             except Exception as e:
-                error = f"Failed _ GPS course.:--detail{e}" 
+                error = f"Failed move_direction :--detail{e}" 
                 self.handle_error(error)
             finally:
                 if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
@@ -239,22 +234,7 @@ class Gps(IGps):
                         
             sleep(1)    
 
-            import math
-#self.__gps.courseの中身
-# def calculate_bearing(lat1, lon1, lat2, lon2):
-#     # 緯度・経度をラジアンに変換
-#     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
-#     d_lon = lon2 - lon1
 
-#     # ベアリング計算
-#     x = math.sin(d_lon) * math.cos(lat2)
-#     y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(d_lon)
-#     bearing = math.atan2(x, y)
-
-#     # 度単位に変換し、0～360度に正規化
-#     return (math.degrees(bearing) + 360) % 360
-
-    
     def delete(self):
         self.error_counts=[]
         self.error_messages=[]
