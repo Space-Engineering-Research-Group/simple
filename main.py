@@ -223,29 +223,61 @@ if tools[2]=True:
 
 kazu=1
 while True:
-    if fplan[1] is False:
-        if fplan[2] is True:
+    if tools[1] is False:
+        if tools[2] is True:
             plan2="C"
         else:
             plan2="D"
     else:
-        if fplan[2] is False:
+        if tools[2] is False:
             plan2="B"
     
     result=None
 #gps
- 
-    while True:
-        gps = [5]
-        pre_lat,pre_lon = gps.get_coordinate_xy()
-        motors.forward()
-        sleep(30)#30は適当の値
-        now_lat,now_lon = gps.get_coordinate_xy()
-        distance=get_distance(pre_lat,pre_lon,now_lat,now_lon)
-        if distance<1.4:
-            raise RuntimeError('stack error or motor error')
+    if plan2 in ["A","B"]:
+        try:
+            #左からフェーズ、プラン、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
+            gps = [5,None,None,None,None,None,None,None,None]
+            try:
+                pre_lat,pre_lon = gps.get_coordinate_xy()
+            except RuntimeError:
+                tools[1]=False
+                raise RuntimeError
+            finally:
+                if len(gps.error_counts):
+                    gps[7]=gps.error_log
+                    if 5 in gps.error_counts:
+                        gps[6]="gps"
+                        xbee.xbee_send(gps)
+
+            while True:
+                #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
+                gps = [5,None,None,None,None,None,None,None]
+                motors.forward()
+                sleep(30)#30は適当の値
+                try:
+                    now_lat,now_lon = gps.get_coordinate_xy()
+                except RuntimeError:
+                    tools[1]=False
+                    raise RuntimeError
+                finally:
+                    if len(gps.error_counts):
+                        gps[7]=gps.error_log
+                        if 5 in gps.error_counts:
+                            gps[6]="gps"
+                            xbee.xbee_send(gps)
+                distance=get_distance(pre_lat,pre_lon,now_lat,now_lon)
+                pre_lat,pre_lon=now_lat,now_lon
+                if distance<1.4:
+                    
+
+                if distance<4:
+                    #sleep(speed waru kyori)
+                    pass
+
         
-    
+        except RuntimeError:
+            continue
 
             
 
