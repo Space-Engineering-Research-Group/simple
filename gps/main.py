@@ -74,8 +74,8 @@ class Gps(IGps):
                         self.log_errors()     
 
             sleep(1)
-    
-    
+        
+
     def update_gps(self):
         self.error_counts = []
         self.error_messages = []
@@ -101,6 +101,7 @@ class Gps(IGps):
                     self.log_errors()
 
             sleep(1)
+
 
     def get_coordinate_xy(self):
         self.error_counts = []
@@ -155,7 +156,6 @@ class Gps(IGps):
 
             sleep(1)      
 
-        
 
     def z_coordinate(self): 
         self.error_counts=[]
@@ -238,6 +238,22 @@ class Gps(IGps):
                     self.log_errors()
                         
             sleep(1)    
+
+            import math
+#self.__gps.courseの中身
+# def calculate_bearing(lat1, lon1, lat2, lon2):
+#     # 緯度・経度をラジアンに変換
+#     lat1, lon1, lat2, lon2 = map(math.radians, [lat1, lon1, lat2, lon2])
+#     d_lon = lon2 - lon1
+
+#     # ベアリング計算
+#     x = math.sin(d_lon) * math.cos(lat2)
+#     y = math.cos(lat1) * math.sin(lat2) - math.sin(lat1) * math.cos(lat2) * math.cos(d_lon)
+#     bearing = math.atan2(x, y)
+
+#     # 度単位に変換し、0～360度に正規化
+#     return (math.degrees(bearing) + 360) % 360
+
     
     def delete(self):
         self.error_counts=[]
