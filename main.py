@@ -222,6 +222,7 @@ if tools[2]=True:
 
 
 kazu=1
+gps_seikou=False
 while True:
     if tools[1] is False:
         if tools[2] is True:
@@ -234,7 +235,7 @@ while True:
     
     result=None
 #gps
-    if plan2 in ["A","B"]:
+    if plan2 in ["A","B"]and gps_seikou==False:
         try:
             #左からフェーズ、プラン、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
             gps = [5,None,None,None,None,None,None,None,None]
@@ -249,12 +250,26 @@ while True:
                     if 5 in gps.error_counts:
                         gps[6]="gps"
                         xbee.xbee_send(gps)
-
+            stack_count = 0
             while True:
                 #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
                 gps = [5,None,None,None,None,None,None,None]
-                motors.forward()
-                sleep(30)#30は適当の値
+
+                try:
+                    motors.forward()
+                    sleep(30)
+                    motors.stop()
+                except RuntimeError:
+                        tools[3]=False
+                        import sys
+                        sys.exit(1)
+                finally:
+                    if len(motors.error_counts):
+                        motors_log=[7,None,motors.error_log]
+                        if 5 in motors.error_counts:
+                            motors_log[1]="motors"
+                        xbee.xbee_send(motors)    
+            
                 try:
                     now_lat,now_lon = gps.get_coordinate_xy()
                 except RuntimeError:
@@ -268,12 +283,60 @@ while True:
                             xbee.xbee_send(gps)
                 distance=get_distance(pre_lat,pre_lon,now_lat,now_lon)
                 pre_lat,pre_lon=now_lat,now_lon
-                if distance<1.4:
-                    
 
+                if distance<1.4:
+                    #stuckした場合の処理
+                    try:
+                        stack_count+=1
+                        if stack_count==4:
+                            import sys
+                            sys.exit(1)
+                        motors.backward()
+                        sleep(5)  
+                        motors.turn_left()
+                        #秒数は計算して出す
+                        sleep(90/280)
+                        motors.forward()
+                        sleep(5)
+                        pre_lat,pre_lon = gps.get_coordinate_xy()
+                        continue
+                    except RuntimeError:
+                        tools[3]=False
+                        import sys
+                        sys.exit(1)
+                    finally:
+                        if len(motors.error_counts):
+                            motors_log=[7,None,motors.error_log]
+                            if 5 in motors.error_counts:
+                                motors_log[1]="motors"
+                            xbee.xbee_send(motors)
+                    
+                #judge
                 if distance<4:
                     #sleep(speed waru kyori)
                     pass
+                if distance<2:
+                    gps_seikou=True
+                    break
+                if plan2 == "B": #planは適当あとで確認。
+                    if distance<0.5:
+                        #30回緯度経度を二個取得し、二つの平均をだす
+                        #そのとき、エラー分のちゃんと書く
+                        break
+
+                try:
+                    move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
+                    get_rotation_anglef = get_rotation_angle(goal_lat,goal_lon,now_lat,now_lon,move_direction)
+                except RuntimeError:
+                    tools[1]=False
+                    raise RuntimeError
+                finally:
+                    if len(gps.error_counts):
+                        gps[7]=gps.error_log
+                        if 5 in gps.error_counts:
+                            gps[6]="gps"
+                            xbee.xbee_send(gps)
+           
 
         
         except RuntimeError:
