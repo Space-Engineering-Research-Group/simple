@@ -28,10 +28,10 @@ class Motor(Imotor):
         self.a=1
         while True:
             try:
-                self.right_PWM.value=1
                 self.right_in1=DigitalOutputDevice(rdir_1,pin_factory=factory)
                 self.right_in2=DigitalOutputDevice(rdir_2,pin_factory=factory)
                 self.right_PWM=PWMOutputDevice(rPWM,pin_factory=factory)
+                self.right_PWM.value=1
                 self.a=0
                 break
             except Exception as e:
@@ -44,7 +44,7 @@ class Motor(Imotor):
 
         self.left_error_counts=[]
         self.left_error_messages=[]
-        self.left_error_log="right motor log"
+        self.left_error_log="left motor log"
         self.a=1
         
         while True:
@@ -91,7 +91,7 @@ class Motor(Imotor):
 
         self.left_error_counts=[]
         self.left_error_messages=[]
-        self.left_error_log="right motor log"
+        self.left_error_log="left motor log"
         self.a=1
 
         while True:
@@ -135,7 +135,7 @@ class Motor(Imotor):
 
         self.left_error_counts=[]
         self.left_error_messages=[]
-        self.left_error_log="right motor log"
+        self.left_error_log="left motor log"
         self.a=1
 
         while True:
@@ -178,7 +178,7 @@ class Motor(Imotor):
 
         self.left_error_counts=[]
         self.left_error_messages=[]
-        self.left_error_log="right motor log"
+        self.left_error_log="left motor log"
         self.a=1
 
         while True:
@@ -219,7 +219,7 @@ class Motor(Imotor):
 
         self.left_error_counts=[]
         self.left_error_messages=[]
-        self.left_error_log="right motor log"
+        self.left_error_log="left motor log"
         self.a=1
 
         while True:
@@ -263,7 +263,7 @@ class Motor(Imotor):
 
         self.left_error_counts = []
         self.left_error_messages = []
-        self.left_error_log = "right motor log"
+        self.left_error_log = "left motor log"
         self.a = 1
 
         while True:
@@ -293,6 +293,7 @@ class Motor(Imotor):
             try:
                 self.right_in1.off()
                 self.right_in2.off()
+                self.right_PWM.value = 0
                 self.a = 0
                 break
             except Exception as e:
@@ -305,13 +306,14 @@ class Motor(Imotor):
 
         self.left_error_counts = []
         self.left_error_messages = []
-        self.left_error_log = "right motor log"
+        self.left_error_log = "left motor log"
         self.a = 1
 
         while True:
             try:
                 self.left_in1.off()
                 self.left_in2.off()
+                self.left_PWM.value = 0
                 self.a = 0
                 break
             except Exception as e:
@@ -373,7 +375,7 @@ class Motor(Imotor):
     def judge_error(self):
         if self.right_error_counts:
             if self.left_error_counts:
-                self.error_log=self.right_error_counts+","+self.left_error_log
+                self.error_log=self.right_error_log+","+self.left_error_log
             else:
                 self.error_log=self.right_error_log
         else:
