@@ -15,10 +15,6 @@ class IGps(abc.ABC):
         pass
     
     @abc.abstractmethod
-    def z_coodinate(self):
-        pass
-    
-    @abc.abstractmethod
     def move_direction(self):
         pass
     
@@ -157,48 +153,6 @@ class Gps(IGps):
             sleep(1)      
 
 
-    def z_coordinate(self): 
-        self.error_counts=[]
-        self.error_messages=[]
-        self.error_log="gps Error Log"
-        self.a=1
-        while True:
-            try:
-                alt_list = []
-                while True:
-                    self.update_gps()
-                    start_time = time.time()
-                    #1秒間に3回取得する
-                    for 3 in range(3):
-                        alt = self.__gps.altitude[0] #単位はmである
-                        if alt is None:
-                            raise ValueError("alt is None")
-                        alt_list.append(alt)
-                        sleep(0.2)
-                        while True:
-                            #1秒経過するまで待つ
-                            current_time = time.time()
-                            time_difference = current_time - start_time
-                            if time_difference > 1:
-                                ave_alt = sum(alt_list)/len(alt_list)
-                                self.a=0
-                                return ave_alt
-                            
-            except ValueError as e:
-                error = f"Failed _ GPS z_coordinate:--detail{e}"
-                self.handle_error(error)        
-            except serial.SerialException as e:
-                error = f"GPS communication error:--detail{e}"
-                self.handle_error(error)
-            except Exception as e:
-                error = f"Failed _ GPS z_coordinate:--detail{e}"
-                self.handle_error(error)
-            finally:
-                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
-                    self.log_errors()
-                        
-            sleep(1)
-    
 
     def move_direction(self,past_lat, past_lon, now_lat, now_lon):
         import math
