@@ -70,7 +70,7 @@ class Gps(IGps):
             finally:
                     self.prev_altitude = None
                     self.prev_time = None
-                    if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
+                    if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                         self.log_errors()     
 
             sleep(1)
@@ -97,7 +97,7 @@ class Gps(IGps):
                 error = f"Failed _ GPS update_gps:--detail{e}"
                 self.handle_error(error)
             finally:
-                if (len(self.error_messages) and self.a == 1) or 5 in self.error_counts:
+                if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
                     self.log_errors()
 
             sleep(1)
@@ -151,7 +151,7 @@ class Gps(IGps):
                 error =f"Failed _ GPS xy_coordinates:--detail{e}"
                 self.handle_error(error)
             finally:
-                if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                     self.log_errors()
 
             sleep(1)      
@@ -194,7 +194,7 @@ class Gps(IGps):
                 error = f"Failed _ GPS z_coordinate:--detail{e}"
                 self.handle_error(error)
             finally:
-                if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                     self.log_errors()
                         
             sleep(1)
@@ -229,7 +229,7 @@ class Gps(IGps):
                 error = f"Failed move_direction :--detail{e}" 
                 self.handle_error(error)
             finally:
-                if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                     self.log_errors()
                         
             sleep(1)    
@@ -253,7 +253,7 @@ class Gps(IGps):
                     error = "Failed to close the serial port.:--detail{e}" 
                     self.handle_error(error)
                 finally:
-                    if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
+                    if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                         self.log_errors()
                         
                 sleep(1)
