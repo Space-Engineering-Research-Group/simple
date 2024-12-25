@@ -19,6 +19,14 @@ plan3="A"
 
 ins_error_tool=[]
 ins_error=[]
+
+#箱の中に入れるまでの時間計測する。
+preparation_time=60
+#光センサで明るいことを検知してから落下するまでにかかると想定する時間
+fall_time=60
+#光センサで判断できなかった場合に置ける処理が起動してから落下するまでにかかるだろうとする時間
+land_time=480
+
 try:
     cds=Cds()
 except RuntimeError:
@@ -57,9 +65,6 @@ gps_deta=[]
 #ここは大会の時に測る。
 goal_lat = 0
 goal_lon = 0
-ground=0
-#ここは機体の落下するスピード
-falling_speed=4
 
 width=640
 height=480
@@ -115,45 +120,66 @@ finally:
 ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error_tool,ins_error]
 xbee.xbee_send(ins_log)
 
+start_time=time()
 
-bright_ness_judge=False
 
-height_dis=[100]
-while True:
-    if tools[0] is False:
-        if tools[1] is True:
-            plan1="B"
-        else:
-            plan1="D"
-    else:
-        if tools[1] is False:
-            plan1="C"
-
-    #待機モード.....後で書き直す必要あり
+#箱に入れるまでの時間を仮に一分と置き、その間ずっと明るさを取得して、xbeeで送るようにする。
+while time()-start_time<preparation_time:
+    #左から、フェーズ、時間、明るさ、故障した部品、エラー文
+    fir_cds_log=[-1,None,None,None,None]
     try:
+        fir_cds_log[1]=time()
         cds.get_brightness()
-        cds.brightness
-        xbee.send(cds.brightness)
+        fir_cds_log[2]=cds.brightness
     except RuntimeError:
         tools[0]=False
         raise RuntimeError
     finally:
         if len(cds.error_counts):
+            fir_cds_log[4]=cds.log_errors
             if 5 in cds.error_counts:
+                fir_cds_log[3]="cds"
                 xbee.send(cds.error_log)
 
-    if plan1 in ["A","C"] and bright_ness_judge==False:
+
+
+land_judge=False
+start_time=time()
+while land_judge==False:
+    if tools[0]==False:
+        plan1="B"
+        notice_log=[9,"cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。"]
+
+    if plan1 =="A":
         try:
-            #なんとなく起動してから箱に入れるまでの時間。これじゃしょぼそうだから、明るさが低いところから高いところに行くのと、高いところから低いところに行くのを設楽っていう風にしてもいい。これは、箱が完全に密封されている想定。
-            sleep(20)
-    
-            while bright_ness_judge==False:
+            while land_judge==False:
+                notice_log=[9,"cdsを用いた落下判定を開始します。"]
                 #左からフェーズ、プラン、時間、明るさ、落下判断、使えない部品、エラー文
                 cds_log=[2,"A",0,None,None,None,None]
                 try:
                     cds_log[1]=time()
+                    if cds_log[1]-start_time>land_time:
+                        land_judge=True
+                        notice_log=[9,"８分間一定以上の明るさを検知できなかったため、着地したと判定する。"]
+                        continue
                     cds.get_brightness()
-                    cds.brightness
+                    cds_log[4]=cds.brightness
+                    if cds.brightness < brightness_threshold:
+                        cds_log[3]=True
+                        start_time=time()
+                        notice_log=[9,"一定以上の明るさを検知したため、１分経過したら着地したと判定"]
+                        xbee.xbee_send(notice_log)
+                        while time()-start_time<fall_time:
+                            #左からフェーズ、時間、残り時間
+                            time_log=[8,None,None]
+                            now_time=time()
+                            time_log[1]=now_time
+                            time_log[2]=fall_time-(now_time-start_time)
+                            xbee.xbee_send(time_log)
+                        notice_log=[9,"１分経過したため着地したと判定"]
+                        land_judge=True
+
+
 
                 except RuntimeError :
                         tools[0]=False
@@ -163,71 +189,39 @@ while True:
                         cds_log[6]=cds.error_log
                         if 5 in cds.error_counts:
                             cds_log[5]="cds"
-                            xbee.xbee_send(cds_log)
-                cds_log[4]=cds.brightness
-                if cds.brightness < brightness_threshold:
-                    bright_ness_judge=True
-                    cds_log[3]=bright_ness_judge
-
-                xbee.xbee_send(cds_log)
+                    xbee.xbee_send(cds_log)
                 
                 sleep(2)
         except RuntimeError:
             continue
-    if plan1 in ["A","B"]:
-        if plan1=="B":
-            start_time=time()
-            explain_log=[7,"cdsが使えないので、５分間待機して、GPSで高度を取得し始めます。"]
-            while time()-start_time>3000:
-                #左からフェーズ、プラン、経過時間
-                not_cds_log=[2,"B",0]
-                remaining_time=3000-(time()-start_time)
-                not_cds_log[2]=remaining_time
-                #xbeeで送信
-        height_judge=False
-        try:
-            while height_judge==False:
-                #左からフェーズ、時間、高度、着地判定、使えない部品、エラー文
-                gps_log=[3,"A",0,None,False,None,None]
-                try:
-                    gps_log[2]=time()
-                    height=gps.z_coordinate()
-                except RuntimeError:
-                    tools[1]=False
-                    raise RuntimeError
-                finally:
-                    if len(gps.error_counts):
-                        gps_log[6]=gps.error_log
-                        if 5 in gps.error_counts:
-                            gps_log[5]="gps"
-                            xbee.xbee_send(gps_log)
-
-    
-
-                if height_dis[-1]<2 and height_dis[-2]<2:
-                    height_judge=True
-                    gps_log[3]=True
-                xbee.xbee_send(gps_log)
-
-                sleep(2)
-        except RuntimeError:
-            continue
-
-    if plan1 in ["C","D"]:
-        if len(height_dis)==1:
-            if plan1=="C":
-                sleep(3600)
-            if plan1=="D":
-                sleep(4800)
-        else:
-            sleep_time=(height_dis[-1]+2)*falling_speed+30
-            sleep(sleep_time)
+    elif  plan1=="B":
+        while time()-start_time()<land_time:
+            #左からフェーズ、時間、残り時間
+            time_log=[8,None,None]
+            now_time=time()
+            time_log[1]=now_time
+            time_log[2]=land_time-(now_time-start_time)
+        land_judge=True
+        notice_log=[9,"起動から８分間経過したため、着地したとみなす。"]
             
             
-    break
+if tools[4]==True:
+    notice_log=[9,"サーボモーターを用いてパラシュートの切り離しを行います。"]
+    xbee.xbee.send(notice_log) 
+else:
+    notice_log=[9,"サーボモーターが使えないため、コードを停止します。"]
+    xbee.xbee.send(notice_log)       
+    import sys
+    sys.exit(1)
 
-servo.rotate()
-sleep(2)
+try:            
+    servo.rotate()
+    #個々の時間は後で計算する
+    sleep(30)
+except RuntimeError:
+    notice_log=[9,"サーボモーターが使えなくなったため、コードを停止します。"]
+
+notice_log=[9,"パラシュートの切り離しを行いました。"]
 
 if tools[2]=True:
     
