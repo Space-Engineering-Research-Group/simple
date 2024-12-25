@@ -25,7 +25,7 @@ class Cds(Icds):
                 error=f"cds: Unexpected error during initialization --detail{e}"
                 self.handle_error(error)
             finally:
-                if (len(self.error_messages)and self.a==1)or 5 in self.error_counts:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                     self.log_errors()
                     
                         
@@ -55,7 +55,7 @@ class Cds(Icds):
                 error=f"cds: Unexpected error while reading brightness --detail{e}"
                 self.handle_error(error)
             finally:
-                if (len(self.error_messages)and a==1)or 5 in self.error_counts:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                     self.log_errors()
                         
             sleep(1)
