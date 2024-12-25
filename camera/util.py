@@ -19,7 +19,7 @@ def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
     mask=cv2.Canny(mask,80.0,175.0)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-def find_parachute(frame,lower_yellow,upper_yellow):
+def find_parachute(frame,lower_yellow,upper_yellow,center,fezu=1):
     img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
     clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
     img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
@@ -39,8 +39,27 @@ def find_parachute(frame,lower_yellow,upper_yellow):
     if contours:
         # 最大面積のコンターを返す
         max_contour = max(contours, key=cv2.contourArea)
-        return max_contour
-    return None
+        judge=judge_parachute(max_contour)
+        if fezu==1:
+            if judge==False:
+                return [None,None]
+            M = cv2.moments(max_contour)
+            cx = int(M["m10"] / M["m00"])
+
+            if cx<center:
+                return [-1,True]
+            else:
+                return [1,True]
+        else:
+            if judge==False:
+                return None
+            else:
+                return True            
+    else:
+        if fezu==1:
+            return [False,False]
+        else:
+            return False
 
 def judge_cone(contour,frame_area):
     area=cv2.contourArea(contour)
@@ -49,6 +68,7 @@ def judge_cone(contour,frame_area):
     if raito >= 0.04:
         return True
     return False
+
 
 def judge_parachute(contour,frame_area):
     area=cv2.contourArea(contour)
