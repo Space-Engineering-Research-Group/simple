@@ -84,8 +84,11 @@ class Camera(ICamera):
         if self.a == 0:
             self.error_log = ",".join(error_list)
         elif 5 in self.error_counts:
-            index = self.error_counts.index(5)
-            result = error_list[:index] + error_list[index + 1:]
-            result = ",".join(result)
-            self.error_log = f"camera:Error--{error_list[index]} other errors--{result}"
-            raise RuntimeError
+            if len(list) == 1:
+                self.error_log=f"camera:Error--{list[0]}"
+            else:
+                index = self.error_counts.index(5)
+                result = error_list[:index] + error_list[index + 1:]
+                result = ",".join(result)
+                self.error_log = f"camera:Error--{error_list[index]} other errors--{result}"
+                raise RuntimeError
