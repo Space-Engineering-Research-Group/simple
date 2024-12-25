@@ -225,6 +225,7 @@ notice_log=[9,"パラシュートの切り離しを行いました。"]
 
 if tools[2]=True:
     
+    
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ここでパラシュートの回避 4
 
@@ -261,7 +262,7 @@ while True:
                     if 5 in gps.error_counts:
                         gps[6]="gps"
                 xbee.xbee_send(gps)
-                
+
                 #初めからコーンが近い場合の処理     
             distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
             if distance<4:
