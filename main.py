@@ -261,6 +261,7 @@ while True:
                     if 5 in gps.error_counts:
                         gps[6]="gps"
                 xbee.xbee_send(gps)
+                
                 #初めからコーンが近い場合の処理     
             distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
             if distance<4:
@@ -302,7 +303,9 @@ while True:
                 gps = [5,None,None,None,None,None,None,None]    
             
                 try:
+                    gps[1] = time()
                     now_lat,now_lon = gps.get_coordinate_xy()
+                    gps[2],gps[3] = now_lat, now_lon
                 except RuntimeError:
                     tools[1]=False
                     raise RuntimeError
@@ -311,9 +314,10 @@ while True:
                         gps[7]=gps.error_log
                         if 5 in gps.error_counts:
                             gps[6]="gps"
-                            xbee.xbee_send(gps)
+                    xbee.xbee_send(gps)    
+        
 
-                distance=get_distance(pre_lat,pre_lon,now_lat,now_lon)
+                distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)            
 
                 if distance<1.4:
                     #stuckした場合の処理
@@ -328,8 +332,7 @@ while True:
                         #秒数は計算して出す
                         sleep(90/280)
                         motors.forward()
-                        sleep(5)
-                        pre_lat,pre_lon = gps.get_coordinate_xy()
+                        sleep(5)    
                         continue
                     except RuntimeError:
                         tools[3]=False
@@ -341,7 +344,25 @@ while True:
                             if 5 in motors.error_counts:
                                 motors_log[1]="motors"
                             xbee.xbee_send(motors)
-                    
+
+                    try:
+                        gps[1] = time()
+                        pre_lat,pre_lon = gps.get_coordinate_xy()
+                        gps[2], gps[3] = pre_lat, pre_lon
+                    except RuntimeError:
+                        tools[1]=False
+                        raise RuntimeError
+                    finally:
+                        if len(gps.error_counts):
+                            gps[7]=gps.error_log
+                            if 5 in gps.error_counts:
+                                gps[6]="gps"
+                        xbee.xbee_send(gps)    
+
+
+                
+                distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)            
+
                 #judge
                 if distance<4:
                     try:
