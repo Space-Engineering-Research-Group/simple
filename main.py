@@ -26,7 +26,7 @@ except RuntimeError:
 finally:
     if cds.error_counts:
         ins_error_tool.append("cds")
-        ins_error.append(cds.error_log)
+        ins_error.append(cds.error_log)       
 
 
 #明るさの閾値は曇りの日に明るさを取得して決める
@@ -129,6 +129,19 @@ while True:
         if tools[1] is False:
             plan1="C"
 
+    #待機モード.....後で書き直す必要あり
+    try:
+        cds.get_brightness()
+        cds.brightness
+        xbee.send(cds.brightness)
+    except RuntimeError:
+        tools[0]=False
+        raise RuntimeError
+    finally:
+        if len(cds.error_counts):
+            if 5 in cds.error_counts:
+                xbee.send(cds.error_log)
+
     if plan1 in ["A","C"] and bright_ness_judge==False:
         try:
             #なんとなく起動してから箱に入れるまでの時間。これじゃしょぼそうだから、明るさが低いところから高いところに行くのと、高いところから低いところに行くのを設楽っていう風にしてもいい。これは、箱が完全に密封されている想定。
@@ -140,6 +153,7 @@ while True:
                 try:
                     cds_log[1]=time()
                     cds.get_brightness()
+                    cds.brightness
 
                 except RuntimeError :
                         tools[0]=False
@@ -237,10 +251,13 @@ while True:
 #gps
     if plan2 in ["A","B"]and gps_seikou==False:
         try:
-            #左からフェーズ、プラン、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
+            #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
             gps = [5,None,None,None,None,None,None,None,None]
             try:
+                gps[1]=time()
                 pre_lat,pre_lon = gps.get_coordinate_xy()
+                gps[2]=pre_lat
+                gps[3]=pre_lon
             except RuntimeError:
                 tools[1]=False
                 raise RuntimeError
@@ -249,26 +266,46 @@ while True:
                     gps[7]=gps.error_log
                     if 5 in gps.error_counts:
                         gps[6]="gps"
-                        xbee.xbee_send(gps)
-            stack_count = 0
-            while True:
-                #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
-                gps = [5,None,None,None,None,None,None,None]
-
+                xbee.xbee_send(gps)
+                #初めからコーンが近い場合の処理     
+            distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
+            if distance<4:
                 try:
-                    motors.forward()
-                    sleep(30)
+                    motors.forward(1/208)
+                    sleep(20)
                     motors.stop()
+                    gps_seikou=True
+                    continue
                 except RuntimeError:
-                        tools[3]=False
-                        import sys
-                        sys.exit(1)
-                finally:
+                    tools[3]=False
+                    import sys
+                    sys.exit(1)
+                finally:    
                     if len(motors.error_counts):
                         motors_log=[7,None,motors.error_log]
                         if 5 in motors.error_counts:
                             motors_log[1]="motors"
                         xbee.xbee_send(motors)    
+            else:
+                try:
+                    motors.turn_left(1/208)
+                    sleep(30)
+                    motors.stop()
+                except RuntimeError:
+                    tools[3]=False
+                    import sys
+                    sys.exit(1)
+                finally:
+                    if len(motors.error_counts):
+                        motors_log=[7,None,motors.error_log]
+                        if 5 in motors.error_counts:
+                            motors_log[1]="motors"
+                        xbee.xbee_send(motors)        
+
+            stack_count = 0
+            while True:
+                #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
+                gps = [5,None,None,None,None,None,None,None]    
             
                 try:
                     now_lat,now_lon = gps.get_coordinate_xy()
@@ -281,8 +318,8 @@ while True:
                         if 5 in gps.error_counts:
                             gps[6]="gps"
                             xbee.xbee_send(gps)
+
                 distance=get_distance(pre_lat,pre_lon,now_lat,now_lon)
-                pre_lat,pre_lon=now_lat,now_lon
 
                 if distance<1.4:
                     #stuckした場合の処理
@@ -313,16 +350,70 @@ while True:
                     
                 #judge
                 if distance<4:
-                    #sleep(speed waru kyori)
-                    pass
+                    try:
+                        motors.forward(1/208)
+                        sleep(20)
+                        motors.stop()
+                        gps_seikou=True
+                        continue
+                    except RuntimeError:
+                        tools[3]=False
+                        import sys
+                        sys.exit(1)
+                    finally:    
+                        if len(motors.error_counts):
+                            motors_log=[7,None,motors.error_log]
+                            if 5 in motors.error_counts:
+                                motors_log[1]="motors"
+                            xbee.xbee_send(motors) 
                 if distance<2:
                     gps_seikou=True
-                    break
-                if plan2 == "B": #planは適当あとで確認。
-                    if distance<0.5:
-                        #30回緯度経度を二個取得し、二つの平均をだす
-                        #そのとき、エラー分のちゃんと書く
-                        break
+
+                    if plan2 == "B": #planは適当あとで確認。
+                        #カメラが壊れていた場合
+                        try:
+                            gps_B_lat = []
+                            gps_B_lon = []
+                        
+                            for i in range(2):
+                                lat,lon = gps.get_coordinate_xy()
+                                gps_B_lat.append(lat)
+                                gps_B_lon.append(lon)
+                                sleep(0.1)
+                            gps_B_lat_ave = sum(gps_B_lat)/2
+                            gps_B_lon_ave = sum(gps_B_lon)/2    
+
+                            distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
+                            if distance<0.5:#適当
+                                gps_seikou=True
+                                #成功したことを送る
+
+                            move_direction = gps.move_direction(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
+                            get_rotation_angle = get_rotation_angle(goal_lat,goal_lon,gps_B_lat_ave,gps_B_lon_ave,move_direction)   
+                        except RuntimeError:
+                            tools[1]=False
+                            raise RuntimeError
+                        finally:
+                            if len(gps.error_counts):
+                                gps[7]=gps.error_log
+                                if 5 in gps.error_counts:
+                                    gps[6]="gps"
+                                xbee.xbee_send(gps)
+
+                        try:
+                            motors.turn_left(1/208)
+                            sleep(4)
+                            motors.stop()
+                        except RuntimeError:
+                            tools[3]=False
+                            import sys
+                            sys.exit(1)
+                        finally:    
+                            if len(motors.error_counts):
+                                motors_log=[7,None,motors.error_log]
+                                if 5 in motors.error_counts:
+                                    motors_log[1]="motors"
+                                xbee.xbee_send(motors)        
 
                 try:
                     move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
@@ -336,8 +427,22 @@ while True:
                         if 5 in gps.error_counts:
                             gps[6]="gps"
                             xbee.xbee_send(gps)
-           
-
+                
+                try:
+                    motors.turn_left(1/208)
+                    sleep(get_rotation_angle/208)
+                    motors.stop()
+                    pre_lat,pre_lon = now_lat,now_lon
+                except:
+                    tools[3]=False
+                    import sys
+                    sys.exit(1) 
+                finally:    
+                    if len(motors.error_counts):
+                        motors_log=[7,None,motors.error_log]
+                        if 5 in motors.error_counts:
+                            motors_log[1]="motors"
+                        xbee.xbee_send(motors)        
         
         except RuntimeError:
             continue
