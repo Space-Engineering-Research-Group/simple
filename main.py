@@ -194,6 +194,7 @@ while land_judge==False:
                 sleep(2)
         except RuntimeError:
             continue
+        
     elif  plan1=="B":
         while time()-start_time()<land_time:
             #左からフェーズ、時間、残り時間
@@ -224,7 +225,7 @@ except RuntimeError:
 notice_log=[9,"パラシュートの切り離しを行いました。"]
 
 if tools[2]=True:
-    
+
     
 
 #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ここでパラシュートの回避 4
