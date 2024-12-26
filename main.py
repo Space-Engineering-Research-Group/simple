@@ -248,21 +248,21 @@ while True:
     if plan2 in ["A","B"]and gps_seikou==False:
         try:
             #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
-            gps = [5,None,None,None,None,None,None,None,None]
+            gps_log = [5,None,None,None,None,None,None,None,None]
             try:
-                gps[1]=time()
+                gps_log[1]=time()
                 pre_lat,pre_lon = gps.get_coordinate_xy()
-                gps[2]=pre_lat
-                gps[3]=pre_lon
+                gps_log[2]=pre_lat
+                gps_log[3]=pre_lon
             except RuntimeError:
                 tools[1]=False
                 raise RuntimeError
             finally:
                 if len(gps.error_counts):
-                    gps[7]=gps.error_log
+                    gps_log[7]=gps.error_log
                     if 5 in gps.error_counts:
-                        gps[6]="gps"
-                xbee.xbee_send(gps)
+                        gps_log[6]="gps"
+                xbee.xbee_send(gps_log)
 
                 #初めからコーンが近い場合の処理     
             distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
@@ -302,21 +302,21 @@ while True:
             stack_count = 0
             while True:
                 #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
-                gps = [5,None,None,None,None,None,None,None]    
+                gps_log = [5,None,None,None,None,None,None,None]    
             
                 try:
-                    gps[1] = time()
+                    gps_log[1] = time()
                     now_lat,now_lon = gps.get_coordinate_xy()
-                    gps[2],gps[3] = now_lat, now_lon
+                    gps_log[2],gps_log[3] = now_lat, now_lon
                 except RuntimeError:
                     tools[1]=False
                     raise RuntimeError
                 finally:
                     if len(gps.error_counts):
-                        gps[7]=gps.error_log
+                        gps_log[7]=gps.error_log
                         if 5 in gps.error_counts:
-                            gps[6]="gps"
-                    xbee.xbee_send(gps)    
+                            gps_log[6]="gps"
+                    xbee.xbee_send(gps_log)    
         
 
                 distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)            
@@ -348,9 +348,9 @@ while True:
                             xbee.xbee_send(motors)
 
                     try:
-                        gps[1] = time()
+                        gps_log[1] = time()
                         pre_lat,pre_lon = gps.get_coordinate_xy()
-                        gps[2], gps[3] = pre_lat, pre_lon
+                        gps_log[2], gps_log[3] = pre_lat, pre_lon
                     except RuntimeError:
                         tools[1]=False
                         raise RuntimeError
@@ -382,7 +382,7 @@ while True:
                             motors_log=[7,None,motors.error_log]
                             if 5 in motors.error_counts:
                                 motors_log[1]="motors"
-                            xbee.xbee_send(motors) 
+                            xbee.xbee_send(motors_log)
                 if distance<2:
                     gps_seikou=True
 
