@@ -42,24 +42,28 @@ class Camera(ICamera):
                     break
 
     def get_frame(self):
-        self.error_count=0
+        self.error_counts=[]
+        self.error_messages=[]
         self.error_log="camera:Error"
-        error = "camera: Failed to capture a frame from the camera."
+        self.a=1
+
         while True:
             try:
                 while True:
                     ret, frame = self.capture.read()
                     if ret:
+                        self.a=0
                         return frame
                     else:
-                        self.error_count += 1
+                        raise RuntimeError("Failed to capture a frame from the camera.")
+            except Exception as e:
+                error=f"camera error during getting frame--detail{e}"
+                self.handle_error(error)
 
-                        if self.error_count == 5:
-                            raise RuntimeError
                         
             finally:
-                if self.error_count:
-                    self.error_log=f"{self.error_count}*{error}"
+                if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
+                    self.log_errors()
 
                 
 
@@ -82,7 +86,7 @@ class Camera(ICamera):
         for count, message in zip(self.error_counts, self.error_messages):
             error_list.append(f"{count}*{message}")
         if self.a == 0:
-            self.error_log = ",".join(error_list)
+            self.error_log = "camera:Error--"+",".join(error_list)
         elif 5 in self.error_counts:
             if len(list) == 1:
                 self.error_log=f"camera:Error--{list[0]}"
