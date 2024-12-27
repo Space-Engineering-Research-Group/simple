@@ -86,7 +86,11 @@ lower_red1 = np.array([0, 100, 100])   # 下の範囲1 (0〜10度)
 upper_red1 = np.array([10, 255, 255])  # 上の範囲1
 lower_red2 = np.array([170, 100, 100]) # 下の範囲2 (170〜180度)
 upper_red2 = np.array([180, 255, 255]) # 上の範囲2
-#赤いコーンの座標をここに書く。大会当日にかく
+
+#パラシュートの黄色をしっかり検出出来るようにする。
+lower_yellow=np.array([20, 100, 100])
+upper_yellow=np.array([40, 255, 255])
+
 
 #pin,pwmの値は決まった
 rdir_1=35
@@ -224,7 +228,37 @@ except RuntimeError:
 
 notice_log=[9,"パラシュートの切り離しを行いました。"]
 
-if tools[2]=True:
+
+while True:
+    if tools[2]==True:
+        try:
+            while True:
+                camera_log=[4,1,None,False,None,None]
+                try:
+                    frame=camera.get_frame()
+                    judge=find_parachute(frame,lower_yellow,upper_yellow,center,0):
+                    if judge==True:
+                        motors.backward()
+                        sleep(10)
+                except RuntimeError:
+                    tools[2]=False
+                    raise RuntimeError
+                finally:
+                    if len(camera.error_counts):
+                        camera_log[-1]=camera.error_log
+                        if 5 in camera.error_counts:
+                            camera_log[-2]="camera"
+                
+        except RuntimeError:
+            continue
+            
+
+                        
+
+                    
+
+    
+
 
     
 
