@@ -71,6 +71,8 @@ height=480
 FPS=10
 center=width/2
 frame_area=width*height
+#カメラの画角（仮定）
+view_angle=70
 try:
     camera=Camera(width,height,FPS)
 except RuntimeError:
@@ -99,6 +101,9 @@ rPWM=33
 ldir_1=38
 ldir_2=40
 lPWM=36
+#機体の回転速度208度/s
+turn_speed=280
+motor_sttime=(view_angle/2)/turn_speed
 
 factory = PiGPIOFactory()
 
@@ -228,18 +233,16 @@ except RuntimeError:
 
 notice_log=[9,"パラシュートの切り離しを行いました。"]
 
-
-while True:
+kaihi1=False
+while kaihi1==False:
     if tools[2]==True:
         try:
-            while True:
+            while kaihi1==False:
+                #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
                 camera_log=[4,1,None,False,None,None]
                 try:
-                    frame=camera.get_frame()
-                    judge=find_parachute(frame,lower_yellow,upper_yellow,center,0):
-                    if judge==True:
-                        motors.backward()
-                        sleep(10)
+                    frame=camera.get_frame()        
+                    sleep(10)
                 except RuntimeError:
                     tools[2]=False
                     raise RuntimeError
@@ -248,13 +251,46 @@ while True:
                         camera_log[-1]=camera.error_log
                         if 5 in camera.error_counts:
                             camera_log[-2]="camera"
-                
-        except RuntimeError:
-            continue
-            
 
-                        
-
+                judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
+                motor_log=[4,9,None,[],None]
+                if judge==True:
+                    try:
+                        #左から、フェーズ、フェーズのフェーズ、時間、故障した部品、エラー文
+                        motors.backward()
+                        sleep(10)
+                        kaihi1=True
+                    except RuntimeError:
+                        tools[3]=False
+                        raise RuntimeError
+                    finally:
+                        if len(motors.right_error_counts) or len(motors.left_error_counts):
+                            motor_log[2]=time()
+                            motor_log[-1]=motors.error_log
+                            if 5 in motors.right_error_counts:
+                                motor_log[-2].append("right motor")
+                            if 5 in motors.left_error_counts:
+                                motor_log[-2].append("left motor")
+                            xbee.xbee_send(motor_log)
+                else:
+                    try:
+                        motors.turn_left()
+                        sleep(motor_sttime)
+                        motors.stop()
+                    except RuntimeError:
+                        tools[3]=False
+                        raise RuntimeError
+                    finally:
+                        if len(motors.right_error_counts) or len(motors.left_error_counts):
+                            motor_log[2]=time()
+                            motor_log[-1]=motors.error_log
+                            if 5 in motors.right_error_counts:
+                                motor_log[-2].append("right motor")
+                            if 5 in motors.left_error_counts:
+                                motor_log[-2].append("left motor")
+                            xbee.xbee_send(motor_log)
+                                
+        break
                     
 
     
