@@ -236,6 +236,24 @@ def mget_frame():
             camera_log[-1]=camera.error_log
             if 5 in camera.error_counts:
                 camera_log[-2]="camera"
+                xbee.xbee_send(camera.error_log)
+
+def mget_coordinate_xy():
+    try:
+        lat,lon=gps.get_coordinate_xy()
+        return lat,lon
+    except RuntimeError:
+        tools[1]=False
+        raise RuntimeError
+        
+    finally:
+        if len(gps.error_counts)>0:
+            gps_log[-1]=gps.error_log
+            if 5 in gps.error_counts:
+                gps_log[-2]="gps"
+                xbee.xbee_send()
+                
+
 
 start_time=time()
 
@@ -348,12 +366,42 @@ if tools[2]==True:
         while True:
             #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
             camera_log=[4,1,None,False,None,None]
+            camera_log[2]=time()
             frame=mget_frame()
             judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
+            camera[3]=judge
             #左からフェーズ、時間、故障した部品、エラー文
             motor_log=[10,None,[],None]
             if judge==True:
-                mforward()
+                notice_log=[9,"パラシュートを検知したため、機体後進させ、GPSの位置情報から向いている向きを取得します。"]
+                xbee.xbee_send(notice_log)
+                notice_log=[9,"現在地の緯度経度を取得"]
+                xbee.xbee_send(notice_log)
+
+                #左から、フェーズ、フェーズのフェーズ、時間、緯度、経度、故障した部品、エラー文
+                gps_log=[4,2,None,None,None,None,None]
+                gps_log[2]=time()
+                prelat,prelot=mget_coordinate_xy()
+                gps_log[3]=prelat
+                gps_log[4]=prelot
+                xbee.xbee_send(gps_log)
+
+                notice_log=[9,"右モーターの逆転、左モーターの正転を１０秒間続けて機体を後進させる。"]
+                mbackward()
+                #１０は割とマジで適当
+                sleep(10)
+                mstop()
+                
+                notice_log=[9,"現在地の緯度経度を取得"]
+                xbee.xbee_send(notice_log)
+                
+                
+
+
+
+                
+
+                mbackward()
                 sleep(10)
                 break
             else:
@@ -364,14 +412,21 @@ if tools[2]==True:
                     xbee.xbee_send(notice_log)
                     #めんどくさいのでエラーを発生させて個々の部分の処理を終了する。これは、決して問題が起きたとかではなく、ただ単にめんどくさいのでエラーを吐くだけである。
                     raise RuntimeError
+                wait_time=(view_angle/2)/208
+                notice_log=[9,f"パラシュートが見つからないため、右モータの逆転、左モーターの逆転を{wait_time}秒間行って再び検出を行います。"]
                 mturn_right()
+                sleep(208)
+                mstop()
+                
             
         
+        notice
         frame=mget_frame()        
         sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,1)
             #左からフェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         if judge==False:
+            notice_log=[9,"パラシュートが見つからないため、右モーターを正転、左モーターを正転して、機体を反時計回りに回転させます。"]
             sign=-1
             #画角が１８０度以内である前提
             wait_time=(90-(view_angle/2))/turn_speed
@@ -381,6 +436,7 @@ if tools[2]==True:
             frame=mget_frame()
             judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
             if judge==False:
+                notice_log=[9,""]
                 sign=1
                 wait_time=2*wait_time
                 mturn_right()
@@ -424,12 +480,6 @@ if tools[2]==False:
     xbee.xbee_send(notice_log)
 
 
-    
-
-
-    
-
-#~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~ここでパラシュートの回避 4
 
 
 kazu=1
