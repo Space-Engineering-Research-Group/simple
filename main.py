@@ -116,6 +116,9 @@ finally:
         ins_error_tool.append("motors")
         ins_error.append(motors.error_log)
 
+
+
+
 try:
     xbee=Xbee()
 except RuntimeError:
@@ -127,7 +130,112 @@ finally:
 
 #ここで、ログを送信する
 ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error_tool,ins_error]
-xbee.xbee_send(ins_log)
+xbee.xbee_send(ins_log)                                          
+
+def mforward():
+    motor_log=[10,None,[],None]
+    try:
+        motors.forward()
+    except RuntimeError:
+        tools[3]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(motors.right_error_counts) or len(motors.left_error_counts):
+            motor_log[2]=time()
+            motor_log[-1]=motors.error_log
+            if 5 in motors.right_error_counts:
+                motor_log[-2].append("right motor")
+            if 5 in motors.left_error_counts:
+                motor_log[-2].append("left motor")
+            xbee.xbee_send(motor_log)
+
+def mbackward():
+    motor_log=[10,None,[],None]
+    try:
+        motors.backward()
+    except RuntimeError:
+        tools[3]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(motors.right_error_counts) or len(motors.left_error_counts):
+            motor_log[2]=time()
+            motor_log[-1]=motors.error_log
+            if 5 in motors.right_error_counts:
+                motor_log[-2].append("right motor")
+            if 5 in motors.left_error_counts:
+                motor_log[-2].append("left motor")
+            xbee.xbee_send(motor_log)
+
+def mturn_left():
+    motor_log=[10,None,[],None]
+    try:
+        motors.turn_left()
+    except RuntimeError:
+        tools[3]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(motors.right_error_counts) or len(motors.left_error_counts):
+            motor_log[2]=time()
+            motor_log[-1]=motors.error_log
+            if 5 in motors.right_error_counts:
+                motor_log[-2].append("right motor")
+            if 5 in motors.left_error_counts:
+                motor_log[-2].append("left motor")
+            xbee.xbee_send(motor_log)
+
+
+def mturn_right():
+    motor_log=[10,None,[],None]
+    try:
+        motors.turn_right()
+    except RuntimeError:
+        tools[3]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(motors.right_error_counts) or len(motors.left_error_counts):
+            motor_log[2]=time()
+            motor_log[-1]=motors.error_log
+            if 5 in motors.right_error_counts:
+                motor_log[-2].append("right motor")
+            if 5 in motors.left_error_counts:
+                motor_log[-2].append("left motor")
+            xbee.xbee_send(motor_log)
+
+def mstop():
+    motor_log=[10,None,[],None]
+    try:
+        motors.stop()
+    except RuntimeError:
+        tools[3]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(motors.right_error_counts) or len(motors.left_error_counts):
+            motor_log[2]=time()
+            motor_log[-1]=motors.error_log
+            if 5 in motors.right_error_counts:
+                motor_log[-2].append("right motor")
+            if 5 in motors.left_error_counts:
+                motor_log[-2].append("left motor")
+            xbee.xbee_send(motor_log)
+
+
+def mget_frame():
+    try:
+        frame=camera.get_frame()
+        return frame       
+    except RuntimeError:
+        tools[2]=False
+        raise RuntimeError
+    finally:
+        if len(camera.error_counts):
+            camera_log[-1]=camera.error_log
+            if 5 in camera.error_counts:
+                camera_log[-2]="camera"
 
 start_time=time()
 
@@ -232,66 +340,89 @@ except RuntimeError:
     notice_log=[9,"サーボモーターが使えなくなったため、コードを停止します。"]
 
 notice_log=[9,"パラシュートの切り離しを行いました。"]
+xbee.xbee_send(notice_log)
 
-kaihi1=False
-while kaihi1==False:
-    if tools[2]==True:
-        try:
-            while kaihi1==False:
-                #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
-                camera_log=[4,1,None,False,None,None]
-                try:
-                    frame=camera.get_frame()        
-                    sleep(10)
-                except RuntimeError:
-                    tools[2]=False
+if tools[2]==True:
+    p=0
+    try:
+        while True:
+            #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
+            camera_log=[4,1,None,False,None,None]
+            frame=mget_frame()
+            judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
+            #左からフェーズ、時間、故障した部品、エラー文
+            motor_log=[10,None,[],None]
+            if judge==True:
+                mforward()
+                sleep(10)
+                break
+            else:
+                p+=1
+
+                if p==int(360/(view_angle/2)):
+                    notice_log=[9,"パラシュートが認識されないため、回避せず、次の動作に移ります"]
+                    xbee.xbee_send(notice_log)
+                    #めんどくさいのでエラーを発生させて個々の部分の処理を終了する。これは、決して問題が起きたとかではなく、ただ単にめんどくさいのでエラーを吐くだけである。
                     raise RuntimeError
-                finally:
-                    if len(camera.error_counts):
-                        camera_log[-1]=camera.error_log
-                        if 5 in camera.error_counts:
-                            camera_log[-2]="camera"
-
+                mturn_right()
+            
+        
+        frame=mget_frame()        
+        sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,1)
+            #左からフェーズ、時間、故障した部品、エラー文
+        motor_log=[10,None,[],None]
+        if judge==False:
+            sign=-1
+            #画角が１８０度以内である前提
+            wait_time=(90-(view_angle/2))/turn_speed
+            mturn_left()
+            sleep(wait_time)
+            mstop()
+            frame=mget_frame()
+            judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
+            if judge==False:
+                sign=1
+                wait_time=2*wait_time
+                mturn_right()
+                sleep(wait_time)
+                mstop()
+                frame=mget_frame()
                 judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
-                motor_log=[4,9,None,[],None]
-                if judge==True:
-                    try:
-                        #左から、フェーズ、フェーズのフェーズ、時間、故障した部品、エラー文
-                        motors.backward()
-                        sleep(10)
-                        kaihi1=True
-                    except RuntimeError:
-                        tools[3]=False
-                        raise RuntimeError
-                    finally:
-                        if len(motors.right_error_counts) or len(motors.left_error_counts):
-                            motor_log[2]=time()
-                            motor_log[-1]=motors.error_log
-                            if 5 in motors.right_error_counts:
-                                motor_log[-2].append("right motor")
-                            if 5 in motors.left_error_counts:
-                                motor_log[-2].append("left motor")
-                            xbee.xbee_send(motor_log)
-                else:
-                    try:
-                        motors.turn_left()
-                        sleep(motor_sttime)
-                        motors.stop()
-                    except RuntimeError:
-                        tools[3]=False
-                        raise RuntimeError
-                    finally:
-                        if len(motors.right_error_counts) or len(motors.left_error_counts):
-                            motor_log[2]=time()
-                            motor_log[-1]=motors.error_log
-                            if 5 in motors.right_error_counts:
-                                motor_log[-2].append("right motor")
-                            if 5 in motors.left_error_counts:
-                                motor_log[-2].append("left motor")
-                            xbee.xbee_send(motor_log)
-                                
-        break
-                    
+                wait_time=wait_time/2
+                mturn_left()
+                sleep(wait_time)
+                mstop()
+        
+        if judge==True:
+            wait_time=90/turn_speed
+            if sign==1:
+                mturn_left()
+                sleep(wait_time)
+                mturn_right()
+                sleep(wait_time)
+                mstop()
+            else:
+                mturn_right()
+                sleep(wait_time)
+                mturn_left()
+                sleep(wait_time)
+                mstop()
+
+        
+        mforward()
+        #適当
+        sleep(10)
+
+
+
+
+    except RuntimeError:
+        pass   
+
+if tools[2]==False:
+    notice_log=[9,"カメラが使えないので、パラシュートの回避を実行しません"]
+    xbee.xbee_send(notice_log)
+
 
     
 
