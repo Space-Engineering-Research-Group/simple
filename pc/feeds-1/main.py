@@ -10,6 +10,5 @@ def feeds1(sheet,data):
     for index, value in enumerate(data, start=1):
         if data[2] == None:
             sheet.range(5,4).value = "cds"
-            sheet.range("F4").value = "cdsが壊れている"
 
-        sheet.range(4, index).value = str(value)
+        sheet.range(5, index).value = str(value)
