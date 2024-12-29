@@ -1,5 +1,4 @@
 import xlwings as xw
-import os
 
 def feeds1(sheet,data):
     sheet.range("A1").value = "フェーズ"
