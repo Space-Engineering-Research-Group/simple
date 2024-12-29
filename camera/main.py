@@ -16,7 +16,7 @@ class ICamera(ABC):
         pass
 
 class Camera(ICamera):
-    def __init__(self, width, height, FPS):
+    def __init__(self, width, height, fps):
         self.error_counts = []
         self.error_messages = []
         self.error_log = "camera:Error"
@@ -26,8 +26,8 @@ class Camera(ICamera):
                 self.capture=Picamera2()
                 # 解像度とFPSを設定
                 config = self.capture.create_preview_configuration(
-                    main={"size": (1280, 720)},  # 解像度
-                    controls={"FrameRate": 30}  # FPS
+                    main={"size": (width, height)},  # 解像度
+                    controls={"FrameRate": fps}  # FPS
                 )
                 self.capture.configure(config)
                 self.capture.start()
