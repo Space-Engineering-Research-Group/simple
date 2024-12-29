@@ -490,16 +490,12 @@ try:
             if judge==True:
                 wait_time=90/turn_speed
                 if sign==1:
-                    mturn_left()
-                    sleep(wait_time)
-                    mturn_right()
-                    sleep(wait_time)
+                    mturn_left(wait_time)
+                    mturn_right(wait_time)
                     mstop()
                 else:
-                    mturn_right()
-                    sleep(wait_time)
-                    mturn_left()
-                    sleep(wait_time)
+                    mturn_right(wait_time)
+                    mturn_left(wait_time)
                     mstop()
 
             
