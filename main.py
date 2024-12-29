@@ -398,7 +398,7 @@ try:
                 camera_log[2]=time()
                 frame=mget_frame()
                 judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
-                camera[3]=judge
+                camera_log[3]=judge
                 #左からフェーズ、時間、故障した部品、エラー文
                 motor_log=[10,None,[],None]
                 if judge==True:
@@ -892,4 +892,6 @@ finally:
     gps.run_gps()
     camera.release()
     gps.delete()
+
+
 
