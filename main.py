@@ -69,13 +69,13 @@ try:
 
     width=640
     height=480
-    FPS=10
+    fps=10
     center=width/2
     frame_area=width*height
     #カメラの画角（仮定）
     view_angle=70
     try:
-        camera=Camera(width,height,FPS)
+        camera=Camera(width,height,fps)
     except RuntimeError:
         tools[2]=False
     finally:
