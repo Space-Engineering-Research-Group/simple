@@ -280,31 +280,34 @@ try:
                     xbee.xbee_send()
 
     def m5get_coodinate_xy():
-        #左からフェーズ、フェーズの分割番号、時間、緯度、経度,故障した部品、エラー文
-        gps_log = [5,1,None,None,None,None,None]
+        #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
+        gps_log = [5,1,None,None,None,None,None,None]
         try:
             gps_log[2]=time()
             lat,lon = gps.get_coordinate_xy()
             gps_log[3]=lat
             gps_log[4]=lon
+            distance = get_distance(goal_lat, goal_lon, lat, lon)
+            gps_log[5]=distance
             return lat,lon
         except RuntimeError:
             tools[1]=False
             raise RuntimeError
         finally:
             if len(gps.error_counts):
-                gps_log[6]=gps.error_log
+                gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
-                    gps_log[5]="gps"
+                    gps_log[6]="gps"
             xbee.xbee_send(gps_log)  
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
-        #左からフェーズ、フェーズの分割番号、時間、進行方向
-        gps_log = [5,1,None,None]
+        #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
+        gps_log = [5,1,None,None,None,None]
+        gps_log[2]=time()
         move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
         get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
-        gps_log[2] = move_direction
-        gps_log[3] = get_rotation_angle 
+        gps_log[3] = move_direction
+        gps_log[4] = get_rotation_angle 
         xbee.xbee_send(gps_log)   
         return get_rotation_angle              
 
@@ -564,7 +567,6 @@ try:
 
         if plan2 in ["A","B"]and gps_seikou==False:
             try:
-                #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
                 #list上の関数にある
                 pre_lat,pre_lon = m5get_coodinate_xy()
 
@@ -585,7 +587,6 @@ try:
 
                #loop started
                 while True:
-                    #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
                     now_lat,now_lon = m5get_coodinate_xy()   
             
                     distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)            
