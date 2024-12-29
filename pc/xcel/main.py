@@ -3,7 +3,7 @@ import os
 
 file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
 
-def open_workbook():
+def open_workbook(file_path):
     app = xw.App(visible=True)
     try:
         if not os.path.exists(file_path):
@@ -16,7 +16,7 @@ def open_workbook():
         raise e
 
 
-def delete():
+def delete(workbook,app):
     if workbook in locals() and workbook is not None:
         workbook.save()
     if workbook in locals() and workbook is not None:
