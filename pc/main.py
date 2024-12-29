@@ -16,6 +16,7 @@ class Xcel():
     def __init__(self):
         self.app = None
         self.workbook = None
+        self.sheet = None
     
     def open_workbook(self,file_path):
         self.app = xw.App(visible=True)
