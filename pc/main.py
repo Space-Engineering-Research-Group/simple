@@ -102,15 +102,12 @@ def feeds_1(sheet,data,num):
         sheet.range(num,4).value = "故障した部品"
         sheet.range(num,5).value = "error"
 
-    result = is_row_empty(sheet, num+1)
-    if result == True: #空であるか確認
+    for index, value in enumerate(data, start=1):
+        sheet.range(num+1, index).value = str(value)
+        if data[2] == None:
+            sheet.range(num+1,4).value = "cds"
 
-        for index, value in enumerate(data, start=1):
-            sheet.range(num+1, index).value = str(value)
-            if data[2] == None:
-                sheet.range(num+1,4).value = "cds"
-
-        num += 1
+    num += 1
     return num                             
 
 
@@ -146,7 +143,7 @@ def feeds1(sheet,data,num):
 
         sheet.range(num + 1, index).value = str(value)    
 
-    F_P = ','.join(data)
+    F_P = ','.join(Faulty_parts)
     sheet.range(num+1, 9).value = F_P
     return num + 1
 
@@ -168,20 +165,81 @@ def feeds2(sheet,data,num):
         sheet.range(num,6).value = "使えない部品"
         sheet.range(num,7).value = "error"
 
-    result = is_row_empty(sheet, num+1)
-    if result == True: #空であるか確認
 
-        for index, value in enumerate(data, start=1):
-            sheet.range(num+1, index).value = str(value)
+    for index, value in enumerate(data, start=1):
+        sheet.range(num+1, index).value = str(value)
 
-            if data[3] == None:
-                sheet.range(num+1, 6).value = "cds"
-        num += 1        
+        if data[3] == None:
+            sheet.range(num+1, 6).value = "cds"
+    num += 1        
     return num            
 
 def feeds3(sheet,data,num):
     #以下feeds、最初はわからん
-    
+    pass
+
+def feeds4(sheet,data,num):
+    #フェーズ、時間、パラシュート検知,時間、緯度、経度,コーンに対する角度、故障した部品、エラー文
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "パラシュート検知"
+        sheet.range(num,4).value = "時間"
+        sheet.range(num,5).value = "緯度"
+        sheet.range(num,6).value = "経度"
+        sheet.range(num,7).value = "コーンに対する角度"
+        sheet.range(num,8).value = "故障した部品"
+        sheet.range(num,9).value = "error"
+
+    Faulty_parts = []
+    error_list = []
+    #フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
+    if data[1] == 1:
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,3).value = str(data[3])
+        if data[4] is not None and data[5] is not None:
+            Faulty_parts.append(data[4])
+            error_list.append(data[5])
+
+    #フェーズ、フェーズのフェーズ、時間、緯度、経度、故障した部品、エラー文
+    if data[1] == 2:
+        sheet.range(num+1,4).value = str(data[2])
+        sheet.range(num+1,5).value = str(data[3])
+        sheet.range(num+1,6).value = str(data[4])
+        if data[5] is not None and data[6] is not None:
+            Faulty_parts.append(data[5])
+            error_list.append(data[6])
+
+    #フェーズ、フェーズの中のフェーズ、コーンに対する角度、故障した部品、エラー文
+    if data[1] == 3:
+        sheet.range(num+1,7).value = str(data[2])
+        if data[3] is not None and data[4] is not None:
+            Faulty_parts.append(data[3])
+            error_list.append(data[4])
+
+    F_P = ','.join(Faulty_parts)  
+    e_l = ','.join(error_list) 
+    sheet.range(num+1,8).value = F_P
+    sheet.range(num+1,9).value = e_l
+    return num +1
+
+def feeds5(sheet,data,num):
+
+
+
+
+
+
+
+
+
+
 
 
 
