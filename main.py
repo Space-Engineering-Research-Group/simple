@@ -133,11 +133,15 @@ ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_erro
 xbee.xbee_send(ins_log)                                          
 
 def mforward(wait_time):
-    nlog("右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
+    if wait_time>0:
+        nlog("右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
+    else:
+        nlog("右モーターの正転、左モーターの逆転をして、機体を前進させます。")
     motor_log=[10,None,[],None]
     try:
         motors.forward()
-        sleep(wait_time)
+        if wait_time>0:
+            sleep(wait_time)
     except RuntimeError:
         tools[3]=False
         import sys
@@ -153,10 +157,14 @@ def mforward(wait_time):
             xbee.xbee_send(motor_log)
 
 def mbackward(wait_time):
-    nlog(f"右モーターの逆転、左モーターの正転を{wait_time}秒間続けて、機体を後進させます。")
+    if wait_time>0:
+        nlog(f"右モーターの逆転、左モーターの正転を{wait_time}秒間続けて、機体を後進させます。")
+    else:
+        nlog("右モーターの逆転、左モーターの正転をして、機体を更新させます。")
     motor_log=[10,None,[],None]
     try:
-        motors.backward()
+        if wait_time>0:
+            motors.backward()
         sleep(wait_time)
     except RuntimeError:
         tools[3]=False
@@ -173,11 +181,15 @@ def mbackward(wait_time):
             xbee.xbee_send(motor_log)
 
 def mturn_left(wait_time):
-    nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
+    if wait_time>0:
+        nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
+    else:
+        nlog("右モーターの正転、左モーターの逆転をして、機体を反時計回りに回転させます。")
     motor_log=[10,None,[],None]
     try:
         motors.turn_left()
-        sleep(wait_time)
+        if wait_time>0:
+            sleep(wait_time)
     except RuntimeError:
         tools[3]=False
         import sys
@@ -194,10 +206,15 @@ def mturn_left(wait_time):
 
 
 def mturn_right(wait_time):
-    nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
+    if wait_time>0:
+        nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
+    else:
+        nlog(f"右モーターの逆転、左モーターの逆転を行います。")
     motor_log=[10,None,[],None]
     try:
         motors.turn_right()
+        if wait_time>0:
+            sleep(wait_time)
     except RuntimeError:
         tools[3]=False
         import sys
@@ -212,7 +229,7 @@ def mturn_right(wait_time):
                 motor_log[-2].append("left motor")
             xbee.xbee_send(motor_log)
 
-def mstop(wait_time):
+def mstop():
     motor_log=[10,None,[],None]
     try:
         motors.stop()
@@ -441,7 +458,7 @@ if tools[2]==True:
                 
             
         
-        notice=
+        nlog("パラシュートの検出を行います。")
         frame=mget_frame()        
         sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,1)
             #左からフェーズ、時間、故障した部品、エラー文
@@ -737,99 +754,119 @@ while True:
 
         #ここに、回転を行うコードを書く
 
-
-    try:
-        p=0
-        while True:
-            if kazu ==1:
-                motors.turn_right()
-                while True:
-                    frame=camera.get_frame()
-                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-                    if contour:
-                        judge=judge_cone(contour,frame_area)
-                        if judge == True:
+    if plan3 in ["A","C"]
+        try:
+            while True:
+                if kazu ==1:
+                    p=0
+                    q=0
+                    while True:
+                        nlog("コーンの検出を行う。")
+                        #左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
+                        camera_log=[6,1,None,False,None,None]
+                        camera_log[2]=time()
+                        frame=mget_frame()
+                        judge=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                        camera[3]=judge
+                        xbee.xbee_send(camera_log)
+                        if judge==True:
                             kazu=2
                             break
-
-                    #ここの数字は、カメラの画角、モーターの回転するのにかかる秒数、後はカメラのFPS?をかんがみてきめる　　
-                    if i==23:
-                        motors.stop()
-                        #xbeeで回転してもコーンが見つかりません見たいなのを送るようにする。
-                        motors.forward()
-                        sleep(4)
-                                 
-                        #ここの数字は上をきじゅんにして、何秒間に一回撮影する必要があるのかとかを考える。
-                    sleep(0.1)
-
-            elif kazu == 2:
-                g=True #エラーって感じのところはgを使って抜け出すようにする。
-                
-                while True:
-                    sign=-1
-                    while sign!=0:
-                        frame=camera.get_frame()
-                        contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-                        if contour == None:
-                            g=False
-                            break
-                        judge=judge_cone(contour,frame_area)
-                        if judge == False:
-                            g=False
-                            break
-                        sign=get_distance(contour,center)
-                        if sign==0:
-                            break
-                        #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
-                        elif sign==1:
-                            motors.turn_left()
-                            #ここの秒数も適当
-                            sleep(2)
-                        else :
-                            motors.turn_right()
-                            #個々の秒数も適当
-                            sleep(2)
+                        else:
+                            p+=1
+                            if p==int(360/(view_angle/2)):
+                                nlog("一周してもコーンが認識されないため、一度前進して動いてから、もう一度取得を始めます。")
+                                mforward(5)
+                                mstop()
+                                p=0
+                                q+=1
+                                if q==3:
+                                    nlog("３回動いてもコーンが検出されなかったので、不可能と判断して停止します。")
+                                    import sys
+                                    sys.exit(1)
+                    
+                            nlog(f"パラシュートが見つからないため、機体を時計回りに回転させたのち、再び検出を行います。")
+                            wait_time=(view_angle/2)/turn_speed
+                            mturn_right(wait_time)
+                            mstop()
                         
-                    if g == False:
-                        kazu=1
-                        break
 
-                    motors.forward()  
-                    start_time=time()
-                    while time()-start_time<5:
-                        frame=camera.get_frame()
-                        contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
-                        if contour == None:
-                            g=False
-                            break
-                        judge=judge_cone(contour,frame_area)
-                        if judge == False:
-                            g=False
+                elif kazu == 2:
+                    g=True #エラーって感じのところはgを使って抜け出すようにする。
+                    
+                    
+                    while True:
+                        nlog("コーンが画面の中心にくるまでで回転しながら画像を取得します。")
+                        sign=-1
+                        while sign!=0:
+                            frame=mget_frame()
+                            contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                            if contour == None:
+                                nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
+                                g=False
+                                break
+                            judge=judge_cone(contour,frame_area)
+                            if judge == False:
+                                nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
+                                g=False
+                                break
+                            sign=get_distance(contour,center)
+                            if sign==0:
+                                nlog("コーンが画面の中心にあるため、接近に切り替えます。")
+                                mstop()
+                                break
+                            #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
+                            elif sign==1:
+                                nlog("コーンが中心の右側にあるため、回転を続けます。")
+                                mturn_right(-1)
+                                
+                            else :
+                                nlog("コーンが中心の左側にあるため、回転を続けます。")
+                                mturn_left(-1)
+                            
+                        if g == False:
+                            kazu=1
                             break
 
-                        result=to_stop(contour,frame_area)
-                        if result:
-                            break
-                        #個々の秒数は適当
-                        sleep(1)
-                    if g == False:
-                        kazu=1
-                        break
-                    if result ==True:
-                        kazu=3
-                        break
-            else:
-                #ここで終了したことを送る。
-                break
+                        motors.forward()  
+                        start_time=time()
+                        while time()-start_time<5:
+                            frame=mget_frame()
+                            contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
+                            if contour == None:
+                                nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
+                                g=False
+                                break
+                            judge=judge_cone(contour,frame_area)
+                            if judge == False:
+                                nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
+                                g=False
+                                break
 
-    except RuntimeError as e:
-        #xbeeで送信する。
-        import sys
-        sys.exit(1)
-    except Exception as e:
-        #xbeeで送信する。
-        import sys
-        sys.exit(1)
+                            result=to_stop(contour,frame_area)
+                            if result:
+                                nlog("コーンに近づけたため、ゴール判定")
+                                break
+                            #個々の秒数は適当
+                            sleep(0.5)
+                        if g == False:
+                            kazu=1
+                            break
+                        if result ==True:
+                            kazu=3
+                            break
+                else:
+                    #ここで終了したことを送る。
+                    break
+
+        except RuntimeError as e:
+            #xbeeで送信する。
+            import sys
+            sys.exit(1)
+        except Exception as e:
+            #xbeeで送信する。
+            import sys
+            sys.exit(1)
 #エラー起きてるけど、finallyとか使うのは確実なのでとりあえずつけとく
 finally:        
     motors.stop()
