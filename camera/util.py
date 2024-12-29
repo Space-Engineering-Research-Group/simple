@@ -40,7 +40,7 @@ def find_parachute(frame,lower_yellow,upper_yellow,center,phase=1):
         # 最大面積のコンターを返す
         max_contour = max(contours, key=cv2.contourArea)
         judge=judge_parachute(max_contour)
-        if phase=1:
+        if phase==1:
             if judge==False:
                 return [None,None]
             M = cv2.moments(max_contour)
