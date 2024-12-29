@@ -526,6 +526,9 @@ try:
                 plan2="C"
             else:
                 plan2="D"
+                nlog("カメラとGPS両方使えないため、プログラムを停止します。")
+                import sys
+                sys.exit(1)
         else:
             if tools[2] is False:
                 plan2="B"
