@@ -81,32 +81,51 @@ class XBeeReceiver:
             self.device.close()
             print("XBee device closed.")
 
+def is_row_empty(sheet, row_number): 
+    row_values = sheet.range(f"{row_number}:{row_number}").value
+    if isinstance(row_values, list):
+        return all(value is None for value in row_values)  # すべての値が None なら空行
+    return row_values is None
+
+def feeds_1(sheet,data,num):
+    #最初num = 4
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "明るさ"
+        sheet.range(num,4).value = "故障した部品"
+        sheet.range(num,5).value = "error"
+
+    result = is_row_empty(sheet, num+1)
+    if result == True: #空であるか確認
+
+        for index, value in enumerate(data, start=1):
+            sheet.range(num+1, index).value = str(value)
+            if data[2] == None:
+                sheet.range(num+1,4).value = "cds"
+
+        num += 1
+    return num                             
 
 
-def feeds_1(sheet,data):
-    sheet.range("A4").value = "フェーズ"
-    sheet.range("B4").value = "時間"
-    sheet.range("C4").value = "明るさ"
-    sheet.range("D4").value = "故障した部品"
-    sheet.range("E4").value = "error"
-
-    for index, value in enumerate(data, start=1):
-        if data[2] == None:
-            sheet.range(5,4).value = "cds"
-
-        sheet.range(5, index).value = str(value)
-
-def feeds1(sheet,data):
-    sheet.range("A1").value = "フェーズ"
-    sheet.range("B1").value = "時間"
-    sheet.range("C1").value = "cds"
-    sheet.range("D1").value = "GPS"
-    sheet.range("E1").value = "camera"
-    sheet.range("F1").value = "motor"
-    sheet.range("G1").value = "servo motor"
-    sheet.range("H1").value = "xbee"
-    sheet.range("I1").value = "故障した部品"
-    sheet.range("J1").value = "error"
+def feeds1(sheet,data,num):
+    #最初num = 1
+    sheet.range(num,1).value = "フェーズ"
+    sheet.range(num,2).value = "時間"
+    sheet.range(num,3).value = "cds"
+    sheet.range(num,4).value = "GPS"
+    sheet.range(num,5).value = "camera"
+    sheet.range(num,6).value = "motor"
+    sheet.range(num,7).value = "servo motor"
+    sheet.range(num,8).value = "xbee"
+    sheet.range(num,9).value = "故障した部品"
+    sheet.range(num,10).value = "error"
 
     Faulty_parts = []
     for index, value in enumerate(data, start=1):
@@ -125,42 +144,45 @@ def feeds1(sheet,data):
             if a == 7:
                  Faulty_parts.append("xbee")                            
 
-        sheet.range(2, index).value = str(value)
+        sheet.range(num + 1, index).value = str(value)    
 
     F_P = ','.join(data)
-    sheet.range(2, 9).value = F_P
+    sheet.range(num+1, 9).value = F_P
+    return num + 1
 
 
-
-
-def is_row_empty(sheet, row_number): 
-    row_values = sheet.range(f"{row_number}:{row_number}").value
-    if isinstance(row_values, list):
-        return all(value is None for value in row_values)  # すべての値が None なら空行
-    return row_values is None
-
-
-def feeds2(sheet,data):
-    result = is_row_empty(sheet,7)
+def feeds2(sheet,data,num):
+    #最初num = 7 
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
     if result == True:
-        sheet.range("A7").value = "フェーズ"
-        sheet.range("B7").value = "プラン"
-        sheet.range("C7").value = "時間"
-        sheet.range("D7").value = "明るさ"
-        sheet.range("E7").value = "落下判断"
-        sheet.range("F7").value = "使えない部品"
-        sheet.range("G7").value = "error"
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "プラン"
+        sheet.range(num,3).value = "時間"
+        sheet.range(num,4).value = "明るさ"
+        sheet.range(num,5).value = "落下判断"
+        sheet.range(num,6).value = "使えない部品"
+        sheet.range(num,7).value = "error"
 
-    for i in range(8,100):#100は適当,意味はなし
-        result = is_row_empty(sheet, i)
-        if result == True: #空であるか確認
+    result = is_row_empty(sheet, num+1)
+    if result == True: #空であるか確認
 
-            for index, value in enumerate(data, start=1):
-                sheet.range(i, index).value = str(value)
+        for index, value in enumerate(data, start=1):
+            sheet.range(num+1, index).value = str(value)
 
-                if data[3] == None:
-                    sheet.range(i, 6).value = "cds"
-                    sheet.range(i+1, 1).value = "cdsが壊れたので、5分間処理を停止したのち、GPSで高度を取得する"
-                else:
-                    sheet.range(i+1, 1).value = "明るさが一定値を超えたためGPSを用いた着地判定を始める"
+            if data[3] == None:
+                sheet.range(num+1, 6).value = "cds"
+        num += 1        
+    return num            
+
+def feeds3(sheet,data,num):
+    #以下feeds、最初はわからん
+    
+
+
+
 
