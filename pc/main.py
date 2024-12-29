@@ -197,6 +197,8 @@ def feeds4(sheet,data,num):
         sheet.range(num,8).value = "故障した部品"
         sheet.range(num,9).value = "error"
 
+    sheet.range(num+1,1).value = "4"
+
     Faulty_parts = []
     error_list = []
     #フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
@@ -230,6 +232,120 @@ def feeds4(sheet,data,num):
     return num +1
 
 def feeds5(sheet,data,num):
+    #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "緯度"
+        sheet.range(num,4).value = "経度"
+        sheet.range(num,5).value = "ゴールまでの距離"
+        sheet.range(num,6).value = "時間"
+        sheet.range(num,7).value = "進行方向"
+        sheet.range(num,8).value = "回転角度"
+        sheet.range(num,9).value = "故障した部品"
+        sheet.range(num,10).value = "エラー文"
+
+    sheet.range(num+1,1).value = "5"
+    Faulty_parts = []
+    error_list = []
+    #フェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
+    if data[1] == 1:
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,3).value = str(data[3])
+        sheet.range(num+1,4).value = str(data[4])
+        sheet.range(num+1,5).value = str(data[5])
+        if data[6] is not None and data[7] is not None:
+            Faulty_parts.append(data[6])
+            error_list.append(data[7])
+
+     #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
+    if data[2] == 2:
+        sheet.range(num,6).value = str(data[2])
+        sheet.range(num,7).value = str(data[3])
+        sheet.range(num,8).value = str(data[4])
+
+    else: #最初の緯度経度だけ特別
+        for index, value in enumerate(data, start=1):
+            sheet.range(num+1, index).value = str(value)
+
+    F_P = ','.join(Faulty_parts)  
+    e_l = ','.join(error_list) 
+    sheet.range(num+1,9).value = F_P
+    sheet.range(num+1,10).value = e_l
+    return num +1        
+
+def feeds6(sheet,data,num):
+    #フェーズ、時間、コーン検知、コーンの位置判定、ゴール判定、故障した部品、エラー文
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "コーン検知"
+        sheet.range(num,4).value = "コーンの位置判定"
+        sheet.range(num,5).value = "ゴール判定"
+        sheet.range(num,6).value = "故障した部品"
+        sheet.range(num,7).value = "エラー文"
+
+    sheet.range(num+1,1).value = "6"
+    Faulty_parts = []
+    error_list = []    
+
+    #フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
+    if data[1] == 1:
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,3).value = str(data[3])
+        if data[4] is not None and data[5] is not None:
+            Faulty_parts.append(data[4])
+            error_list.append(data[5])
+
+    #フェーズ、フェーズ中のフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
+    if data[1] == 2:
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,3).value = str(data[3])
+        sheet.range(num+1,4).value = str(data[4])
+        if data[5] is not None and data[6] is not None:
+            Faulty_parts.append(data[5])
+            error_list.append(data[6])
+
+    #フェーズ、フェーズの中のフェーズ、時間、コーン検知、ゴール判定、故障した部品、エラー文
+    if data[1] == 3:
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,3).value = str(data[3])
+        sheet.range(num+1,5).value = str(data[4])
+        if data[5] is not None and data[6] is not None:
+            Faulty_parts.append(data[5])
+            error_list.append(data[6])
+
+    F_P = ','.join(Faulty_parts)  
+    e_l = ','.join(error_list) 
+    sheet.range(num+1,6).value = F_P
+    sheet.range(num+1,7).value = e_l
+    return num +1         
+
+def feeds8(sheet,data,num):
+    #フェーズ、時間、故障した部品、エラー文  
+    sheet.range(num,1).value = "フェーズ"
+    sheet.range(num,2).value = "時間"
+    sheet.range(num,6).value = "故障した部品"
+    sheet.range(num,7).value = "エラー文"
+    
+
+
+
+
+
+
 
 
 
