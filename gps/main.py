@@ -4,7 +4,6 @@ import micropyGPS
 from time import sleep
 import time
 
-
 class IGps(abc.ABC):
     @abc.abstractmethod
     def update_gps(self):
@@ -67,8 +66,11 @@ class Gps(IGps):
                     self.prev_altitude = None
                     self.prev_time = None
                     if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
-                        self.log_errors()     
-
+                        if 5 in self.error_counts:
+                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                self.__gps_uart.close()
+                        self.log_errors()   
+                        break  
             sleep(1)
         
 
@@ -94,7 +96,11 @@ class Gps(IGps):
                 self.handle_error(error)
             finally:
                 if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
+                    if 5 in self.error_counts:
+                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                self.__gps_uart.close()
                     self.log_errors()
+                    break
 
             sleep(1)
 
@@ -148,46 +154,29 @@ class Gps(IGps):
                 self.handle_error(error)
             finally:
                 if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                    if 5 in self.error_counts:
+                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                self.__gps_uart.close()
                     self.log_errors()
+                    break
 
             sleep(1)      
 
 
-
     def move_direction(self,past_lat, past_lon, now_lat, now_lon):
         import math
-        self.error_counts=[]
-        self.error_messages=[]
-        self.error_log="gps Error Log"
-        self.a=1
-        while True:
-            try:
-                direction = [] 
-                for i in range(30):
-                    if past_lat is None and past_lon is None and now_lat is None and now_lon is None:
-                        raise ValueError("past_lat , past_lon , now_lat , now_lon is None")
-                    past_lat, past_lon, now_lat, now_lon = map(math.radians, [past_lat, past_lon, now_lat, now_lon])
-                    delta_lon = now_lon - past_lon
-                    delta_lat = now_lat - past_lat
-                    bearing = math.atan2(delta_lon, delta_lat)
-                    bearing = math.degrees(bearing)  # ラジアンから度に変換
-                    direction.append(bearing)
+        direction = [] 
+        for i in range(30):
+            past_lat, past_lon, now_lat, now_lon = map(math.radians, [past_lat, past_lon, now_lat, now_lon])
+            delta_lon = now_lon - past_lon
+            delta_lat = now_lat - past_lat
+            bearing = math.atan2(delta_lon, delta_lat)
+            bearing = math.degrees(bearing)  # ラジアンから度に変換
+            direction.append(bearing)
 
-                ave_direction = sum(direction)/len(direction)
-                self.a=0
-                return ave_direction
-            except ValueError as e:
-                error = f"Failed move_direction :--detail{e}" 
-                self.handle_error(error)
-            except Exception as e:
-                error = f"Failed move_direction :--detail{e}" 
-                self.handle_error(error)
-            finally:
-                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
-                    self.log_errors()
-                        
-            sleep(1)    
-
+        ave_direction = sum(direction)/len(direction)
+        self.a=0
+        return ave_direction
 
     def delete(self):
         self.error_counts=[]
@@ -208,6 +197,9 @@ class Gps(IGps):
                     self.handle_error(error)
                 finally:
                     if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                        if 5 in self.error_counts:
+                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                self.__gps_uart.close()
                         self.log_errors()
                         
                 sleep(1)
