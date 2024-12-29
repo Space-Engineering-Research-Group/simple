@@ -1,7 +1,9 @@
 import abc
-import serial
-import micropyGPS
-from time import sleep
+import json
+from digi.xbee.devices import XBeeDevice
+from serial import SerialException
+from digi.xbee.exception import XBeeException,TransmitException
+
 
 class IXbee(abc.ABC):
     @abc.abstractmethod
@@ -20,62 +22,69 @@ class Xbee(IXbee):
         self.a = 1
         while True:
             try:
-                self.__xbee_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
-                self.a = 0
-                break
+                self.PORT = "COM3" 
+                self.BAUD_RATE = 9600
+                self.DEVICE_ID = "00:13:A2:00:41:59:5C:54"  #adles
+                self.device = XBeeDevice(self.PORT, self.BAUD_RATE)
+
+            except SerialException as e:
+                error = f"port erorr-- detail {e}"  
+                self.handle_error(error) 
+
+            except XBeeException as e:  
+                error = f"xbee error-- detail {e}"  
+                self.handle_error(error) 
 
             except Exception as e:
-                # 初期化中にエラーが起きた場合にリソースを解放
-                if hasattr(self, '_Gps__xbee_uart') and self.__xbee_uart and self.__xbee_uart.is_open:
-                    self.__xbee_uart.close()
-                error = f"False to init-- detail {e}"  
+                error = f"other error-- detail {e}"  
                 self.handle_error(error) 
+
             finally:
                 if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
                     self.log_errors()
-                    break
-            sleep(1)    
-     
-    def xbee_send(self,data,jude):
+                    if 5 in self.error_counts: 
+                        if hasattr(self, 'device') and self.device and self.device.is_open:
+                            self.device.close()
+                    break    
+
+    def xbee_send(self,data):
         self.error_counts = []
         self.error_messages = []
         self.error_log = "xbee:Error"
         self.a = 1
         while True:
-            #まだ完成していない、、、考え中 　selfa=0 を書くこと
-
             try:
-                data = str(data)
-                jude = str(jude)
-                if not isinstance(data, str):
-                    raise ValueError("Data must be a string.")
-
-                if self.__xbee_uart and self.__xbee_uart.is_open:
-                    self.__xbee_uart.write(data.encode('utf-8'))
-                else:
-                    status = "XBee not connected or not open"
-
+                self.device.open()
+                json_data = json.dumps(data)
+                self.device.send_data_remote(self.DEVICE_ID, json_data.encode())
+                xbee_raspy(data)
+                self.a = 0
+            except TransmitException as e: 
+                error = f"Data transmission failed-- detail {e}"  
+                self.handle_error(error)    
+            except XBeeException as e:
+                error = f"Common errors related to XBee devices-- detail {e}"  
+                self.handle_error(error) 
+            except SerialException as e:
+                error = f"The serial port cannot be opened or a communication error has occurred-- detail {e}"  
+                self.handle_error(error) 
+            except TypeError as e:
+                error = f"JSON data conversion failed-- detail {e}"  
+                self.handle_error(error)        
             except Exception as e:
-                status = f"Error: {str(e)}"
-
-                #1_インスタンス化、2_cds、3_sarvo、4_gps、5_camera、6_motor
-                    
+                error = f"other error-- detail {e}"  
+                self.handle_error(error)   
             finally:
-                if "1" in jude:
-                    if status:
-                        with open('/home/pi/space_data.txt', 'a') as log_file:
-                            log_file.write(f" Data: {data}, | Status: {status}\n")
-                    else:
-                        with open('/home/pi/space_data.txt', 'a') as log_file:
-                            log_file.write(f" Data: {data}")
-            sleep(1)                
-                          
-                       
-                       
-            
+                if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
+                    if 5 in self.error_counts: 
+                        if hasattr(self, 'device') and self.device and self.device.is_open:
+                            self.device.close()
+                    self.log_errors()
+                    break         
+                
     def xbee_delete(self):
-        if self.__xbee_uart and self.__xbee_uart.is_open:
-            self.__xbee_uart.close()      
+        if self.device.is_open:
+            self.device.close()  
 
 
     def handle_error(self,error):
@@ -104,4 +113,25 @@ class Xbee(IXbee):
             raise RuntimeError        
      
 
- 
+
+def xbee_send(self,data):
+    self.error_counts = []
+    self.error_messages = []
+    self.error_log = "xbee:Error"
+    self.a = 1
+    while True:
+        # setting
+        PORT = "COM3" 
+        BAUD_RATE = 9600
+        DEVICE_ID = "00:13:A2:00:41:59:5C:54"  #adles
+
+        device = XBeeDevice(PORT, BAUD_RATE)
+        device.open()
+
+        json_data = json.dumps(data)
+
+        device.send_data_remote(DEVICE_ID, json_data.encode())
+
+    # デバイスを閉じる
+        device.close()
+
