@@ -535,6 +535,10 @@ try:
         
         result=None
     #gps
+    #logに残す操作
+    #motorのエラー処理
+    #関数化して短縮
+    #-1いれると、常時回る
         if plan2 in ["A","B"]and gps_seikou==False:
             try:
                 #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
