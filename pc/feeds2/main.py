@@ -39,13 +39,3 @@ def feeds2(sheet,data):
 
 
 
-
-
-def is_row_empty(self,sheet, row_number): 
-    row_values = sheet.range(f"{row_number}:{row_number}").value 
-    #その行が空なら、 row_values=Noneになる
-
-    if isinstance(row_values, list): 
-        return True
-    else:  
-        return False
