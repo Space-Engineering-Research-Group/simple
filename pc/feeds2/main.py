@@ -8,13 +8,15 @@ def is_row_empty(sheet, row_number):
 
 
 def feeds2(sheet,data):
-    sheet.range("A7").value = "フェーズ"
-    sheet.range("B7").value = "プラン"
-    sheet.range("C7").value = "時間"
-    sheet.range("D7").value = "明るさ"
-    sheet.range("E7").value = "落下判断"
-    sheet.range("F7").value = "使えない部品"
-    sheet.range("G7").value = "error"
+    result = is_row_empty(sheet,7)
+    if result == True:
+        sheet.range("A7").value = "フェーズ"
+        sheet.range("B7").value = "プラン"
+        sheet.range("C7").value = "時間"
+        sheet.range("D7").value = "明るさ"
+        sheet.range("E7").value = "落下判断"
+        sheet.range("F7").value = "使えない部品"
+        sheet.range("G7").value = "error"
 
     for i in range(8,100):#100は適当,意味はなし
         result = is_row_empty(sheet, i)
