@@ -725,7 +725,7 @@ try:
                             camera_log[2]=time()
                             frame=mget_frame()
                             judge=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-                            camera[3]=judge
+                            camera_log[3]=judge
                             xbee.xbee_send(camera_log)
                             if judge==True:
                                 kazu=2
