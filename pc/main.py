@@ -50,7 +50,7 @@ class Xcel():
 from digi.xbee.devices import XBeeDevice
 import json
 
-class XBeeReceiver:
+class XBeeReceiver():
     def __init__(self, port, baud_rate):
         port = "COM3"  # あなたのXBeeモジュールのポートを指定してください
         baud_rate = 9600
