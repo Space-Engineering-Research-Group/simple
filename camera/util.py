@@ -18,6 +18,11 @@ def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
     mask[:, -1] = 0 
     mask=cv2.Canny(mask,80.0,175.0)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
+    if contours:
+        # 最大面積のコンターを返す
+        max_contour = max(contours, key=cv2.contourArea)
+        return max_contour
+    return None
 
 def find_parachute(frame,lower_yellow,upper_yellow,center,phase=1):
     img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
