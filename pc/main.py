@@ -23,11 +23,20 @@ class Xcel():
             if not os.path.exists(file_path):
                 raise FileNotFoundError(f"指定されたファイル {file_path} が見つかりません。")
             self.workbook = self.app.books.open(file_path)
-            sheet = self.workbook.sheets[0]
-            return self.app, self.workbook, sheet
+            self.sheet = self.workbook.sheets[0]
+            return self.app, self.workbook, self.sheet
+        
         except Exception as e:
             self.app.quit()
             raise e
+        
+    def reconnect_excel(self):
+        try:
+            app, workbook, sheet = self.open_workbook()
+            return app, workbook, sheet
+        except Exception as e:
+            print(f"再接続に失敗しました: {e}")
+            return None, None, None    
 
 
     def delete(self):
@@ -108,6 +117,7 @@ def feeds_1(sheet,data,num):
             sheet.range(num+1,4).value = "cds"
 
     num += 1
+    workbook.save()
     return num                             
 
 
@@ -145,6 +155,7 @@ def feeds1(sheet,data,num):
 
     F_P = ','.join(Faulty_parts)
     sheet.range(num+1, 9).value = F_P
+    workbook.save()
     return num + 1
 
 
@@ -171,12 +182,14 @@ def feeds2(sheet,data,num):
 
         if data[3] == None:
             sheet.range(num+1, 6).value = "cds"
-    num += 1        
+    num += 1   
+    workbook.save()      
     return num            
 
 def feeds3(sheet,data,num):
     #以下feeds、最初はわからん
-    pass
+    pass 
+    workbook.save()
 
 def feeds4(sheet,data,num):
     #フェーズ、時間、パラシュート検知,時間、緯度、経度,コーンに対する角度、故障した部品、エラー文
@@ -229,6 +242,7 @@ def feeds4(sheet,data,num):
     e_l = ','.join(error_list) 
     sheet.range(num+1,8).value = F_P
     sheet.range(num+1,9).value = e_l
+    workbook.save() 
     return num +1
 
 def feeds5(sheet,data,num):
@@ -278,6 +292,7 @@ def feeds5(sheet,data,num):
     e_l = ','.join(error_list) 
     sheet.range(num+1,9).value = F_P
     sheet.range(num+1,10).value = e_l
+    workbook.save() 
     return num +1        
 
 def feeds6(sheet,data,num):
@@ -331,14 +346,111 @@ def feeds6(sheet,data,num):
     e_l = ','.join(error_list) 
     sheet.range(num+1,6).value = F_P
     sheet.range(num+1,7).value = e_l
+    workbook.save() 
     return num +1         
 
 def feeds8(sheet,data,num):
-    #フェーズ、時間、故障した部品、エラー文  
+    #左からフェーズ、時間、残り時間  
     sheet.range(num,1).value = "フェーズ"
     sheet.range(num,2).value = "時間"
-    sheet.range(num,6).value = "故障した部品"
-    sheet.range(num,7).value = "エラー文"
+    sheet.range(num,3).value = "残り時間"
+
+    for index, value in enumerate(data, start=1):
+        sheet.range(num+1, index).value = str(value)
+    workbook.save()     
+
+def feeds9(sheet,data,num):
+    #フェーズ、時間、故障した部品、エラー文 
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "故障した部品"
+        sheet.range(num,4).value = "エラー文"
+
+    for index, value in enumerate(data, start=1):
+        sheet.range(num+1, index).value = str(value)   
+    workbook.save()      
+
+
+
+#ここからがやっとmainだぜっ
+#================================= main =============================
+try:
+    print("通信中...")
+    xcel = Xcel()
+    xbee = XBeeReceiver()
+    num = 1
+    print("インスタンス化が完了")
+
+    xbee.open_device()
+    file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
+    app, workbook, sheet = xcel.open_workbook(file_path)
+
+except FileNotFoundError as e:
+    print(f"エラー: {e}")
+except Exception as e:
+    print(f"予期しないエラー発生: {e}")    
+
+
+while True:
+    try:
+        data = xbee.receive_data()
+
+        for i in range(1,9):
+            if data[1] == i:
+                if i == 1:
+                    num = feeds1(sheet,data,num)
+                if i == -1:
+                    num = feeds_1(sheet,data,num)
+                if i == 2:
+                    num = feeds2(sheet,data,num)
+                if i == 3:
+                    num = feeds3(sheet,data,num)  
+                if i == 4:
+                    num = feeds4(sheet,data,num)
+                if i == 5:
+                    num = feeds5(sheet,data,num)
+                if i == 6:
+                    num = feeds6(sheet,data,num)
+                if i == 8:
+                    num = feeds8(sheet,data,num) 
+                if i == 9:
+                    num = feeds9(sheet,data,num)    
+
+        num = num + 1  
+    except Exception as e:
+        print(f"エラー発生: {e}")
+        app, workbook, sheet = xcel.reconnect_excel()
+        if app is None or workbook is None:
+            print("Excelへの再接続に失敗しました。終了します。")
+            break     
+
+    if data[1] == 9 and data[2] == 3: #ここは最後のデータが送られてきたらbeakを行う。数値を変える可能性あり
+        break         
+
+print("任務完了しました")
+try:
+    xcel.delete()
+    xbee.close_device()
+    print("xcelとxbees消去完了")
+except Exception as e:
+    print(f"閉じることができなかった{e}")
+
+
+
+
+
+
+
+
+
+
     
 
 
