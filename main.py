@@ -567,8 +567,28 @@ try:
 
         if plan2 in ["A","B"]and gps_seikou==False:
             try:
-                #list上の関数にある
-                pre_lat,pre_lon = m5get_coodinate_xy()
+                #最初の緯度経度の取得は特別なので、関数化しない
+                #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
+                gps_log = [5,None,None,None,None,None,None,None,None,None]
+                try:
+                    gps_log[1]=time()
+                    pre_lat,pre_lon = gps.get_coordinate_xy()
+                    gps_log[2]=lat
+                    gps_log[3]=lon
+
+                    distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
+                    gps_log[4]=distance
+
+                except RuntimeError:
+                    tools[1]=False
+                    raise RuntimeError
+                finally:
+                    if len(gps.error_counts):
+                        gps_log[10]=gps.error_log
+                        if 5 in gps.error_counts:
+                            gps_log[9]="gps"
+                    xbee.xbee_send(gps_log)  
+
 
                     #初めからコーンが近い場合の処理     
                 distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
