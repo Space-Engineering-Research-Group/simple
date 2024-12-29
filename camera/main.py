@@ -1,4 +1,5 @@
 import cv2
+from picamera2 import Picamera2
 from abc import ABC,abstractmethod
 
 class ICamera(ABC):
@@ -22,19 +23,18 @@ class Camera(ICamera):
         self.a = 1
         while True:
             try:
-                self.capture = cv2.VideoCapture(0)
-                if not self.capture.isOpened():
-                    raise IOError("camera: Failed to open the camera.")
-                self.capture.set(cv2.CAP_PROP_FRAME_WIDTH, width)
-                self.capture.set(cv2.CAP_PROP_FRAME_HEIGHT, height)
-                self.capture.set(cv2.CAP_PROP_FPS, FPS)
+                self.capture=Picamera2()
+                # 解像度とFPSを設定
+                config = self.capture.create_preview_configuration(
+                    main={"size": (1280, 720)},  # 解像度
+                    controls={"FrameRate": 30}  # FPS
+                )
+                self.capture.configure(config)
+                self.capture.start()
                 self.a = 0
                 break
-            except IOError as e:
-                error = f"camera: Error initializing camera -- detail {e}"
-                self.handle_error(error)
             except Exception as e:
-                error = f"camera: Unexpected error during initialization -- detail {e}"
+                error = f"camera: Error initialization -- detail {e}"
                 self.handle_error(error)
             finally:
                 if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
@@ -50,8 +50,8 @@ class Camera(ICamera):
         while True:
             try:
                 while True:
-                    ret, frame = self.capture.read()
-                    if ret:
+                    frame = self.capture.capture_array()
+                    if frame is not None:
                         self.a=0
                         return frame
                     else:
@@ -70,8 +70,8 @@ class Camera(ICamera):
     
 
     def release(self):
-        if self.capture is not None and self.capture.isOpened():
-            self.capture.release()
+        if self.capture is not None:
+            self.capture.stop()
 
     def handle_error(self, error):
         if str(error) not in self.error_messages:
@@ -88,8 +88,8 @@ class Camera(ICamera):
         if self.a == 0:
             self.error_log = "camera:Error--"+",".join(error_list)
         elif 5 in self.error_counts:
-            if len(list) == 1:
-                self.error_log=f"camera:Error--{list[0]}"
+            if len(error_list) == 1:
+                self.error_log=f"camera:Error--{error_list[0]}"
             else:
                 index = self.error_counts.index(5)
                 result = error_list[:index] + error_list[index + 1:]
