@@ -1,5 +1,4 @@
 import xlwings as xw
-import time
 import os
 
 file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
@@ -18,9 +17,9 @@ def open_workbook():
 
 
 def delete():
-    if 'workbook' in locals() and workbook is not None:
+    if workbook in locals() and workbook is not None:
         workbook.save()
-    if 'workbook' in locals() and workbook is not None:
-        workbook.close()  # workbook を閉じる    
-    if 'app' in locals() and app is not None:
+    if workbook in locals() and workbook is not None:
+        workbook.close()  # workbook を閉じる
+    if app in locals() and app is not None:
         app.quit()
