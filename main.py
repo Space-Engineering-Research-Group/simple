@@ -561,10 +561,7 @@ try:
         
         result=None
     #gps
-    #logに残す操作
-    #motorのエラー処理
-    #関数化して短縮
-    #-1いれると、常時回る
+
         if plan2 in ["A","B"]and gps_seikou==False:
             try:
                 #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
@@ -585,6 +582,8 @@ try:
 
                 stack_count = 0
                 B_of_judge = 0
+
+               #loop started
                 while True:
                     #左からフェーズ、時間、緯度、経度、コーンとの距離、コーンに対する角度、故障した部品、エラー文
                     now_lat,now_lon = m5get_coodinate_xy()   
@@ -639,7 +638,7 @@ try:
                                 gps_B_lat_ave = sum(gps_B_lat)/2
                                 gps_B_lon_ave = sum(gps_B_lon)/2   
                                 gps_log[3]=gps_B_lat_ave
-                                gps_log[4]=gps_B_lon_ave
+                                gps_log[4]=gps_B_lon_ave  #60回の平均
 
                             except RuntimeError:
                                 tools[1]=False
@@ -665,11 +664,11 @@ try:
                             mstop()
                             mforward(4) #1/208の単位と、2m移動にかかる時間計算
                             mstop()
-                        else:
+                        else:#not B
                             gps_seikou=True
                             continue
 
-
+                    #distanceが大きくてもまだ4m以上ある
                     grotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
                     if rotation_angle > 0:
                         mturn_right(rotation_angle/208)  
@@ -678,7 +677,7 @@ try:
                         mturn_left(z_rot/208)
 
                     mstop()
-                    mforward(4)#この4秒は適当
+                    mforward(4)#この4秒は適当　あとで計算
                     mstop()
         
             
