@@ -19,7 +19,7 @@ def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
     mask=cv2.Canny(mask,80.0,175.0)
     contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
-def find_parachute(frame,lower_yellow,upper_yellow,center,fezu=1):
+def find_parachute(frame,lower_yellow,upper_yellow,center,phase=1):
     img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
     clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
     img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
