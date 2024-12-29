@@ -57,7 +57,6 @@ class Xbee(IXbee):
                 self.device.open()
                 json_data = json.dumps(data)
                 self.device.send_data_remote(self.DEVICE_ID, json_data.encode())
-                xbee_raspy(data)
                 self.a = 0
             except TransmitException as e: 
                 error = f"Data transmission failed-- detail {e}"  
@@ -114,24 +113,5 @@ class Xbee(IXbee):
      
 
 
-def xbee_send(self,data):
-    self.error_counts = []
-    self.error_messages = []
-    self.error_log = "xbee:Error"
-    self.a = 1
-    while True:
-        # setting
-        PORT = "COM3" 
-        BAUD_RATE = 9600
-        DEVICE_ID = "00:13:A2:00:41:59:5C:54"  #adles
 
-        device = XBeeDevice(PORT, BAUD_RATE)
-        device.open()
-
-        json_data = json.dumps(data)
-
-        device.send_data_remote(DEVICE_ID, json_data.encode())
-
-    # デバイスを閉じる
-        device.close()
 
