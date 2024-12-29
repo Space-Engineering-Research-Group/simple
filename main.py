@@ -623,8 +623,8 @@ try:
 
                         if plan2 == "B": #planは適当あとで確認。
                             #カメラが壊れていた場合
-                            #左からフェーズ、フェーズの分割番号、時間、緯度、経度,故障した部品、エラー文
-                            gps_log = [5,1,None,None,None,None,None]
+                            #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
+                            gps_log = [5,1,None,None,None,None,None,None]
                             try:
                                 gps_log[2]=time()
                                 gps_B_lat = []
@@ -641,17 +641,18 @@ try:
                                 gps_log[3]=gps_B_lat_ave
                                 gps_log[4]=gps_B_lon_ave  #60回の平均
 
+                                distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
+                                gps_log[5] = distance
                             except RuntimeError:
                                 tools[1]=False
                                 raise RuntimeError
                             finally:
                                 if len(gps.error_counts):
-                                    gps_log[6]=gps.error_log
+                                    gps_log[7]=gps.error_log
                                     if 5 in gps.error_counts:
-                                        gps_log[5]="gps"
+                                        gps_log[6]="gps"
                                 xbee.xbee_send(gps_log)  
 
-                            distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
                             if distance<0.5:#適当
                                 gps_seikou=True
                                 #成功したことを送る
@@ -665,6 +666,7 @@ try:
                             mstop()
                             mforward(4) #1/208の単位と、2m移動にかかる時間計算
                             mstop()
+
                         else:#not B
                             gps_seikou=True
                             continue
