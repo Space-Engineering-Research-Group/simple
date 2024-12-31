@@ -17,6 +17,7 @@ class Camera(ICamera):
         self.error_messages = []
         self.error_log = "camera:Error"
         self.a = 1
+        self.ini=True
         while True:
             try:
                 self.capture=Picamera2()
@@ -36,12 +37,14 @@ class Camera(ICamera):
                 if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
                     self.log_errors()
                     break
+            sleep(1)
 
     def get_frame(self):
         self.error_counts=[]
         self.error_messages=[]
         self.error_log="camera:Error"
         self.a=1
+        self.ini=False
 
         while True:
             try:
@@ -61,7 +64,7 @@ class Camera(ICamera):
             finally:
                 if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
                     self.log_errors()
-
+            sleep(1)
                 
 
     
@@ -92,4 +95,5 @@ class Camera(ICamera):
                 result = error_list[:index] + error_list[index + 1:]
                 result = ",".join(result)
                 self.error_log = f"camera:Error--{error_list[index]} other errors--{result}"
-            raise RuntimeError
+            if ini==False:
+                raise RuntimeError
