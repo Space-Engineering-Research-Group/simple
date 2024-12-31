@@ -52,6 +52,7 @@ class Camera(ICamera):
                 while True:
                     frame = self.capture.capture_array()
                     if frame is not None:
+                        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                         self.a=0
                         return frame
                     else:
