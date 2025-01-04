@@ -74,7 +74,7 @@ class Cds(Icds):
         for count,message in zip(self.error_counts,self.error_messages):
             list.append(f"{count}*{message}")
         if self.a==0:
-            self.error_log=",".join(list)
+            self.error_log="cds Error--"+",".join(list)
         elif 5 in self.error_counts:
             if len(list) == 1:
                 self.error_log=f"cds:Error--{list[0]}"
