@@ -95,5 +95,5 @@ class Camera(ICamera):
                 result = error_list[:index] + error_list[index + 1:]
                 result = ",".join(result)
                 self.error_log = f"camera:Error--{error_list[index]} other errors--{result}"
-            if ini==False:
+            if self.ini==False:
                 raise RuntimeError
