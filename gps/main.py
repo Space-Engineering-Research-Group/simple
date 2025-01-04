@@ -115,52 +115,60 @@ class Gps(IGps):
         self.a=1
         self.ini=False
         while True:
-            try:
-                lali = [] #latitude_list
-                loli = [] #longitude_list
-                for i in range(30):
-                    start_time = time.time()
+            lali = [] #latitude_list
+            loli = [] #longitude_list
+            for i in range(30):
+                start_time = time.time()
 
-                    self.update_gps()
-                    latitude = self.__gps.latitude[0]
-                    longitude = self.__gps.longitude[0]
-                    if latitude is None and longitude is None:      
-                        raise ValueError( "lat , lon is None")
-                    dis_time=time()-start_time
-                    if dis_time<0.11:
-                        sleep(0.11-dis_time)
+                self.update_gps()
 
-                    m_latitude, m_longitude = self.dms_to_decimal(latitude,longitude)
-                    if m_latitude is None and m_longitude is None:
-                            raise ValueError("m_lat , m_lon is None")
-            
-                    lali.append(m_latitude)
-                    loli.append(m_longitude)
 
-                ave_lat = sum(lali)/len(lali)
-                ave_lon = sum(loli)/len(loli)
-                self.a=0               
-                return ave_lat, ave_lon
+                try:
+                    while True:
+
+                        self.latitude = self.__gps.latitude[0]
+                        self.longitude = self.__gps.longitude[0]
+                        self.a = 0
+                        break
                 
+                except ValueError as e:
+                    error = f"Failed _ GPS get_coordinate_xy:--detail{e}"
+                    self.handle_error(error)
+                except serial.SerialException as e:
+                    error = "GPS communication error: --detail{e}"
+                    self.handle_error(error)
+                except Exception as e:
+                    error =f"Failed _ GPS xy_coordinates:--detail{e}"
+                    self.handle_error(error)
+                finally:
+                    if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                        if 5 in self.error_counts:
+                                if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                    self.__gps_uart.close()
+                        self.log_errors()
+                        break
 
-            except ValueError as e:
-                error = f"Failed _ GPS get_coordinate_xy:--detail{e}"
-                self.handle_error(error)
-            except serial.SerialException as e:
-                error = "GPS communication error: --detail{e}"
-                self.handle_error(error)
-            except Exception as e:
-                error =f"Failed _ GPS xy_coordinates:--detail{e}"
-                self.handle_error(error)
-            finally:
-                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
-                    if 5 in self.error_counts:
-                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
-                                self.__gps_uart.close()
-                    self.log_errors()
-                    break
+                sleep(1) 
 
-            sleep(1)      
+
+
+
+                if self.latitude is None and self.longitude is None:      
+                    raise ValueError( "lat , lon is None")
+                dis_time=time()-start_time
+                if dis_time<0.11:
+                    sleep(0.11-dis_time)
+
+                m_latitude, m_longitude = self.dms_to_decimal
+        
+                lali.append(m_latitude)
+                loli.append(m_longitude)
+
+            ave_lat = sum(lali)/len(lali)
+            ave_lon = sum(loli)/len(loli)            
+            return ave_lat, ave_lon
+            
+    
 
 
     def move_direction(self,past_lat, past_lon, now_lat, now_lon):
@@ -205,14 +213,14 @@ class Gps(IGps):
                 sleep(1)
 
 
-    def dms_to_decimal(self,lat,lon):
+    def dms_to_decimal(self):
 
             # 度と分に分割する
-        lat_degrees = int(lat / 100)  # 整数部分（度）
-        lat_minutes = lat % 100  # 小数部分（分）
+        lat_degrees = int(self.latitude / 100)  # 整数部分（度）
+        lat_minutes = self.latitude % 100  # 小数部分（分）
 
-        lon_degrees = int(lon / 100)  # 整数部分（度）
-        lon_minutes = lon % 100  # 小数部分（分）
+        lon_degrees = int(self.longitude / 100)  # 整数部分（度）
+        lon_minutes = self.longitude % 100  # 小数部分（分）
 
         # 10進法に変換
         m_latitude = lat_degrees + lat_minutes / 60
@@ -231,7 +239,7 @@ class Gps(IGps):
             result=list[:index]+list[index+1:]
             result=",".join(result)
             self.error_log=f"cds:Error--{list[index]} other errors--{result}"
-        if ini==False:    
+        if self.ini==False:    
             raise RuntimeError
 
     def handle_error(self,error):
