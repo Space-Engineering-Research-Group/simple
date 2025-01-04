@@ -1,6 +1,7 @@
 import cv2
 from picamera2 import Picamera2
 from abc import ABC,abstractmethod
+from time import sleep
 
 class ICamera(ABC):
     @abstractmethod
