@@ -1,8 +1,7 @@
 import abc
 import serial
 import micropyGPS
-from time import sleep
-import time
+from time import sleep,time
 
 class IGps(abc.ABC):
     @abc.abstractmethod
@@ -40,6 +39,7 @@ class Gps(IGps):
         self.error_messages = []
         self.error_log="gps Error Log"
         self.a=1
+        self.ini=True
         while True:
             try:
                 self.__gps_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
@@ -51,15 +51,15 @@ class Gps(IGps):
                 if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
                     self.__gps_uart.close()
                     #ポートがビジー状態または存在しない
-                    error ="Failed to open the serial port:: /dev/serial0. Ensure the port is not busy or unavailable.:--detail{e}"
-                    self.handle_error(error)
+                error ="Failed to open the serial port:: /dev/serial0. Ensure the port is not busy or unavailable.:--detail{e}"
+                self.handle_error(error)
                                     
             except Exception as e:
             # その他のエラー（MicropyGPS の初期化エラーなど）
                 if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
                     self.__gps_uart.close()
-                    error = "Failed to _init_ the GPS:--detail{e}"
-                    self.handle_error(error)
+                error = "Failed to _init_ the GPS:--detail{e}"
+                self.handle_error(error)
                                     #micropyGPS の設定やデータ受信に問題がある
                         
             finally:
@@ -79,6 +79,7 @@ class Gps(IGps):
         self.error_messages = []
         self.error_log = "gps Error Log"
         self.a = 1
+        self.ini=False
         while True:
             try:
                 self.sentence = self.__gps_uart.readline()
@@ -87,6 +88,8 @@ class Gps(IGps):
                         self.__gps.update(x)
                         self.a = 0
                         break
+                else:
+                    raise Exception("failed to get info of gps")
 
             except serial.SerialException as e:
                 error = f"GPS communication error:--detail{e}"
@@ -110,6 +113,7 @@ class Gps(IGps):
         self.error_messages = []
         self.error_log="gps Error Log"
         self.a=1
+        self.ini=False
         while True:
             try:
                 lali = [] #latitude_list
@@ -122,20 +126,16 @@ class Gps(IGps):
                     longitude = self.__gps.longitude[0]
                     if latitude is None and longitude is None:      
                         raise ValueError( "lat , lon is None")
-                        
-                    while True:
-                        current_time = time.time()
-                    
-                        time_difference = current_time - start_time
+                    dis_time=time()-start_time
+                    if dis_time<0.11:
+                        sleep(0.11-dis_time)
 
-                        if time_difference > 0.11:
-                            m_latitude, m_longitude = self.dms_to_decimal(latitude,longitude)
-                            if m_latitude is None and m_longitude is None:
-                                raise ValueError("m_lat , m_lon is None")
+                    m_latitude, m_longitude = self.dms_to_decimal(latitude,longitude)
+                    if m_latitude is None and m_longitude is None:
+                            raise ValueError("m_lat , m_lon is None")
             
-                            lali.append(m_latitude)
-                            loli.append(m_longitude)
-                            break
+                    lali.append(m_latitude)
+                    loli.append(m_longitude)
 
                 ave_lat = sum(lali)/len(lali)
                 ave_lon = sum(loli)/len(loli)
@@ -231,6 +231,7 @@ class Gps(IGps):
             result=list[:index]+list[index+1:]
             result=",".join(result)
             self.error_log=f"cds:Error--{list[index]} other errors--{result}"
+        if ini==False:    
             raise RuntimeError
 
     def handle_error(self,error):
