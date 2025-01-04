@@ -114,59 +114,59 @@ class Gps(IGps):
         self.error_log="gps Error Log"
         self.a=1
         self.ini=False
-        while True:
-            lali = [] #latitude_list
-            loli = [] #longitude_list
-            for i in range(30):
-                start_time = time.time()
-
-                self.update_gps()
-
-
-                try:
-                    while True:
-
-                        self.latitude = self.__gps.latitude[0]
-                        self.longitude = self.__gps.longitude[0]
-                        self.a = 0
-                        break
-                
-                except ValueError as e:
-                    error = f"Failed _ GPS get_coordinate_xy:--detail{e}"
-                    self.handle_error(error)
-                except serial.SerialException as e:
-                    error = "GPS communication error: --detail{e}"
-                    self.handle_error(error)
-                except Exception as e:
-                    error =f"Failed _ GPS xy_coordinates:--detail{e}"
-                    self.handle_error(error)
-                finally:
-                    if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
-                        if 5 in self.error_counts:
-                                if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
-                                    self.__gps_uart.close()
-                        self.log_errors()
-                        break
-
-                sleep(1) 
-
-
-
-
-                if self.latitude is None and self.longitude is None:      
-                    raise ValueError( "lat , lon is None")
-                dis_time=time()-start_time
-                if dis_time<0.11:
-                    sleep(0.11-dis_time)
-
-                m_latitude, m_longitude = self.dms_to_decimal
         
-                lali.append(m_latitude)
-                loli.append(m_longitude)
+        lali = [] #latitude_list
+        loli = [] #longitude_list
+        for i in range(30):
+            start_time = time.time()
 
-            ave_lat = sum(lali)/len(lali)
-            ave_lon = sum(loli)/len(loli)            
-            return ave_lat, ave_lon
+            self.update_gps()
+
+
+            try:
+                while True:
+
+                    self.latitude = self.__gps.latitude[0]
+                    self.longitude = self.__gps.longitude[0]
+                    self.a = 0
+                    break
+                
+            except ValueError as e:
+                error = f"Failed _ GPS get_coordinate_xy:--detail{e}"
+                self.handle_error(error)
+            except serial.SerialException as e:
+                error = "GPS communication error: --detail{e}"
+                self.handle_error(error)
+            except Exception as e:
+                error =f"Failed _ GPS xy_coordinates:--detail{e}"
+                self.handle_error(error)
+            finally:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                    if 5 in self.error_counts:
+                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                self.__gps_uart.close()
+                    self.log_errors()
+                    break
+
+            sleep(1) 
+
+
+
+
+            if self.latitude is None and self.longitude is None:      
+                raise ValueError( "lat , lon is None")
+            dis_time=time()-start_time
+            if dis_time<0.11:
+                sleep(0.11-dis_time)
+
+            m_latitude, m_longitude = self.dms_to_decimal
+        
+            lali.append(m_latitude)
+            loli.append(m_longitude)
+
+        ave_lat = sum(lali)/len(lali)
+        ave_lon = sum(loli)/len(loli)            
+        return ave_lat, ave_lon
             
     
 
