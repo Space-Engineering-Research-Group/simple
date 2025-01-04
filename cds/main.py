@@ -42,14 +42,14 @@ class Cds(Icds):
                 self.brightness = self.cds.value
                 
                 if self.brightness < 0.0 or self.brightness > 1.0:
-                    raise ValueError(f"cds: Brightness value out of range")
+                    raise ValueError(f"Brightness value out of range")
                 self.a=0
                 break
             except IOError as e:
                 error=f"cds: Error reading brightness--detail{e}"
                 self.handle_error(error)
             except ValueError as e:
-                error=f"{e}"
+                error=f"cds: Error detail--{e}"
                 self.handle_error(error)
             except Exception as e:
                 error=f"cds: Unexpected error while reading brightness --detail{e}"
