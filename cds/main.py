@@ -13,6 +13,7 @@ class Cds(Icds):
         self.error_messages = []
         self.error_log="cds Error Log"
         self.a=1
+        self.ini=True
         while True:
             try:
                 self.cds = MCP3008(channel=0)
@@ -28,8 +29,6 @@ class Cds(Icds):
                 if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                     self.log_errors()
                     
-                        
-
             sleep(1)
 
     def get_brightness(self):
@@ -37,6 +36,7 @@ class Cds(Icds):
         self.error_messages=[]
         self.error_log="cds Error Log"
         self.a=1
+        self.ini=False
         while True:
             try:
                 self.brightness = self.cds.value
@@ -83,4 +83,5 @@ class Cds(Icds):
                 result=list[:index]+list[index+1:]
                 result=",".join(result)
                 self.error_log=f"cds:Error--{list[index]} other errors--{result}"
-            raise RuntimeError
+            if ini==False:
+                raise RuntimeError
