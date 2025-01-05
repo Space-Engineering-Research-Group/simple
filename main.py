@@ -1,13 +1,12 @@
 try:
-    from .camera import *
-    from .gps import *
-    from .motor import *
+    from camera import *
+    from gps import *
+    from motor import *
     from gpiozero.pins.pigpio import PiGPIOFactory
-    from .cds import *
-    from .servo import *
-    from .xbee import *
+    from cds import *
+    from servo import *
+    from xbee import *
     from time import sleep,time
-
 
     #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
     tools=[True,True,True,True,True,True]
