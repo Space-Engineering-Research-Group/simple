@@ -22,7 +22,7 @@ class IXbee(abc.ABC):
     def log_errors(self):
         pass
 
-class Xbee(IXbee):
+class Xb(IXbee):
     def __init__(self):
         self.error_counts = []
         self.error_messages = []
