@@ -8,7 +8,7 @@ from XB import *
 
 #gps
 gps = Gps()
-xbee = xxbb()
+xbee = Xxbb()
 motors = Motor()
 
 plan2 = "A"

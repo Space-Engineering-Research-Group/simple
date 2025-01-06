@@ -22,7 +22,7 @@ class IXbee(abc.ABC):
     def log_errors(self):
         pass
 
-class xxbb(IXbee):
+class Xxbb(IXbee):
     def __init__(self):
         self.error_counts = []
         self.error_messages = []
@@ -119,5 +119,4 @@ class xxbb(IXbee):
                 self.error_log=f"cds:Error--{list[index]} other errors--{result}"
             raise RuntimeError        
      
-
 
