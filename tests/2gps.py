@@ -1,7 +1,10 @@
+import os
+import sys
+sys.path.append(os.pardir)
 from gps import *
-from xbee import *
 from time import sleep,time
 from motor import *
+from xbee import *
 
 #gps
 gps = Gps()
