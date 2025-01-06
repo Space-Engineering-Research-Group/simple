@@ -26,6 +26,7 @@ class Motor(Imotor):
         self.right_error_messages=[]
         self.right_error_log="right motor log"
         self.a=1
+        self.ini=True
         while True:
             try:
                 self.right_in1=DigitalOutputDevice(rdir_1,pin_factory=factory)
@@ -73,6 +74,7 @@ class Motor(Imotor):
         self.right_error_messages=[]
         self.right_error_log="right motor log"
         self.a=1
+        self.ini=False
         
         while True:
             try:
@@ -117,6 +119,7 @@ class Motor(Imotor):
         self.right_error_messages=[]
         self.right_error_log="right motor log"
         self.a=1
+        self.ini=False
 
         while True:
             try:
@@ -161,6 +164,7 @@ class Motor(Imotor):
         self.right_error_messages=[]
         self.right_error_log="right motor log"
         self.a=1
+        self.ini=False
         while True:
             try:
                 self.right_PWM.value = speed
@@ -201,6 +205,7 @@ class Motor(Imotor):
         self.right_error_messages=[]
         self.right_error_log="right motor log"
         self.a=1
+        self.ini=False
 
         while True:
             try:
@@ -245,6 +250,7 @@ class Motor(Imotor):
         self.right_error_messages = []
         self.right_error_log = "right motor log"
         self.a = 1
+        self.ini=False
 
         while True:
             try:
@@ -288,6 +294,7 @@ class Motor(Imotor):
         self.right_error_messages = []
         self.right_error_log = "right motor log"
         self.a = 1
+        self.ini=False
 
         while True:
             try:
@@ -383,5 +390,5 @@ class Motor(Imotor):
                 self.error_log=self.left_error_log
         
         if 5 in [self.left_error_counts,self.right_error_counts]:
-            raise RuntimeError
-                
+            if self.ini==False:
+                raise RuntimeError
