@@ -5,7 +5,7 @@ try:
     from gpiozero.pins.pigpio import PiGPIOFactory
     from cds import *
     from servo import *
-    from xbee import *
+    from XB import *
     from time import sleep,time
 
     #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
@@ -120,7 +120,7 @@ try:
 
 
     try:
-        xbee=Xbee()
+        xbee=Xb()
     except RuntimeError:
         tools[5]=False
     finally:
