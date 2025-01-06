@@ -7,7 +7,16 @@ class Iservo(abc.ABC):
      def rotate(self):
           pass
 
+     @abc.abstractmethod     
      def stop(self):
+          pass
+
+     @abc.abstractmethod     
+     def handle_error(self):
+          pass
+
+     @abc.abstractmethod     
+     def log_errors(self):
           pass
 
 class Servo(Iservo):

@@ -6,6 +6,9 @@ class Imotor(ABC):
     def forward(self):
         pass
 
+    @abstractmethod    
+    def backward(self):
+        pass  
     
     @abstractmethod
     def turn_right(self):
@@ -15,11 +18,35 @@ class Imotor(ABC):
     def turn_left(self):
         pass
 
+    @abstractmethod    
+    def stop(self): 
+        pass
+
     @abstractmethod
     def release(self):
         pass
-    
-    
+
+    @abstractmethod
+    def right_handle_error(self):
+        pass
+
+    @abstractmethod    
+    def left_handle_error(self):
+        pass
+
+    @abstractmethod    
+    def right_log_errors(self):
+        pass
+
+    @abstractmethod    
+    def left_log_errors(self):
+        pass
+
+    @abstractmethod    
+    def judge_error(self):
+        pass
+
+
 class Motor(Imotor):
     def __init__(self,rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory): 
         self.right_error_counts=[]

@@ -7,6 +7,15 @@ class Icds(ABC):
     def get_brightness(self):
         pass
 
+    @abstractmethod    
+    def handle_error(self):
+        pass
+
+    @abstractmethod    
+    def log_errors(self):   
+        pass 
+
+
 class Cds(Icds):
     def __init__(self):
         self.error_counts = []

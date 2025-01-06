@@ -12,6 +12,14 @@ class ICamera(ABC):
     def release(self):
         pass
 
+    @abstractmethod
+    def handle_error(self):
+        pass
+
+    @abstractmethod
+    def log_errors(self):
+        pass
+
 class Camera(ICamera):
     def __init__(self, width, height, fps):
         self.error_counts = []

@@ -14,7 +14,15 @@ class IXbee(abc.ABC):
     def xbee_delete(self):
         pass
 
-class Xbee(IXbee):
+    @abc.abstractmethod
+    def handle_error(self):
+        pass
+
+    @abc.abstractmethod
+    def log_errors(self):
+        pass
+
+class xxbb(IXbee):
     def __init__(self):
         self.error_counts = []
         self.error_messages = []
@@ -111,7 +119,5 @@ class Xbee(IXbee):
                 self.error_log=f"cds:Error--{list[index]} other errors--{result}"
             raise RuntimeError        
      
-
-
 
 
