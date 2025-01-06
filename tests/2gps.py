@@ -4,11 +4,11 @@ sys.path.append(os.pardir)
 from gps import *
 from time import sleep,time
 from motor import *
-from xbee import *
+from XB import *
 
 #gps
 gps = Gps()
-xbee = Xbee()
+xbee = xxbb()
 motors = Motor()
 
 plan2 = "A"
