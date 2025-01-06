@@ -124,16 +124,23 @@ try:
 
     try:
         xbee=Xxbb()
-    except RuntimeError:
-        tools[5]=False
     finally:
-        if xbee.error_counts:
+        if len(xbee.error_counts)>0:
             ins_error_tool.append("xbee")
             ins_error.append(xbee.error_log)
+            if 5 in xbee.error_counts:
+                ins_error_tool.append("xbee")
+                tools[5]=False
+
 
     #ここで、ログを送信する
     ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error_tool,ins_error]
-    xbee.xbee_send(ins_log)                                          
+    xbee.xbee_send(ins_log)         
+
+
+    def nlog(ward):
+        notice_log=[9,ward]
+        xbee.xbee_send(notice_log)
 
     def mforward(wait_time):
         if wait_time>0:
@@ -315,9 +322,7 @@ try:
         return get_rotation_angle              
 
 
-    def nlog(ward):
-        notice_log=[9,ward]
-        xbee.xbee_send(notice_log)
+
                     
 
 
@@ -424,6 +429,11 @@ try:
 
     nlog("パラシュートの切り離しを行いました。")
 
+    if tools[3]==False:
+        nlog("モーターが使えないため処理を停止します")
+        import sys
+        sys.exit(1)
+        
     if tools[2]==True:
         p=0
         try:
