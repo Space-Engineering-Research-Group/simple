@@ -14,6 +14,14 @@ class IXbee(abc.ABC):
     def xbee_delete(self):
         pass
 
+    @abc.abstractmethod
+    def handle_error(self):
+        pass
+
+    @abc.abstractmethod
+    def log_errors(self):
+        pass
+
 class Xbee(IXbee):
     def __init__(self):
         self.error_counts = []
