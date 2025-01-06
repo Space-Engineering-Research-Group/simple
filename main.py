@@ -29,12 +29,12 @@ try:
 
     try:
         cds=Cds()
-    except RuntimeError:
-            tools[0]=False
     finally:
-        if cds.error_counts:
-            ins_error_tool.append("cds")
-            ins_error.append(cds.error_log)       
+        if len(cds.error_counts)>0:
+            ins_error.append(cds.error_log)   
+            if  5 in cds.error_counts:
+                ins_error_tool.append("cds")
+                tools[0]=False   
 
 
     #明るさの閾値は曇りの日に明るさを取得して決める
@@ -46,20 +46,22 @@ try:
     except RuntimeError:
         tools[4]=False
     finally:
-        if servo.error_counts:
-            ins_error_tool.append("servo")
+        if len(servo.error_counts)>0:
             ins_error.append(servo.error_log)
+            if 5 in servo.error_counts:
+                ins_error_tool.append("servo")
+                tools[4]=False
 
 
 
     try:
         gps=Gps()
-    except RuntimeError:
-        tools[1]=False
     finally:
-        if gps.error_counts:
-            ins_error_tool.append("gps")
+        if len(gps.error_counts)>0:
             ins_error.append(gps.error_log)
+            if 5 in gps.error_log:
+               ins_error_tool.append("gps") 
+               tools[1]=False
 
     gps_deta=[]
     #ここは大会の時に測る。
@@ -75,13 +77,12 @@ try:
     view_angle=70
     try:
         camera=Camera(width,height,fps)
-    except RuntimeError:
-        tools[2]=False
     finally:
-        if camera.error_counts:
-            ins_error_tool.append("camera")
+        if len(camera.error_counts)>0:
             ins_error.append(camera.error_log)
-
+            if 5 in camera.error_counts:
+                ins_error_tool.append("camera")
+                tools[2]=False
 
     #ここの具体的な値はコーンの検査をして考える。
     lower_red1 = np.array([0, 100, 100])   # 下の範囲1 (0〜10度)
@@ -109,18 +110,20 @@ try:
 
     try:
         motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory)
-    except Exception :
-        tools[3]=False
     finally:
-        if motors.error_counts:
-            ins_error_tool.append("motors")
+        if len(motors.left_error_counts)>0 or len(motors.right_error_counts)>0:
             ins_error.append(motors.error_log)
-
+            if 5 in motors.left_error_counts:
+                ins_error_tool.append("left motor")
+                tools[3]=False
+            if 5 in motors.right_error_counts:
+                ins_error_tool.append("right motor")
+                tools[3]=False
 
 
 
     try:
-        xbee=Xb()
+        xbee=Xxbb()
     except RuntimeError:
         tools[5]=False
     finally:
