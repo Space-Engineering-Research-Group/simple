@@ -360,6 +360,22 @@ def feeds8(sheet,data,num):
     workbook.save()     
 
 def feeds9(sheet,data,num):
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "words"
+
+    for index, value in enumerate(data, start=1):
+        sheet.range(num+1, index).value = str(value)   
+    workbook.save()      
+
+
+def feeds10(sheet,data,num):
     #フェーズ、時間、故障した部品、エラー文 
     num_list = []
     num_list.append(num)
