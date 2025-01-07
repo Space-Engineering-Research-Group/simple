@@ -120,7 +120,7 @@ try:
 
 
     try:
-        xbee=Xb()
+        xbee=xxbb()
     except RuntimeError:
         tools[5]=False
     finally:
