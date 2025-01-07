@@ -92,5 +92,5 @@ class Cds(Icds):
                 result=list[:index]+list[index+1:]
                 result=",".join(result)
                 self.error_log=f"cds:Error--{list[index]} other errors--{result}"
-            if ini==False:
+            if self.ini==False:
                 raise RuntimeError
