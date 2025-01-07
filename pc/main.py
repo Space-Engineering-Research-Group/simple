@@ -438,6 +438,9 @@ while True:
                     num = feeds8(sheet,data,num) 
                 if i == 9:
                     num = feeds9(sheet,data,num)    
+                if i == 10:
+                    num = feeds10(sheet,data,num) 
+            
 
         num = num + 1  
     except Exception as e:
