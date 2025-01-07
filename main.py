@@ -6,6 +6,7 @@ try:
     from cds import *
     from servo import *
     from XB import *
+    from raspberry import *
     from time import sleep,time
 
     #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
@@ -132,6 +133,11 @@ try:
     ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error_tool,ins_error]
     xbee.xbee_send(ins_log)                                          
 
+    try:
+        raspy = raspberry()
+    except RuntimeError:
+        tools[6]=False #ここの部分は要検討
+
 
     def mxbee(data):
         #フェーズ、故障した部品、エラー分
@@ -147,7 +153,7 @@ try:
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].append("xbee")
-                xbee.xbee_send(motor_log)    
+                raspy.Main.main(xbee_log)    
 
 
     def mforward(wait_time):
