@@ -62,7 +62,7 @@ class Camera(ICamera):
                     if frame is not None:
                         frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
                         self.a=0
-                        return frame
+                        return frame_bgr
                     else:
                         raise RuntimeError("Failed to capture a frame from the camera.")
             except Exception as e:
