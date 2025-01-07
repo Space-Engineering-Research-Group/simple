@@ -141,7 +141,7 @@ try:
 
     def mxbee_send(data):
         #フェーズ、故障した部品、エラー分
-        xbee_log = [11,[],None]
+        xbee_log = [11,[],None] #raspyのみ書く
         try:
             xbee.xbee_send(data)
         except RuntimeError:
