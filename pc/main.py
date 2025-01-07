@@ -359,7 +359,6 @@ def feeds8(sheet,data,num):
         sheet.range(num+1, index).value = str(value)
     workbook.save()     
 
-#9が10になる
 def feeds9(sheet,data,num):
     #フェーズ、時間、故障した部品、エラー文 
     num_list = []
