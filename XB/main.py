@@ -65,6 +65,7 @@ class Xxbb(IXbee):
                 self.device.open()
                 json_data = json.dumps(data)
                 self.device.send_data_remote(self.DEVICE_ID, json_data.encode())
+                
                 self.a = 0
             except TransmitException as e: 
                 error = f"Data transmission failed-- detail {e}"  

@@ -120,7 +120,7 @@ try:
 
 
     try:
-        xbee=xxbb()
+        xbee=Xxbb()
     except RuntimeError:
         tools[5]=False
     finally:
@@ -131,6 +131,24 @@ try:
     #ここで、ログを送信する
     ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error_tool,ins_error]
     xbee.xbee_send(ins_log)                                          
+
+
+    def mxbee(data):
+        #フェーズ、故障した部品、エラー分
+        xbee_log = [11,[],None]
+        try:
+            xbee.xbee_send(data)
+        except RuntimeError:
+            tools[5]=False
+            import sys
+            sys.exit(1)
+        finally:
+            if len(xbee_log):
+                xbee_log[-1]=xbee.error_log
+                if 5 in xbee.error_counts:
+                    xbee_log[-2].append("xbee")
+                xbee.xbee_send(motor_log)    
+
 
     def mforward(wait_time):
         if wait_time>0:
