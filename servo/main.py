@@ -25,6 +25,7 @@ class Servo(Iservo):
           self.error_messages = []
           self.error_log = "Servo Error Log"
           self.a = 1
+          self.ini=True
           while True:
                try:
                     self.servo = Servo(pin)
@@ -46,6 +47,7 @@ class Servo(Iservo):
           self.error_messages = []
           self.error_log = "Servo Error Log"
           self.a = 1
+          self.ini=False
           while True:
                try:
                     self.servo.value = -1
@@ -67,6 +69,7 @@ class Servo(Iservo):
           self.error_messages = []
           self.error_log = "Servo Error Log"
           self.a = 1
+          self.ini=False
           while True:
                try:
                     self.servo.value = 0
@@ -105,4 +108,5 @@ class Servo(Iservo):
                     result = list[:index] + list[index + 1:]
                     result = ",".join(result)
                     self.error_log = f"Servo: Error--{list[index]} other errors--{result}"
-               raise RuntimeError
+               if self.ini==False:
+                    raise RuntimeError
