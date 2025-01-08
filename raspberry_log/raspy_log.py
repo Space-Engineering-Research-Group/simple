@@ -36,6 +36,9 @@ class Xcel(IXcel):
         self.f6_num_list = []
         self.f7_num_list = []
         self.f9_num_list = []
+        self.f10_num_list = []
+        self.f11_num_list = []
+        self.f12_num_list = []
 
         try:
             file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx" #raspyの保存先を入れる。仮の値
@@ -383,7 +386,7 @@ class Xcel(IXcel):
 
         for index, value in enumerate(data, start=1):
             sheet.range(num+1, index).value = str(value)
-        self.workbook.save()     
+        self.workbook.save()    
 
     def feeds9(self,sheet,data,num):
         #フェーズ、時間、故障した部品、エラー文 
@@ -394,14 +397,63 @@ class Xcel(IXcel):
         result = self.is_row_empty(sheet,self.f9_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
+            sheet.range(num,2).value = "エラー文"
+
+        for index, value in enumerate(data, start=1):
+            sheet.range(num+1, index).value = str(value)   
+        self.workbook.save()       
+
+    def feeds10(self,sheet,data,num):
+        #フェーズ、時間、故障した部品、エラー文 
+        self.f10_num_list.append(num)
+        if len(self.f10_num_list) > 2:
+            self.f10_num_list.pop(-1) 
+            
+        result = self.is_row_empty(sheet,self.f10_num_list[0])
+        if result == True:
+            sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "時間"
-            sheet.range(num,3).value = "故障した部品"
+            sheet.range(num,3).value = "故障した部品(motor)"
             sheet.range(num,4).value = "エラー文"
 
         for index, value in enumerate(data, start=1):
             sheet.range(num+1, index).value = str(value)   
-        self.workbook.save()      
+        self.workbook.save()   
 
+    def feeds11(self,sheet,data,num):
+        #フェーズ、時間、故障した部品、エラー文 
+        self.f11_num_list.append(num)
+        if len(self.f11_num_list) > 2:
+            self.f11_num_list.pop(-1) 
+            
+        result = self.is_row_empty(sheet,self.f11_num_list[0])
+        if result == True:
+            sheet.range(num,1).value = "フェーズ"
+            sheet.range(num,2).value = "時間"
+            sheet.range(num,3).value = "故障した部品(xbee)"
+            sheet.range(num,4).value = "エラー文"
+
+        for index, value in enumerate(data, start=1):
+            sheet.range(num+1, index).value = str(value)   
+        self.workbook.save()            
+
+    def feeds12(self,sheet,data,num):
+        #フェーズ、時間、故障した部品、エラー文 
+        self.f12_num_list.append(num)
+        if len(self.f12_num_list) > 2:
+            self.f12_num_list.pop(-1) 
+            
+        result = self.is_row_empty(sheet,self.f12_num_list[0])
+        if result == True:
+            sheet.range(num,1).value = "フェーズ"
+            sheet.range(num,2).value = "時間"
+            sheet.range(num,3).value = "故障した部品(raspy_log)"
+            sheet.range(num,4).value = "エラー文"
+
+        for index, value in enumerate(data, start=1):
+            sheet.range(num+1, index).value = str(value)   
+        self.workbook.save()   
+        
 
     def handle_error(self, error):
         if str(error) not in self.error_messages:
