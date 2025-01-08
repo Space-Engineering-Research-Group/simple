@@ -31,7 +31,7 @@ class Xcel(IXcel):
             self.sheet = self.workbook.sheets[0]  
             self.workbook.save(new_file_path)   
 
-            return self.app, self.workbook, self.sheet
+            return self.sheet
         except Exception as e:
             if self.app:
                 self.app.quit()
@@ -42,8 +42,7 @@ class Xcel(IXcel):
             app, workbook, sheet = self.open_workbook()
             return app, workbook, sheet
         except Exception as e:
-            print(f"再接続に失敗しました: {e}")
-            return None, None, None    
+            return e
 
 
     def delete(self):
@@ -53,8 +52,22 @@ class Xcel(IXcel):
             self.workbook.close()  # workbook を閉じる
         if hasattr(self, 'app') and self.app is not None:
             self.app.quit()
+            
+g = 0  
+xcel_judge = False  
+while True:        
+    try:
+        xcel = Xcel()
+        g = 0
+    except:
+        g = g + 1
+        if g == 5:
+            break
+        else:
+            xcel_judge = True
+            break
 
-xcel = Xcel()
+
 def is_row_empty(sheet, row_number): 
     row_values = sheet.range(f"{row_number}:{row_number}").value
     if isinstance(row_values, list):
@@ -346,17 +359,30 @@ def feeds9(sheet,data,num):
 
 #================================= main =============================
 class Main():
-    def main(data):
+    def __init__(self,sheet):
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log = "raspy_log:Error"
+        self.a = 1
+
+    def main(self,data):
+        if xcel_judge == False:
+                raise RuntimeError("xcel ins false")
+        
+        num = 1
+
         try:
-            num = 1
-
             file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx" #raspyの保存先を入れる。仮の値
-            app, workbook, sheet = xcel.create_new_workbook(file_path)
+            sheet = xcel.create_new_workbook(file_path)
+            self.a = 0
 
-        except FileNotFoundError as e:
-            print(f"エラー: {e}")
         except Exception as e:
-            print(f"予期しないエラー発生: {e}")    
+                error=f"path cannot--detail{e}"
+                self.handle_error(error)
+     
+        finally:
+            if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
+                self.log_errors()
 
 
         while True:
@@ -384,21 +410,38 @@ class Main():
                             num = feeds9(sheet,data,num)    
 
                 num = num + 1  
+                self.a = 0
+                break
             except Exception as e:
-                print(f"エラー発生: {e}")
-                app, workbook, sheet = xcel.reconnect_excel()
-                if app is None or workbook is None:
-                    print("Excelへの再接続に失敗しました。終了します。")
-                    break     
+                error=f"path cannot--detail{e}"
+                self.handle_error(error)
+     
+            finally:
+                if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
+                    self.log_errors()
 
-            if data[1] == 9 and data[2] == 3: #ここは最後のデータが送られてきたらbeakを行う。数値を変える可能性あり
-                break         
+    def handle_error(self, error):
+        if str(error) not in self.error_messages:
+            self.error_messages.append(str(error))
+            self.error_counts.append(1)
+        else:
+            index = self.error_messages.index(str(error))
+            self.error_counts[index] += 1
 
-        try:
-            xcel.delete()
-        except Exception as e:
-            print("エラー処理どうしよう")
-
+    def log_errors(self):
+        error_list = []
+        for count, message in zip(self.error_counts, self.error_messages):
+            error_list.append(f"{count}*{message}")
+        if self.a == 0:
+            self.error_log = "raspy_log:Error--"+",".join(error_list)
+        elif 5 in self.error_counts:
+            if len(error_list) == 1:
+                self.error_log=f"raspy_log:Error--{error_list[0]}"
+            else:
+                index = self.error_counts.index(5)
+                result = error_list[:index] + error_list[index + 1:]
+                result = ",".join(result)
+                self.error_log = f"raspy_log:Error--{error_list[index]} other errors--{result}"        
 
 
 
