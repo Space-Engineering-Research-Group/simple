@@ -6,7 +6,7 @@ try:
     from cds import *
     from servo import *
     from XB import *
-    from raspberry.log import *
+    from raspberry_log import *
     from time import sleep,time
 
     #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
@@ -134,7 +134,8 @@ try:
     xbee.xbee_send(ins_log)                                          
 
     try:
-        raspy = raspberry()
+        raspy = Main()
+        xcel = Xcel() #deleteの時に使う
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
 
