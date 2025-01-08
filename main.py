@@ -146,6 +146,7 @@ try:
 
     try:
         raspy = Main()
+        xcel = Xcel() #deleteの時に使う
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
 
