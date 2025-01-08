@@ -25,7 +25,7 @@ try:
     
 
 
-    #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbee,もどきが生きてたらTrueを示すようにする。
+    #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbee、raspy_logもどきが生きてたらTrueを示すようにする。
     tools=[True,True,True,True,True,True,True]
     #plan1は機体の落下、着地まで
     plan1="A"
@@ -157,7 +157,7 @@ try:
         try:
             xcel.main(data)
         except RuntimeError:
-            tools[5]=False
+            tools[6]=False
             import sys
             sys.exit(1)
         finally:
