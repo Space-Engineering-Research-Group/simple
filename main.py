@@ -6,7 +6,7 @@ try:
     from cds import *
     from servo import *
     from XB import *
-    from raspberry import *
+    from raspberry.log import *
     from time import sleep,time
 
     #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
