@@ -589,6 +589,7 @@ try:
         except RuntimeError:
             pass   
 
+    #個々のロジック有用性確認済み。後はnlogの単体テストを行うだけで、ここは詳細テストはいらない。
     if tools[2]==False:
         if tools[1]==True:
             nlog("カメラが使えないので、パラシュートの回避を実行しません")
