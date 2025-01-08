@@ -20,7 +20,7 @@ class Iservo(abc.ABC):
           pass
 
 class Servo(Iservo):
-     def __init__(self, pin):
+     def __init__(self, pin,factory):
           self.error_counts = []
           self.error_messages = []
           self.error_log = "Servo Error Log"
@@ -28,7 +28,7 @@ class Servo(Iservo):
           self.ini=True
           while True:
                try:
-                    self.servo = Servo(pin)
+                    self.servo = Servo(pin,factory)
                     self.a = 0
                     break
                except IOError as e:
