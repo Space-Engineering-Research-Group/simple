@@ -153,7 +153,7 @@ try:
 
     def mxcel(data):
         #フェーズ、故障した部品、エラー分
-        xcel_log = [11,[],None] #raspyのみ書く
+        xcel_log = [11,None,[],None] #raspyのみ書く
         try:
             xcel.main(data)
         except RuntimeError:
@@ -162,6 +162,7 @@ try:
             sys.exit(1)
         finally:
             if len(xbee.error_counts):
+                motor_log[2]=mget_time()
                 xcel_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xcel_log[-2].append("xcel")
@@ -169,7 +170,7 @@ try:
 
     def mxbee_send(data):
         #フェーズ、故障した部品、エラー分
-        xbee_log = [12,[],None] #raspyのみ書く
+        xbee_log = [12,None,[],None] #raspyのみ書く
         try:
             xbee.xbee_send(data)
         except RuntimeError:
@@ -178,6 +179,7 @@ try:
             sys.exit(1)
         finally:
             if len(xbee.error_counts):
+                motor_log[2]=mget_time()
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].append("xbee")
