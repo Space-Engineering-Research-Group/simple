@@ -22,6 +22,73 @@ class Xcel(IXcel):
         self.app = None
         self.workbook = None
         self.sheet = None
+
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log = "raspy_log:Error"
+        self.a = 1
+        self.num = 1
+
+        self.fm1_num_list = []
+        self.f2_num_list = []
+        self.f4_num_list = []
+        self.f5_num_list = []
+        self.f6_num_list = []
+        self.f7_num_list = []
+        self.f9_num_list = []
+
+        try:
+            file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx" #raspyの保存先を入れる。仮の値
+            self.sheet = self.create_new_workbook(file_path)
+            self.a = 0
+
+        except Exception as e:
+                error=f"path cannot--detail{e}"
+                self.handle_error(error)
+                
+        finally:
+            if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
+                self.log_errors()
+
+
+    def main(self,data):  
+
+        while True:
+            try:
+                for i in range(1,9):
+                    if data[1] == i:
+                        if i == 1:
+                            num = self.feeds1(self.sheet,data,self.num)
+                        if i == -1:
+                            num = self.feeds_1(self.sheet,data,num)
+                        if i == 2:
+                            num = self.feeds2(self.sheet,data,num) 
+                        if i == 4:
+                            num = self.feeds4(self.sheet,data,num)
+                        if i == 5:
+                            num = self.feeds5(self.sheet,data,num)
+                        if i == 6:
+                            num = self.feeds6(self.sheet,data,num)
+                        if i == 8:
+                            num = self.feeds8(self.sheet,data,num) 
+                        if i == 9:
+                            num = self.feeds9(self.sheet,data,num)    
+
+                num = num + 1 
+                self.a = 0
+                break
+            except Exception as e:
+                error=f"path cannot--detail{e}"
+                self.handle_error(error)
+                rapp, rworkbook, rsheet = self.reconnect_excel()
+                if rapp is None or rworkbook is None:
+                        print("Connection failed. will end")
+     
+            finally:
+                if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
+                    self.log_errors()
+            
+
     
     def create_new_workbook(self, new_file_path):
         """新しいExcelファイルを作成して保存"""
@@ -33,9 +100,15 @@ class Xcel(IXcel):
 
             return self.sheet
         except Exception as e:
-            if self.app:
-                self.app.quit()
-            raise e
+            error=f"create_workbook failse--detail{e}"
+            self.handle_error(error)
+            rapp, rworkbook, rsheet = self.reconnect_excel()
+            if rapp is None or rworkbook is None:
+                    print("Connection failed. will end")
+
+        finally:
+            if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
+                self.log_errors()        
         
     def reconnect_excel(self):
         try:
@@ -60,13 +133,11 @@ class Xcel(IXcel):
         return row_values is None
 
     def feeds_1(self,sheet,data,num):
-        #最初num = 4
-        num_list = []
-        num_list.append(num)
-        if len(num_list) > 2:
-            num_list.pop(-1) 
+        self.fm1_num_list.append(num)
+        if len(self.fm1_num_list) > 2:
+            self.fm1_num_list.pop(-1) 
 
-        result = self.is_row_empty(sheet,num_list[0])
+        result = self.is_row_empty(sheet,self.fm1_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "時間"
@@ -123,13 +194,11 @@ class Xcel(IXcel):
 
 
     def feeds2(self,sheet,data,num):
-        #最初num = 7 
-        num_list = []
-        num_list.append(num)
-        if len(num_list) > 2:
-            num_list.pop(-1) 
+        self.f2_num_list.append(num)
+        if len(self.f2_num_list) > 2:
+            self.f2_num_list.pop(-1) 
             
-        result = self.is_row_empty(sheet,num_list[0])
+        result = self.is_row_empty(sheet,self.f2_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "プラン"
@@ -153,12 +222,11 @@ class Xcel(IXcel):
 
     def feeds4(self,sheet,data,num):
         #フェーズ、時間、パラシュート検知,時間、緯度、経度,コーンに対する角度、故障した部品、エラー文
-        num_list = []
-        num_list.append(num)
-        if len(num_list) > 2:
-            num_list.pop(-1) 
+        self.f4_num_list.append(num)
+        if len(self.f4_num_list) > 2:
+            self.f4_num_list.pop(-1) 
             
-        result = self.is_row_empty(sheet,num_list[0])
+        result = self.is_row_empty(sheet,self.f4_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "時間"
@@ -207,12 +275,11 @@ class Xcel(IXcel):
 
     def feeds5(self,sheet,data,num):
         #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
-        num_list = []
-        num_list.append(num)
-        if len(num_list) > 2:
-            num_list.pop(-1) 
+        self.f5_num_list.append(num)
+        if len(self.f5_num_list) > 2:
+            self.f5_num_list.pop(-1) 
             
-        result = self.is_row_empty(sheet,num_list[0])
+        result = self.is_row_empty(sheet,self.f5_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "時間"
@@ -257,12 +324,11 @@ class Xcel(IXcel):
 
     def feeds6(self,sheet,data,num):
         #フェーズ、時間、コーン検知、コーンの位置判定、ゴール判定、故障した部品、エラー文
-        num_list = []
-        num_list.append(num)
-        if len(num_list) > 2:
-            num_list.pop(-1) 
+        self.f6_num_list.append(num)
+        if len(self.f6_num_list) > 2:
+            self.f6_num_list.pop(-1) 
             
-        result = self.is_row_empty(sheet,num_list[0])
+        result = self.is_row_empty(sheet,self.f6_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "時間"
@@ -321,12 +387,11 @@ class Xcel(IXcel):
 
     def feeds9(self,sheet,data,num):
         #フェーズ、時間、故障した部品、エラー文 
-        num_list = []
-        num_list.append(num)
-        if len(num_list) > 2:
-            num_list.pop(-1) 
+        self.f9_num_list.append(num)
+        if len(self.f9_num_list) > 2:
+            self.f9_num_list.pop(-1) 
             
-        result = self.is_row_empty(sheet,num_list[0])
+        result = self.is_row_empty(sheet,self.f9_num_list[0])
         if result == True:
             sheet.range(num,1).value = "フェーズ"
             sheet.range(num,2).value = "時間"
@@ -337,62 +402,6 @@ class Xcel(IXcel):
             sheet.range(num+1, index).value = str(value)   
         self.workbook.save()      
 
-
-
-#================================= main =============================
-    def __init__(self):
-        self.error_counts = []
-        self.error_messages = []
-        self.error_log = "raspy_log:Error"
-        self.a = 1
-        self.num = 1
-
-        try:
-            file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx" #raspyの保存先を入れる。仮の値
-            self.sheet = self.create_new_workbook(file_path)
-            self.a = 0
-
-        except Exception as e:
-                error=f"path cannot--detail{e}"
-                self.handle_error(error)
-     
-        finally:
-            if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
-                self.log_errors()
-
-    def main(self,data):  
-
-        while True:
-            try:
-                for i in range(1,9):
-                    if data[1] == i:
-                        if i == 1:
-                            num = self.feeds1(self.sheet,data,self.num)
-                        if i == -1:
-                            num = self.feeds_1(self.sheet,data,num)
-                        if i == 2:
-                            num = self.feeds2(self.sheet,data,num) 
-                        if i == 4:
-                            num = self.feeds4(self.sheet,data,num)
-                        if i == 5:
-                            num = self.feeds5(self.sheet,data,num)
-                        if i == 6:
-                            num = self.feeds6(self.sheet,data,num)
-                        if i == 8:
-                            num = self.feeds8(self.sheet,data,num) 
-                        if i == 9:
-                            num = self.feeds9(self.sheet,data,num)    
-
-                num = num + 1 
-                self.a = 0
-                break
-            except Exception as e:
-                error=f"path cannot--detail{e}"
-                self.handle_error(error)
-     
-            finally:
-                if (len(self.error_counts)and self.a==0) or 5 in self.error_counts:
-                    self.log_errors()
 
     def handle_error(self, error):
         if str(error) not in self.error_messages:
