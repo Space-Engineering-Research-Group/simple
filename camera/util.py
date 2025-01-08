@@ -24,7 +24,7 @@ def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
         return max_contour
     return None
 
-def find_parachute(frame,lower_yellow,upper_yellow,center,phase=1):
+def find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,phase):
     img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
     clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
     img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
@@ -33,38 +33,30 @@ def find_parachute(frame,lower_yellow,upper_yellow,center,phase=1):
 
     mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)       
     mask = cv2.medianBlur(mask, 11)
-    mask[0, :] = 0            
-    mask[-1, :] = 0            
-    mask[:, 0] = 0            
-    mask[:, -1] = 0 
-    mask=cv2.Canny(mask,80.0,175.0)
-    contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
 
+    yellow_pixels=np.sum(mask==255)
+    yellow_ratio=yellow_pixels/frame_area
 
-    if contours:
-        # 最大面積のコンターを返す
-        max_contour = max(contours, key=cv2.contourArea)
-        judge=judge_parachute(max_contour)
-        if phase==1:
-            if judge==False:
-                return [None,None]
-            M = cv2.moments(max_contour)
-            cx = int(M["m10"] / M["m00"])
+    threshold=0.03
+    if yellow_ratio>=threshold:
+        if phase==0:
+            return True
+        elif phase==1:
+            left_half = mask[:, :center]
+            right_half = mask[:, center:]   
 
-            if cx<center:
+            left_yellow_count = np.sum(left_half == 255)
+            right_yellow_count = np.sum(right_half == 255)
+
+            if left_yellow_count > right_yellow_count:
                 return [-1,True]
             else:
                 return [1,True]
-        else:
-            if judge==False:
-                return None
-            else:
-                return True            
     else:
-        if phase==1:
-            return [False,False]
-        else:
+        if phase==0:
             return False
+        else:
+            return [None,False]
 
 def judge_cone(contour,frame_area):
     area=cv2.contourArea(contour)
@@ -73,16 +65,6 @@ def judge_cone(contour,frame_area):
     if raito >= 0.04:
         return True
     return False
-
-
-def judge_parachute(contour,frame_area):
-    area=cv2.contourArea(contour)
-    raito=(area/frame_area)*100
-    #個々の値も適当
-    if raito >= 0.04:
-        return True
-    return False
-    
 
         
 def get_distance(contour,x):
