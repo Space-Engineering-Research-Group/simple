@@ -21,6 +21,8 @@ try:
         time_string = japan_time.strftime('%H時%M分') + f'{seconds_with_micro:.3f}秒'
 
         return time_string
+    
+    
 
 
     #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbee,もどきが生きてたらTrueを示すようにする。
@@ -145,23 +147,29 @@ try:
                 tools[5]=False
 
     try:
-        raspy = Main()
         xcel = Xcel() #deleteの時に使う
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
 
-    #ここで、ログを送信する
-    ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
-    xbee.xbee_send(ins_log)         
+    def mxcel(data):
+        #フェーズ、故障した部品、エラー分
+        xcel_log = [11,[],None] #raspyのみ書く
+        try:
+            xcel.main(data)
+        except RuntimeError:
+            tools[5]=False
+            import sys
+            sys.exit(1)
+        finally:
+            if len(xbee.error_counts):
+                xcel_log[-1]=xbee.error_log
+                if 5 in xbee.error_counts:
+                    xcel_log[-2].append("xcel")
+                xbee.xbee_send(xcel_log)
 
-
-    def nlog(ward):
-        notice_log=[9,ward]
-        xbee.xbee_send(notice_log)
-    
     def mxbee_send(data):
         #フェーズ、故障した部品、エラー分
-        xbee_log = [11,[],None] #raspyのみ書く
+        xbee_log = [12,[],None] #raspyのみ書く
         try:
             xbee.xbee_send(data)
         except RuntimeError:
@@ -173,7 +181,20 @@ try:
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].append("xbee")
-                raspy.main(xbee_log)   
+                mxcel(xbee_log)    
+
+
+    #ここで、ログを送信する
+    ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
+    mxbee_send(ins_log)    
+    mxcel(ins_log)     
+
+
+    def nlog(ward):
+        notice_log=[9,ward]
+        mxbee_send(notice_log)
+        mxcel(notice_log)
+      
 
     def mforward(wait_time):
         if wait_time>0:
@@ -198,7 +219,8 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                xbee.xbee_send(motor_log)
+                mxbee_send(motor_log)
+                mxcel(motor_log)
 
     def mbackward(wait_time):
         if wait_time>0:
@@ -222,7 +244,8 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                xbee.xbee_send(motor_log)
+                mxbee_send(motor_log)
+                mxcel(motor_log)
 
     def mturn_left(wait_time):
         if wait_time>0:
@@ -246,7 +269,8 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                xbee.xbee_send(motor_log)
+                mxbee_send(motor_log)
+                mxcel(motor_log)
 
 
     def mturn_right(wait_time):
@@ -271,7 +295,8 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                xbee.xbee_send(motor_log)
+                mxbee_send(motor_log)
+                mxcel(motor_log)
 
     def mstop():
         motor_log=[10,None,[],None]
@@ -290,7 +315,8 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                xbee.xbee_send(motor_log)
+                mxbee_send(motor_log)
+                mxcel(motor_log)
 
 
     def mget_frame():
@@ -305,7 +331,8 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    xbee.xbee_send(camera.error_log)
+                    mxbee_send(camera.error_log)
+                    mxcel(camera.error_log)
 
     def mget_coordinate_xy(): #これはfeeds4の時に使う
         try:
@@ -320,7 +347,8 @@ try:
                 gps_log[-1]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[-2]="gps"
-                    xbee.xbee_send(gps_log)
+                    mxbee_send(gps_log)
+                    mxcel(gps_log)
 
     def m5get_coodinate_xy():
         #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
@@ -340,8 +368,9 @@ try:
             if len(gps.error_counts):
                 gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
-                    gps_log[6]="gps"
-            xbee.xbee_send(gps_log)  
+                    gps_log[6]="gps"  
+            mxbee_send(gps_log)
+            mxcel(gps_log)
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
@@ -350,8 +379,9 @@ try:
         move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
         get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
         gps_log[3] = move_direction
-        gps_log[4] = get_rotation_angle 
-        xbee.xbee_send(gps_log)   
+        gps_log[4] = get_rotation_angle  
+        mxbee_send(gps_log)
+        mxcel(gps_log)
         return get_rotation_angle              
 
 
@@ -384,7 +414,8 @@ try:
                     fir_cds_log[5]=cds.log_errors
                     if 5 in cds.error_counts:
                         fir_cds_log[4]="cds"
-                xbee.send(cds.error_log)
+                mxbee_send(cds.error_log)
+                mxcel(cds.error_log)
             
             keika=time()-now_time
             if keika<2:
@@ -399,7 +430,8 @@ try:
             wait_log[1]=jp_time
             wait_log[2]=int(preparation_time-(now_time-start_time))
             #xbeeで送信
-            xbee.send(wait_log)
+            mxbee_send(wait_log)
+            mxcel(wait_log)
             sleep(5)
 
             
@@ -431,7 +463,8 @@ try:
                 cds_log[2]=cds.brightness
                 if cds.brightness > brightness_threshold:
                     cds_log[3]=True
-                    xbee.xbee_send(cds_log)
+                    mxbee_send(cds_log)
+                    mxcel(cds_log)
 
                     start_time=time()
                     nlog("一定以上の明るさを検知したため、１分経過したら着地したと判定")
@@ -443,6 +476,8 @@ try:
                         time_log[1]=jp_time
                         time_log[2]=fall_time-(now_time-start_time)
                         xbee.xbee_send(time_log)
+                        mxbee_send(time_log)
+                        mxcel(time_log)
                         sleep(2)
 
                     nlog("１分経過したため着地したと判定")
@@ -456,7 +491,8 @@ try:
                     cds_log[5]=cds.error_log
                     if 5 in cds.error_counts:
                         cds_log[4]="cds"
-                xbee.xbee_send(cds_log)
+                mxbee_send(cds_log)
+                mxcel(cds_log)
             
             keika=time()-cds_log[1]
             if keika<2:
@@ -500,7 +536,8 @@ try:
             servo_log[3]=servo.error_log
             if 5 in servo.error_counts:
                 servo_log[2]="servo"
-            xbee.xbee_send(servo_log)
+            mxbee_send(servo_log)
+            mxcel(servo_log)
 
     nlog("パラシュートの切り離しを行いました。")
 
@@ -521,7 +558,8 @@ try:
             prelat,prelon=mget_coordinate_xy()
             gps_log[3]=prelat
             gps_log[4]=prelon
-            xbee.xbee_send(gps_log)
+            mxbee_send(gps_log)
+            mxcel(gps_log)
             nlog("パラシュートの検出を行う。")
             #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
             camera_log=[4,1,None,False,None,None]
@@ -529,7 +567,8 @@ try:
             frame=mget_frame()
             judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
             camera_log[3]=judge
-            xbee.xbee_send(camera_log)
+            mxbee_send(camera_log)
+            mxcel(camera_log)
 
             if judge==True:
                 nlog("パラシュートを検知したため、機体を後進させ、GPSの位置情報から向いている向きを取得します。")
@@ -547,7 +586,8 @@ try:
             nowlat,nowlon=mget_coordinate_xy()
             gps_log[3]=nowlat
             gps_log[4]=nowlon
-            xbee.xbee_send(gps_log)
+            mxbee_send(gps_log)
+            mxcel(gps_log)
             #変更点
             #左からフェーズ、フェーズの中のフェーズ、コーンに対する角度
             gps_log=[4,3,None,None]
@@ -641,8 +681,9 @@ try:
                     if len(gps.error_counts):
                         gps_log[10]=gps.error_log
                         if 5 in gps.error_counts:
-                            gps_log[9]="gps"
-                    xbee.xbee_send(gps_log)  
+                            gps_log[9]="gps"  
+                    mxbee_send(gps_log)
+                    mxcel(gps_log) 
 
 
                     #初めからコーンが近い場合の処理     
@@ -725,8 +766,9 @@ try:
                                 if len(gps.error_counts):
                                     gps_log[7]=gps.error_log
                                     if 5 in gps.error_counts:
-                                        gps_log[6]="gps"
-                                xbee.xbee_send(gps_log)  
+                                        gps_log[6]="gps"  
+                                mxbee_send(gps_log)
+                                mxcel(gps_log)
 
                             if distance<0.5:#適当
                                 gps_seikou=True
@@ -781,7 +823,8 @@ try:
                             frame=mget_frame()
                             judge=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
                             camera_log[3]=judge
-                            xbee.xbee_send(camera_log)
+                            mxbee_send(camera_log)
+                            mxcel(camera_log)
                             if judge==True:
                                 kazu=2
                                 break
@@ -827,12 +870,14 @@ try:
                                 if judge == False:
                                     nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     g=False
-                                    xbee.xbee_send(camera_log)
+                                    mxbee_send(camera_log)
+                                    mxcel(camera_log)
                                     break
                                 camera_log[3]=True
                                 sign=get_distance(contour,center)
                                 camera_log[4]=sign
-                                xbee.xbee_send(camera_log)
+                                mxbee_send(camera_log)
+                                mxcel(camera_log)
                                 move_time=1/turn_speed
                                 if sign==0:
                                     nlog("コーンが画面の中心にあるため、5秒間コーンに向かって前進をします。")
@@ -861,13 +906,15 @@ try:
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
                                 if contour == None:
-                                    xbee.xbee_send(camera_log)
+                                    mxbee_send(camera_log)
+                                    mxcel(camera_log)
                                     nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     g=False
                                     break
                                 judge=judge_cone(contour,frame_area)
                                 if judge == False:
-                                    xbee.xbee_send(camera_log)
+                                    mxbee_send(camera_log)
+                                    mxcel(camera_log)
                                     nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     g=False
                                     break
@@ -876,7 +923,8 @@ try:
 
                                 cone_result=to_stop(contour,frame_area)
                                 camera_log[4]=cone_result
-                                xbee.xbee_send(camera_log)
+                                mxbee_send(camera_log)
+                                mxcel(camera_log)
                                 if cone_result:
                                     nlog("コーンに近づけたため、ゴール判定")
                                     break
