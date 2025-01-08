@@ -6,17 +6,29 @@ try:
     from cds import *
     from servo import *
     from XB import *
-    from raspberry.log import *
+    from raspberry_log import *
     from time import sleep,time
+    from datetime import datetime, timedelta, timezone
 
-    #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbeeが生きてたらTrueを示すようにする。
-    tools=[True,True,True,True,True,True]
+    def mget_time():
+        # 日本のタイムゾーン（UTC+9）を設定
+        japan_time = datetime.now(timezone(timedelta(hours=9)))
+
+        # 秒数を小数点以下まで取得（小数点3桁）
+        seconds_with_micro = japan_time.second + japan_time.microsecond / 1_000_000
+
+        # 何時何分小数点以下の秒数の形式で文字列を作成
+        time_string = japan_time.strftime('%H時%M分') + f'{seconds_with_micro:.3f}秒'
+
+        return time_string
+
+
+    #左から順に光センサ、GPS、カメラ、モーター、サーボモーター、xbee,もどきが生きてたらTrueを示すようにする。
+    tools=[True,True,True,True,True,True,True]
     #plan1は機体の落下、着地まで
     plan1="A"
-    #plan2はパラシュートを回避するシーン
+    #plan2はgpsとカメラでコーンに近づいていくシーン
     plan2="A"
-    #plan3は機体がGPSとカメラを使ってコーンに近づくシーン
-    plan3="A"
 
     ins_error_tool=[]
     ins_error=[]
@@ -30,37 +42,39 @@ try:
 
     try:
         cds=Cds()
-    except RuntimeError:
-            tools[0]=False
     finally:
-        if cds.error_counts:
-            ins_error_tool.append("cds")
-            ins_error.append(cds.error_log)       
+        if len(cds.error_counts)>0:
+            ins_error.append(cds.error_log)   
+            if  5 in cds.error_counts:
+                ins_error_tool.append("cds")
+                tools[0]=False   
 
 
     #明るさの閾値は曇りの日に明るさを取得して決める
     brightness_threshold=0.3
     #ピンの値は回路班が後で決めるので仮の値
-
+    factory = PiGPIOFactory()
     try:
-        servo=Servo(12)
+        servo=Servo(12,factory)
     except RuntimeError:
         tools[4]=False
     finally:
-        if servo.error_counts:
-            ins_error_tool.append("servo")
+        if len(servo.error_counts)>0:
             ins_error.append(servo.error_log)
+            if 5 in servo.error_counts:
+                ins_error_tool.append("servo")
+                tools[4]=False
 
 
 
     try:
         gps=Gps()
-    except RuntimeError:
-        tools[1]=False
     finally:
-        if gps.error_counts:
-            ins_error_tool.append("gps")
+        if len(gps.error_counts)>0:
             ins_error.append(gps.error_log)
+            if 5 in gps.error_log:
+               ins_error_tool.append("gps") 
+               tools[1]=False
 
     gps_deta=[]
     #ここは大会の時に測る。
@@ -70,19 +84,18 @@ try:
     width=640
     height=480
     fps=10
-    center=width//2
+    center=width/2
     frame_area=width*height
-    #カメラの画角（仮定）
-    view_angle=70
+    #カメラの画角（実験値）
+    view_angle=120
     try:
         camera=Camera(width,height,fps)
-    except RuntimeError:
-        tools[2]=False
     finally:
-        if camera.error_counts:
-            ins_error_tool.append("camera")
+        if len(camera.error_counts)>0:
             ins_error.append(camera.error_log)
-
+            if 5 in camera.error_counts:
+                ins_error_tool.append("camera")
+                tools[2]=False
 
     #ここの具体的な値はコーンの検査をして考える。
     lower_red1 = np.array([0, 100, 100])   # 下の範囲1 (0〜10度)
@@ -106,39 +119,45 @@ try:
     turn_speed=280
     motor_sttime=(view_angle/2)/turn_speed
 
-    factory = PiGPIOFactory()
 
     try:
         motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory)
-    except Exception :
-        tools[3]=False
     finally:
-        if motors.error_counts:
-            ins_error_tool.append("motors")
+        if len(motors.left_error_counts)>0 or len(motors.right_error_counts)>0:
             ins_error.append(motors.error_log)
-
+            if 5 in motors.left_error_counts:
+                ins_error_tool.append("left motor")
+                tools[3]=False
+            if 5 in motors.right_error_counts:
+                ins_error_tool.append("right motor")
+                tools[3]=False
 
 
 
     try:
         xbee=Xxbb()
-    except RuntimeError:
-        tools[5]=False
     finally:
-        if xbee.error_counts:
+        if len(xbee.error_counts)>0:
             ins_error_tool.append("xbee")
             ins_error.append(xbee.error_log)
-
-    #ここで、ログを送信する
-    ins_log=[1,time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],ins_error_tool,ins_error]
-    xbee.xbee_send(ins_log)                                          
+            if 5 in xbee.error_counts:
+                ins_error_tool.append("xbee")
+                tools[5]=False
 
     try:
-        raspy = raspberry()
+        raspy = Main()
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
 
+    #ここで、ログを送信する
+    ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
+    xbee.xbee_send(ins_log)         
 
+
+    def nlog(ward):
+        notice_log=[9,ward]
+        xbee.xbee_send(notice_log)
+    
     def mxbee_send(data):
         #フェーズ、故障した部品、エラー分
         xbee_log = [11,[],None] #raspyのみ書く
@@ -149,12 +168,11 @@ try:
             import sys
             sys.exit(1)
         finally:
-            if len(xbee_log):
+            if len(xbee.error_counts):
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].append("xbee")
-                raspy.Main.main(xbee_log)    
-
+                raspy.main(xbee_log)   
 
     def mforward(wait_time):
         if wait_time>0:
@@ -173,13 +191,13 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=time()
+                motor_log[2]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
+                xbee.xbee_send(motor_log)
 
     def mbackward(wait_time):
         if wait_time>0:
@@ -197,13 +215,13 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=time()
+                motor_log[2]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
+                xbee.xbee_send(motor_log)
 
     def mturn_left(wait_time):
         if wait_time>0:
@@ -221,13 +239,13 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=time()
+                motor_log[2]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
+                xbee.xbee_send(motor_log)
 
 
     def mturn_right(wait_time):
@@ -246,13 +264,13 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=time()
+                motor_log[2]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
+                xbee.xbee_send(motor_log)
 
     def mstop():
         motor_log=[10,None,[],None]
@@ -265,13 +283,13 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=time()
+                motor_log[2]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
+                xbee.xbee_send(motor_log)
 
 
     def mget_frame():
@@ -286,7 +304,7 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    mxbee_send(camera.error_log)
+                    xbee.xbee_send(camera.error_log)
 
     def mget_coordinate_xy(): #これはfeeds4の時に使う
         try:
@@ -301,13 +319,13 @@ try:
                 gps_log[-1]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[-2]="gps"
-                    mxbee_send(gps_log)
+                    xbee.xbee_send(gps_log)
 
     def m5get_coodinate_xy():
         #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
         gps_log = [5,1,None,None,None,None,None,None]
         try:
-            gps_log[2]=time()
+            gps_log[2]=mget_time()
             lat,lon = gps.get_coordinate_xy()
             gps_log[3]=lat
             gps_log[4]=lon
@@ -322,109 +340,139 @@ try:
                 gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[6]="gps"
-            mxbee_send(gps_log)  
+            xbee.xbee_send(gps_log)  
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
         gps_log = [5,1,None,None,None,None]
-        gps_log[2]=time()
+        gps_log[2]=mget_time()
         move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
         get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
         gps_log[3] = move_direction
         gps_log[4] = get_rotation_angle 
-        mxbee_send(gps_log)   
+        xbee.xbee_send(gps_log)   
         return get_rotation_angle              
 
 
-    def nlog(ward):
-        notice_log=[9,ward]
-        mxbee_send(notice_log)
+
                     
 
-
+    nlog("箱入れ待機時間")
     start_time=time()
 
 
     #箱に入れるまでの時間を仮に一分と置き、その間ずっと明るさを取得して、xbeeで送るようにする。
-    while time()-start_time<preparation_time:
-        #左から、フェーズ、時間、明るさ、故障した部品、エラー文
-        fir_cds_log=[-1,None,None,None,None]
-        try:
-            fir_cds_log[1]=time()
-            cds.get_brightness()
-            fir_cds_log[2]=cds.brightness
-        except RuntimeError:
-            tools[0]=False
-            raise RuntimeError
-        finally:
-            if len(cds.error_counts):
-                fir_cds_log[4]=cds.log_errors
-                if 5 in cds.error_counts:
-                    fir_cds_log[3]="cds"
-                    mxbee_send(cds.error_log)
+
+    if tools[0]==True:
+        while time()-start_time<preparation_time:
+            #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
+            fir_cds_log=[-1,None,None,None,None,None]
+            try:
+                now_time=time()
+                jp_time=mget_time()
+                fir_cds_log[1]=jp_time
+                fir_cds_log[2]=preparation_time-(now_time-start_time)
+                cds.get_brightness()
+                fir_cds_log[3]=cds.brightness
+                    
+            except RuntimeError:
+                tools[0]=False
+                break
+            finally:
+                if len(cds.error_counts):
+                    fir_cds_log[5]=cds.log_errors
+                    if 5 in cds.error_counts:
+                        fir_cds_log[4]="cds"
+                xbee.send(cds.error_log)
+            
+            keika=time()-now_time
+            if keika<2:
+                sleep(2-keika)
+    if tools[0]==False:
+        nlog("cdsが使えないため、普通に待機します。")
+        
+        while time()-start_time<preparation_time:
+            wait_log=[8,None,None]
+            now_time=time()
+            jp_time=mget_time()
+            wait_log[1]=jp_time
+            wait_log[2]=int(preparation_time-(now_time-start_time))
+            #xbeeで送信
+            xbee.send(wait_log)
+            sleep(5)
+
+            
 
 
+
+    #ここ変更点
 
     land_judge=False
     start_time=time()
-    while land_judge==False:
-        if tools[0]==False:
-            plan1="B"
-            nlog("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
 
-        if plan1 =="A":
+
+
+    if tools[0]==True:
+        
+        while True:
+            nlog("cdsを用いた落下判定を開始します。")
+            #左からフェーズ、時間、明るさ、落下判断、使えない部品、エラー文
+            cds_log=[2,None,None,None,None,None]
             try:
-                while land_judge==False:
-                    nlog("cdsを用いた落下判定を開始します。")
-                    #左からフェーズ、プラン、時間、明るさ、落下判断、使えない部品、エラー文
-                    cds_log=[2,"A",0,None,None,None,None]
-                    try:
-                        cds_log[1]=time()
-                        if cds_log[1]-start_time>land_time:
-                            land_judge=True
-                            nlog("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
-                            continue
-                        cds.get_brightness()
-                        cds_log[4]=cds.brightness
-                        if cds.brightness < brightness_threshold:
-                            cds_log[3]=True
-                            start_time=time()
-                            nlog("一定以上の明るさを検知したため、１分経過したら着地したと判定")
-                            while time()-start_time<fall_time:
-                                #左からフェーズ、時間、残り時間
-                                time_log=[8,None,None]
-                                now_time=time()
-                                time_log[1]=now_time
-                                time_log[2]=fall_time-(now_time-start_time)
-                                mxbee_send(time_log)
-                            nlog("１分経過したため着地したと判定")
-                            land_judge=True
-
-
-
-                    except RuntimeError :
-                            tools[0]=False
-                            raise RuntimeError
-                    finally:
-                        if len(cds.error_counts):
-                            cds_log[6]=cds.error_log
-                            if 5 in cds.error_counts:
-                                cds_log[5]="cds"
-                        mxbee_send(cds_log)
-                    
-                    sleep(2)
-            except RuntimeError:
-                continue
-            
-        elif  plan1=="B":
-            while time()-start_time()<land_time:
-                #左からフェーズ、時間、残り時間
-                time_log=[8,None,None]
                 now_time=time()
-                time_log[1]=now_time
-                time_log[2]=land_time-(now_time-start_time)
-            land_judge=True
-            nlog("起動から８分間経過したため、着地したとみなす。")
+                jp_time=mget_time()
+                cds_log[1]=jp_time
+                if now_time-start_time>=land_time:
+                    land_judge=True
+                    nlog("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
+                    break
+                cds.get_brightness()
+                cds_log[2]=cds.brightness
+                if cds.brightness > brightness_threshold:
+                    cds_log[3]=True
+                    xbee.xbee_send(cds_log)
+
+                    start_time=time()
+                    nlog("一定以上の明るさを検知したため、１分経過したら着地したと判定")
+                    while time()-start_time<fall_time:
+                        #左からフェーズ、時間、残り時間
+                        time_log=[8,None,None]
+                        now_time=time()
+                        jp_time=mget_time()
+                        time_log[1]=jp_time
+                        time_log[2]=fall_time-(now_time-start_time)
+                        xbee.xbee_send(time_log)
+                        sleep(2)
+
+                    nlog("１分経過したため着地したと判定")
+                    break
+
+            except RuntimeError :
+                    tools[0]=False
+                    break
+            finally:
+                if len(cds.error_counts):
+                    cds_log[5]=cds.error_log
+                    if 5 in cds.error_counts:
+                        cds_log[4]="cds"
+                xbee.xbee_send(cds_log)
+            
+            keika=time()-cds_log[1]
+            if keika<2:
+                sleep(2-keika)
+            
+        
+    if tools[0]==False:
+        nlog("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
+        while time()-start_time()<land_time:
+            #左からフェーズ、時間、残り時間
+            time_log=[8,None,None]
+            now_time=time()
+            jp_time=mget_time()
+            time_log[1]=jp_time
+            time_log[2]=land_time-(now_time-start_time)
+        land_judge=True
+        nlog("起動から８分間経過したため、着地したとみなす。")
                 
                 
     if tools[4]==True:
@@ -434,139 +482,120 @@ try:
         import sys
         sys.exit(1)
 
+    #変更点
     try:            
         servo.rotate()
         #個々の時間は後で計算する
         sleep(30)
+        servo.stop()
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
         import sys
         sys.exit(1)
+    finally:
+        if len(servo.error_counts):
+            #左から順にフェーズ、時間、故障した部品、エラー文
+            servo_log=[-2,mget_time(),None,None]
+            servo_log[3]=servo.error_log
+            if 5 in servo.error_counts:
+                servo_log[2]="servo"
+            xbee.xbee_send(servo_log)
 
     nlog("パラシュートの切り離しを行いました。")
 
-    if tools[2]==True:
+    if tools[3]==False:
+        nlog("モーターが使えないため処理を停止します")
+        import sys
+        sys.exit(1)
+
+    if tools[2]==True and tools[1]==True:
         p=0
         try:
-            while True:
-                nlog("パラシュートの検出を行う。")
-                #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
-                camera_log=[4,1,None,False,None,None]
-                camera_log[2]=time()
-                frame=mget_frame()
-                judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
-                camera_log[3]=judge
-                #左からフェーズ、時間、故障した部品、エラー文
-                motor_log=[10,None,[],None]
-                if judge==True:
-                    nlog("パラシュートを検知したため、機体を後進させ、GPSの位置情報から向いている向きを取得します。")
-
-                    nlog("現在地の緯度経度を取得")
-
-                    #左から、フェーズ、フェーズのフェーズ、時間、緯度、経度、故障した部品、エラー文
-                    gps_log=[4,2,None,None,None,None,None]
-                    gps_log[2]=time()
-                    prelat,prelon=mget_coordinate_xy()
-                    gps_log[3]=prelat
-                    gps_log[4]=prelon
-                    mxbee_send(gps_log)
-
-                    #10は割とマジで適当
-                    mbackward(10)
-
-                    mstop()
-                    
-                    nlog("現在地の緯度経度を取得")
-                    
-                    #左から、フェーズ、フェーズのフェーズ、時間、緯度、経度、故障した部品、エラー文
-                    gps_log=[4,2,None,None,None,None,None]
-                    gps_log[2]=time()
-                    nowlat,nowlon=mget_coordinate_xy()
-                    gps_log[3]=nowlat
-                    gps_log[4]=nowlon
-                    mxbee_send(gps_log)
-                    #左からフェーズ、フェーズの中のフェーズ、コーンに対する角度、故障した部品、エラー文
-                    gps_log=[4,3,None,None,None]
-                    direction=gps.move_direction(prelat,prelon,nowlat,nowlon)
-                    gps_log[2]=direction
-                    #５度以上回転がずれてたら戻すようにしようと思う。（勘）
-                    wait_time=abs(direction)/turn_speed
-                    if direction>5 or direction<-5:
-                        if direction >5:
-                            mturn_right(wait_time)
-                        else:
-                            mturn_left(wait_time)
-                        
-
-                        mstop()
-                    
-                    break
-                else:
-                    p+=1
-
-                    if p==int(360/(view_angle/2)):
-                        nlog("パラシュートが認識されないため、回避をせず、次の動作へ移ります。")
-                        #めんどくさいのでエラーを発生させて個々の部分の処理を終了する。これは、決して問題が起きたとかではなく、ただ単にめんどくさいのでエラーを吐くだけである。
-                        raise RuntimeError
-                    
-                    nlog(f"パラシュートが見つからないため、機体を時計回りに回転させたのち、再び検出を行います。")
-                    wait_time=(view_angle/2)/turn_speed
-                    mturn_right(wait_time)
-                    mstop()
-                    
-                
             
+            nlog("現在地の緯度経度を取得")
+
+            #左から、フェーズ、フェーズのフェーズ、時間、緯度、経度、故障した部品、エラー文
+            gps_log=[4,2,None,None,None,None,None]
+            gps_log[2]=mget_time()
+            prelat,prelon=mget_coordinate_xy()
+            gps_log[3]=prelat
+            gps_log[4]=prelon
+            xbee.xbee_send(gps_log)
+            nlog("パラシュートの検出を行う。")
+            #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、故障した部品、エラー文
+            camera_log=[4,1,None,False,None,None]
+            camera_log[2]=mget_time()
+            frame=mget_frame()
+            judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
+            camera_log[3]=judge
+            xbee.xbee_send(camera_log)
+
+            if judge==True:
+                nlog("パラシュートを検知したため、機体を後進させ、GPSの位置情報から向いている向きを取得します。")
+                mbackward(10)
+            if judge==False:
+                nlog("パラシュートを検知しなかったため、機体を前進させ、GPSの位置情報から向いている向きを取得します。")
+
+            mstop()
+                
+            nlog("現在地の緯度経度を取得")
+            
+            #左から、フェーズ、フェーズのフェーズ、時間、緯度、経度、故障した部品、エラー文
+            gps_log=[4,2,None,None,None,None,None]
+            gps_log[2]=mget_time()
+            nowlat,nowlon=mget_coordinate_xy()
+            gps_log[3]=nowlat
+            gps_log[4]=nowlon
+            xbee.xbee_send(gps_log)
+            #変更点
+            #左からフェーズ、フェーズの中のフェーズ、コーンに対する角度
+            gps_log=[4,3,None,None]
+            direction=gps.move_direction(prelat,prelon,nowlat,nowlon)
+            gps_log[2]=direction
+            #５度以上回転がずれてたら戻すようにしようと思う。（勘）
+            wait_time=abs(direction)/turn_speed
+            if abs(direction)>5:
+                if direction >5:
+                    mturn_right(wait_time)
+                else:
+                    mturn_left(wait_time)
+                
+
+                mstop()
+                    
             nlog("パラシュートの検出を行います。")
             frame=mget_frame()        
             sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,1)
                 #左からフェーズ、時間、故障した部品、エラー文
             motor_log=[10,None,[],None]
-            if judge==False:
-                sign=-1
-                #画角が１８０度以内である前提
-                wait_time=(90-(view_angle/2))/turn_speed
-                nlog("パラシュートが見つからないため、機体を反時計回りに回転させたのち、再度検出を行います。")
-                mturn_left(wait_time)
-                mstop()
-                nlog("パラシュートの検出を行います。")
-                frame=mget_frame()
-                judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
-                if judge==False:
-                    nlog("パラシュートのが見つからないため、機体を時計回りに回転させたのち、再度検出を行う。")
-                    sign=1
-                    wait_time=2*wait_time
-                    mturn_right(wait_time)
-                    mstop()
-                    frame=mget_frame()
-                    judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
-                    nlog("機体とコーンを正対させます。")
-                    wait_time=wait_time/2
-                    mturn_left(wait_time)
-                    mstop()
+                
             
             if judge==True:
                 wait_time=90/turn_speed
                 if sign==1:
                     mturn_left(wait_time)
+                    mforward(10)
                     mturn_right(wait_time)
-                    mstop()
                 else:
                     mturn_right(wait_time)
+                    mforward(10)
                     mturn_left(wait_time)
-                    mstop()
-
-            
-            #１０秒は適当
-            mforward(10)
-
-
-
+                
+                #１０は適当
+                mforward(10)
+                mstop()
 
         except RuntimeError:
             pass   
 
     if tools[2]==False:
-        nlog("カメラが使えないので、パラシュートの回避を実行しません")
+        if tools[1]==True:
+            nlog("カメラが使えないので、パラシュートの回避を実行しません")
+        else:
+            nlog("カメラとgpsが使えないので、パラシュートの回避を実行しません")
+    else:
+        if tools[1]==False:
+            nlog("gpsが使えないので、パラシュートの回避を実行しません")
 
 
 
@@ -611,7 +640,7 @@ try:
                         gps_log[10]=gps.error_log
                         if 5 in gps.error_counts:
                             gps_log[9]="gps"
-                    mxbee_send(gps_log)  
+                    xbee.xbee_send(gps_log)  
 
 
                     #初めからコーンが近い場合の処理     
@@ -695,7 +724,7 @@ try:
                                     gps_log[7]=gps.error_log
                                     if 5 in gps.error_counts:
                                         gps_log[6]="gps"
-                                mxbee_send(gps_log)  
+                                xbee.xbee_send(gps_log)  
 
                             if distance<0.5:#適当
                                 gps_seikou=True
@@ -736,21 +765,21 @@ try:
 
             #ここに、回転を行うコードを書く
 
-        if plan3 in ["A","C"]:
+        if plan2 in ["A","C"]:
             try:
                 while True:
                     if kazu ==1:
                         p=0
-                        q=0
+                        q=-1
                         while True:
                             nlog("コーンの検出を行う。")
                             #左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
                             camera_log=[6,1,None,False,None,None]
-                            camera_log[2]=time()
+                            camera_log[2]=mget_time()
                             frame=mget_frame()
                             judge=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
                             camera_log[3]=judge
-                            mxbee_send(camera_log)
+                            xbee.xbee_send(camera_log)
                             if judge==True:
                                 kazu=2
                                 break
@@ -785,7 +814,7 @@ try:
                             while sign!=0:
                                 #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
                                 camera_log=[6,2,None,False,None,None,None]
-                                camera_log[2]=time()
+                                camera_log[2]=mget_time()
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
                                 if contour == None:
@@ -796,23 +825,25 @@ try:
                                 if judge == False:
                                     nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     g=False
-                                    mxbee_send(camera_log)
+                                    xbee.xbee_send(camera_log)
                                     break
                                 camera_log[3]=True
                                 sign=get_distance(contour,center)
                                 camera_log[4]=sign
+                                xbee.xbee_send(camera_log)
+                                move_time=1/turn_speed
                                 if sign==0:
                                     nlog("コーンが画面の中心にあるため、5秒間コーンに向かって前進をします。")
                                     mstop()
                                     break
                                 #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
                                 elif sign==1:
-                                    nlog("コーンが中心の右側にあるため、回転を続けます。")
-                                    mturn_right(-1)
+                                    nlog("コーンが中心の右側にあるため、時計回りの回転を行います。")
+                                    mturn_right(move_time)
                                     
                                 else :
-                                    nlog("コーンが中心の左側にあるため、回転を続けます。")
-                                    mturn_left(-1)
+                                    nlog("コーンが中心の左側にあるため、反時計回りの回転を行います。")
+                                    mturn_left(move_time)
                                 
                             if g == False:
                                 kazu=1
@@ -823,18 +854,19 @@ try:
                             while time()-start_time<5:
                                 #フェーズ、フェーズの中のフェーズ、時間、コーン検出、ゴール判定、故障した部品、エラー文
                                 camera_log=[6,3,None,False,False,None,None]
-                                camera_log[2]=time()
+                                now_time=time()
+                                camera_log[2]=mget_time()
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
                                 if contour == None:
-                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     xbee.xbee_send(camera_log)
+                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     g=False
                                     break
                                 judge=judge_cone(contour,frame_area)
                                 if judge == False:
-                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     xbee.xbee_send(camera_log)
+                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
                                     g=False
                                     break
 
@@ -842,11 +874,16 @@ try:
 
                                 cone_result=to_stop(contour,frame_area)
                                 camera_log[4]=cone_result
+                                xbee.xbee_send(camera_log)
                                 if cone_result:
                                     nlog("コーンに近づけたため、ゴール判定")
                                     break
+
                                 #個々の秒数は適当
-                                sleep(0.5)
+                                keika=time()-now_time
+                                if keika<1:
+                                    sleep(keika)
+                                    
                             if g == False:
                                 kazu=1
                                 break
@@ -869,6 +906,3 @@ finally:
     gps.delete()
     camera.release()
     gps.delete()
-
-
-
