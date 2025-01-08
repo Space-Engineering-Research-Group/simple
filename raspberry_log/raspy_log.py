@@ -51,7 +51,7 @@ class Xcel(IXcel):
                 self.log_errors()
 
 
-    def Main(self,data):  
+    def main(self,data):  
 
         while True:
             try:
