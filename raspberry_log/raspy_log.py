@@ -76,6 +76,12 @@ class Xcel(IXcel):
                             num = self.feeds8(self.sheet,data,num) 
                         if i == 9:
                             num = self.feeds9(self.sheet,data,num)    
+                        if i == 10:
+                            num = self.feeds10(self.sheet,data,num) 
+                        if i == 11:
+                            num = self.feeds11(self.sheet,data,num) 
+                        if i == 12:
+                            num = self.feeds12(self.sheet,data,num)             
 
                 num = num + 1 
                 self.a = 0
