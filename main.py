@@ -527,7 +527,7 @@ try:
             camera_log=[4,1,None,False,None,None]
             camera_log[2]=mget_time()
             frame=mget_frame()
-            judge=find_parachute(frame,lower_yellow,upper_yellow,center,0)
+            judge=find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,0)
             camera_log[3]=judge
             xbee.xbee_send(camera_log)
 
@@ -566,7 +566,7 @@ try:
                     
             nlog("パラシュートの検出を行います。")
             frame=mget_frame()        
-            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,1)
+            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,1)
                 #左からフェーズ、時間、故障した部品、エラー文
             motor_log=[10,None,[],None]
                 
