@@ -447,8 +447,6 @@ try:
 
 
     #ここ変更点
-
-    land_judge=False
     start_time=time()
 
 
@@ -456,7 +454,6 @@ try:
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
         while True:
-            nlog("cdsを用いた落下判定を開始します。")
             #左からフェーズ、時間、明るさ、落下判断、使えない部品、エラー文
             cds_log=[2,None,None,None,None,None]
             try:
@@ -483,9 +480,11 @@ try:
                         jp_time=mget_time()
                         time_log[1]=jp_time
                         time_log[2]=fall_time-(now_time-start_time)
-                        xbee.xbee_send(time_log)
                         mxbee_send(time_log)
                         mxcel(time_log)
+                        keika=time()-now_time
+                        if keika<2:
+                            sleep(2-keika)
                     nlog("１分経過したため着地したと判定")
                     break
 
@@ -497,8 +496,8 @@ try:
                     cds_log[5]=cds.error_log
                     if 5 in cds.error_counts:
                         cds_log[4]="cds"
-                mxbee_send(cds_log)
-                mxcel(cds_log)
+                        mxbee_send(cds_log)
+                        mxcel(cds_log)
             
             keika=time()-now_time
             if keika<2:
