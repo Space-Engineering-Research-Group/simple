@@ -397,11 +397,13 @@ try:
     #箱に入れるまでの時間を仮に一分と置き、その間ずっと明るさを取得して、xbeeで送るようにする。
 
     if tools[0]==True:
-        while time()-start_time<preparation_time:
+        while True:
             #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
             fir_cds_log=[-1,None,None,None,None,None]
             try:
                 now_time=time()
+                if now_time-start_time>=preparation_time:
+                    nlog("60秒間立ったため、次のフェーズに移ります。")
                 jp_time=mget_time()
                 fir_cds_log[1]=jp_time
                 fir_cds_log[2]=preparation_time-(now_time-start_time)
@@ -435,6 +437,8 @@ try:
             mxbee_send(wait_log)
             mxcel(wait_log)
             sleep(5)
+        
+        nlog("６０秒待機したため、次のフェーズに移ります。")
 
             
 
