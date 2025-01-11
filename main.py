@@ -398,10 +398,10 @@ try:
 
     if tools[0]==True:
         while True:
+            now_time=time()
             #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
             fir_cds_log=[-1,None,None,None,None,None]
             try:
-                now_time=time()
                 if now_time-start_time>=preparation_time:
                     nlog("60秒間立ったため、次のフェーズに移ります。")
                 jp_time=mget_time()
@@ -428,15 +428,17 @@ try:
         nlog("cdsが使えないため、普通に待機します。")
         
         while time()-start_time<preparation_time:
-            wait_log=[8,None,None]
             now_time=time()
+            wait_log=[8,None,None]
             jp_time=mget_time()
             wait_log[1]=jp_time
             wait_log[2]=int(preparation_time-(now_time-start_time))
             #xbeeで送信
             mxbee_send(wait_log)
             mxcel(wait_log)
-            sleep(5)
+            keika=time()-now_time
+            if keika<2:
+                sleep(2-keika)
         
         nlog("６０秒待機したため、次のフェーズに移ります。")
 
@@ -452,7 +454,7 @@ try:
 
 
     if tools[0]==True:
-        
+        nlog("cdsを用いた落下判定を開始します。")
         while True:
             nlog("cdsを用いた落下判定を開始します。")
             #左からフェーズ、時間、明るさ、落下判断、使えない部品、エラー文
@@ -473,19 +475,17 @@ try:
                     mxcel(cds_log)
 
                     start_time=time()
-                    nlog("一定以上の明るさを検知したため、１分経過したら着地したと判定")
+                    nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
                     while time()-start_time<fall_time:
+                        now_time=time()
                         #左からフェーズ、時間、残り時間
                         time_log=[8,None,None]
-                        now_time=time()
                         jp_time=mget_time()
                         time_log[1]=jp_time
                         time_log[2]=fall_time-(now_time-start_time)
                         xbee.xbee_send(time_log)
                         mxbee_send(time_log)
                         mxcel(time_log)
-                        sleep(2)
-
                     nlog("１分経過したため着地したと判定")
                     break
 
@@ -500,7 +500,7 @@ try:
                 mxbee_send(cds_log)
                 mxcel(cds_log)
             
-            keika=time()-cds_log[1]
+            keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
             
@@ -514,7 +514,9 @@ try:
             jp_time=mget_time()
             time_log[1]=jp_time
             time_log[2]=land_time-(now_time-start_time)
-        land_judge=True
+            keika=time()-now_time
+            if keika<2:
+                sleep(2-keika)
         nlog("起動から８分間経過したため、着地したとみなす。")
                 
                 
