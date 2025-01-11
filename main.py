@@ -498,7 +498,8 @@ try:
                         cds_log[4]="cds"
                         mxbee_send(cds_log)
                         mxcel(cds_log)
-            
+            mxbee_send(cds_log)
+            mxcel(cds_log)
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
@@ -526,7 +527,7 @@ try:
         import sys
         sys.exit(1)
 
-    #変更点
+    #変更点 
     try:            
         servo.rotate()
         #個々の時間は後で計算する
