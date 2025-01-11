@@ -398,15 +398,15 @@ try:
 
     if tools[0]==True:
         while True:
-            now_time=time()
             #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
             fir_cds_log=[-1,None,None,None,None,None]
             try:
+                now_time=time()
                 if now_time-start_time>=preparation_time:
                     nlog("60秒間立ったため、次のフェーズに移ります。")
                 jp_time=mget_time()
                 fir_cds_log[1]=jp_time
-                fir_cds_log[2]=preparation_time-(now_time-start_time)
+                fir_cds_log[2]=int(preparation_time-(now_time-start_time))
                 cds.get_brightness()
                 fir_cds_log[3]=cds.brightness
                     
@@ -415,7 +415,7 @@ try:
                 break
             finally:
                 if len(cds.error_counts):
-                    fir_cds_log[5]=cds.log_errors
+                    fir_cds_log[5]=cds.error_log
                     if 5 in cds.error_counts:
                         fir_cds_log[4]="cds"
                 mxbee_send(cds.error_log)
