@@ -963,4 +963,3 @@ finally:
     motors.release()
     gps.delete()
     camera.release()
-    gps.delete()
