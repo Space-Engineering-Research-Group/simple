@@ -40,6 +40,7 @@ class Servo(Iservo):
                finally:
                     if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
                          self.log_errors()
+                         break
                sleep(1)
 
      def rotate(self):
