@@ -614,10 +614,7 @@ try:
                     
             nlog("パラシュートの検出を行います。")
             frame=mget_frame()        
-            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,1)
-                #左からフェーズ、時間、故障した部品、エラー文
-            motor_log=[10,None,[],None]
-                
+            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,1)                
             
             if judge==True:
                 wait_time=90/turn_speed
