@@ -387,52 +387,18 @@ def feeds10(sheet,data,num):
         sheet.range(num,1).value = "フェーズ"
         sheet.range(num,2).value = "時間"
         sheet.range(num,3).value = "故障した部品"
-        sheet.range(num,4).value = "エラー文motor"
+        sheet.range(num,4).value = "エラー文"
 
     for index, value in enumerate(data, start=1):
         sheet.range(num+1, index).value = str(value)   
     workbook.save()      
-
-def feeds11(sheet,data,num):
-    #フェーズ、時間、故障した部品、エラー文 
-    num_list = []
-    num_list.append(num)
-    if len(num_list) > 2:
-        num_list.pop(-1) 
-        
-    result = is_row_empty(sheet,num_list[0])
-    if result == True:
-        sheet.range(num,1).value = "フェーズ"
-        sheet.range(num,2).value = "時間"
-        sheet.range(num,3).value = "故障した部品"
-        sheet.range(num,4).value = "エラー文xbee"
-
-    for index, value in enumerate(data, start=1):
-        sheet.range(num+1, index).value = str(value)   
-    workbook.save()      
-
-def feeds12(sheet,data,num):
-    #フェーズ、時間、故障した部品、エラー文 
-    num_list = []
-    num_list.append(num)
-    if len(num_list) > 2:
-        num_list.pop(-1) 
-        
-    result = is_row_empty(sheet,num_list[0])
-    if result == True:
-        sheet.range(num,1).value = "フェーズ"
-        sheet.range(num,2).value = "時間"
-        sheet.range(num,3).value = "故障した部品"
-        sheet.range(num,4).value = "エラー文raspy_log"
-
-    for index, value in enumerate(data, start=1):
-        sheet.range(num+1, index).value = str(value)   
-    workbook.save()    
 
 
 
 #ここからがやっとmainだぜっ
 #================================= main =============================
+import keyboard
+
 try:
     print("通信中...")
     xcel = Xcel()
@@ -476,58 +442,23 @@ while True:
                     num = feeds9(sheet,data,num)    
                 if i == 10:
                     num = feeds10(sheet,data,num) 
-                if i == 11:
-                    num = feeds11(sheet,data,num) 
-                if i == 12:
-                    num = feeds12(sheet,data,num)         
             
-
         num = num + 1  
+
+        if keyboard.is_pressed('d'):
+            try:
+                xcel.delete()
+                xbee.close_device()
+                print("xcelとxbees消去完了")
+            except Exception as e:
+                print(f"閉じることができなかった{e}")
+
     except Exception as e:
         print(f"エラー発生: {e}")
+        print("再接続します")
         app, workbook, sheet = xcel.reconnect_excel()
         if app is None or workbook is None:
             print("Excelへの再接続に失敗しました。終了します。")
             break     
 
-    if data[1] == 9 and data[2] == 3: #ここは最後のデータが送られてきたらbeakを行う。数値を変える可能性あり
-        break         
-
 print("任務完了しました")
-try:
-    xcel.delete()
-    xbee.close_device()
-    print("xcelとxbees消去完了")
-except Exception as e:
-    print(f"閉じることができなかった{e}")
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
