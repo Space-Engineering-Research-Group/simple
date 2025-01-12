@@ -960,7 +960,7 @@ try:
             break
     #エラー起きてるけど、finallyとか使うのは確実なのでとりあえずつけとく
 finally:        
-    motors.stop()
+    motors.release()
     gps.delete()
     camera.release()
     gps.delete()
