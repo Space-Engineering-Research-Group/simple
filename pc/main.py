@@ -397,6 +397,8 @@ def feeds10(sheet,data,num):
 
 #ここからがやっとmainだぜっ
 #================================= main =============================
+import keyboard
+
 try:
     print("通信中...")
     xcel = Xcel()
@@ -441,53 +443,22 @@ while True:
                 if i == 10:
                     num = feeds10(sheet,data,num) 
             
-
         num = num + 1  
+
+        if keyboard.is_pressed('d'):
+            try:
+                xcel.delete()
+                xbee.close_device()
+                print("xcelとxbees消去完了")
+            except Exception as e:
+                print(f"閉じることができなかった{e}")
+
     except Exception as e:
         print(f"エラー発生: {e}")
+        print("再接続します")
         app, workbook, sheet = xcel.reconnect_excel()
         if app is None or workbook is None:
             print("Excelへの再接続に失敗しました。終了します。")
             break     
 
-    if data[1] == 9 and data[2] == 3: #ここは最後のデータが送られてきたらbeakを行う。数値を変える可能性あり
-        break         
-
 print("任務完了しました")
-try:
-    xcel.delete()
-    xbee.close_device()
-    print("xcelとxbees消去完了")
-except Exception as e:
-    print(f"閉じることができなかった{e}")
-
-
-
-
-
-
-
-
-
-
-    
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
