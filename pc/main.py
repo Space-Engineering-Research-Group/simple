@@ -387,47 +387,11 @@ def feeds10(sheet,data,num):
         sheet.range(num,1).value = "フェーズ"
         sheet.range(num,2).value = "時間"
         sheet.range(num,3).value = "故障した部品"
-        sheet.range(num,4).value = "エラー文motor"
+        sheet.range(num,4).value = "エラー文"
 
     for index, value in enumerate(data, start=1):
         sheet.range(num+1, index).value = str(value)   
     workbook.save()      
-
-def feeds11(sheet,data,num):
-    #フェーズ、時間、故障した部品、エラー文 
-    num_list = []
-    num_list.append(num)
-    if len(num_list) > 2:
-        num_list.pop(-1) 
-        
-    result = is_row_empty(sheet,num_list[0])
-    if result == True:
-        sheet.range(num,1).value = "フェーズ"
-        sheet.range(num,2).value = "時間"
-        sheet.range(num,3).value = "故障した部品"
-        sheet.range(num,4).value = "エラー文xbee"
-
-    for index, value in enumerate(data, start=1):
-        sheet.range(num+1, index).value = str(value)   
-    workbook.save()      
-
-def feeds12(sheet,data,num):
-    #フェーズ、時間、故障した部品、エラー文 
-    num_list = []
-    num_list.append(num)
-    if len(num_list) > 2:
-        num_list.pop(-1) 
-        
-    result = is_row_empty(sheet,num_list[0])
-    if result == True:
-        sheet.range(num,1).value = "フェーズ"
-        sheet.range(num,2).value = "時間"
-        sheet.range(num,3).value = "故障した部品"
-        sheet.range(num,4).value = "エラー文raspy_log"
-
-    for index, value in enumerate(data, start=1):
-        sheet.range(num+1, index).value = str(value)   
-    workbook.save()    
 
 
 
@@ -476,10 +440,6 @@ while True:
                     num = feeds9(sheet,data,num)    
                 if i == 10:
                     num = feeds10(sheet,data,num) 
-                if i == 11:
-                    num = feeds11(sheet,data,num) 
-                if i == 12:
-                    num = feeds12(sheet,data,num)         
             
 
         num = num + 1  
