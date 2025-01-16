@@ -442,13 +442,6 @@ try:
         
         nlog("６０秒待機したため、次のフェーズに移ります。")
 
-            
-
-
-
-    #ここ変更点
-    start_time=time()
-
 
 
     if tools[0]==True:
