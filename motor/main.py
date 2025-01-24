@@ -1,5 +1,6 @@
 from gpiozero import PWMOutputDevice,DigitalOutputDevice
 from abc import ABC,abstractmethod
+from time import sleep
 
 class Imotor(ABC):
     @abstractmethod
@@ -69,6 +70,7 @@ class Motor(Imotor):
                 if (len(self.right_error_counts) and self.a==0)or 5 in self.right_error_counts:
                     self.right_log_errors()
                     break
+            sleep(1)
 
         self.left_error_counts=[]
         self.left_error_messages=[]
@@ -77,10 +79,10 @@ class Motor(Imotor):
         
         while True:
             try:
-                self.left_PWM.value=1
                 self.left_in1=DigitalOutputDevice(ldir_1,pin_factory=factory)
                 self.left_in2=DigitalOutputDevice(ldir_2,pin_factory=factory)
                 self.left_PWM=PWMOutputDevice(lPWM,pin_factory=factory)
+                self.left_PWM.value=1
                 self.a=0
                 break
             except Exception as e:
@@ -91,12 +93,13 @@ class Motor(Imotor):
                 if (len(self.right_error_counts)and self.a==0)or 5 in self.left_error_counts:
                     self.left_log_errors()
                     break
+            sleep(1)
         
         self.judge_error()
 
         
         
-    def forward(self, speed):
+    def forward(self, speed=1):
         self.right_error_counts=[]
         self.right_error_messages=[]
         self.right_error_log="right motor log"
@@ -105,9 +108,9 @@ class Motor(Imotor):
         
         while True:
             try:
-                self.right_PWM.value = speed
                 self.right_in1.on()
                 self.right_in2.off()
+                self.right_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -117,6 +120,7 @@ class Motor(Imotor):
                 if (len(self.right_error_counts) and self.a==0)or 5 in self.right_error_counts:
                     self.right_log_errors()
                     break
+            sleep(1)
 
         self.left_error_counts=[]
         self.left_error_messages=[]
@@ -125,9 +129,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_PWM.value = speed
                 self.left_in1.off()
                 self.left_in2.on()
+                self.left_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -137,11 +141,12 @@ class Motor(Imotor):
                 if (len(self.right_error_counts)and self.a==0)or 5 in self.left_error_counts:
                     self.left_log_errors()
                     break
+            sleep(1)
 
         self.judge_error()
 
 
-    def backward(self, speed):
+    def backward(self, speed=1):
         self.right_error_counts=[]
         self.right_error_messages=[]
         self.right_error_log="right motor log"
@@ -150,9 +155,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.right_PWM.value = speed
                 self.right_in1.off()
                 self.right_in2.on()
+                self.right_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -162,6 +167,7 @@ class Motor(Imotor):
                     if (len(self.right_error_counts) and self.a==0)or 5 in self.right_error_counts:
                         self.right_log_errors()
                         break
+            sleep(1)
 
         self.left_error_counts=[]
         self.left_error_messages=[]
@@ -170,9 +176,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_PWM.value = speed
                 self.left_in1.on()
                 self.left_in2.off()
+                self.left_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -182,11 +188,12 @@ class Motor(Imotor):
                 if (len(self.right_error_counts)and self.a==0)or 5 in self.left_error_counts:
                     self.left_log_errors()
                     break
+            sleep(1)
             
         self.judge_error()
 
 
-    def turn_right(self, speed):
+    def turn_right(self, speed=1):
         self.right_error_counts=[]
         self.right_error_messages=[]
         self.right_error_log="right motor log"
@@ -194,9 +201,9 @@ class Motor(Imotor):
         self.ini=False
         while True:
             try:
-                self.right_PWM.value = speed
                 self.right_in1.off()
                 self.right_in2.on()
+                self.right_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -206,6 +213,7 @@ class Motor(Imotor):
                     if (len(self.right_error_counts) and self.a==0)or 5 in self.right_error_counts:
                         self.right_log_errors()
                         break
+            sleep(1)
 
         self.left_error_counts=[]
         self.left_error_messages=[]
@@ -214,9 +222,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_PWM.value = speed
                 self.left_in1.off()
                 self.left_in2.on()
+                self.left_PWM.value = speed
             except Exception as e:
                 error = f"left motor error during right turn--detail {e}"
                 self.left_handle_error(error)
@@ -224,10 +232,11 @@ class Motor(Imotor):
                 if (len(self.right_error_counts)and self.a==0) or 5 in self.right_error_counts:
                     self.right_log_errors()
                     break
+            sleep(1)
         
         self.judge_error()
 
-    def turn_left(self, speed):
+    def turn_left(self, speed=1):
         self.right_error_counts=[]
         self.right_error_messages=[]
         self.right_error_log="right motor log"
@@ -236,9 +245,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.right_PWM.value = speed
                 self.right_in1.on()
                 self.right_in2.off()
+                self.right_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -248,6 +257,7 @@ class Motor(Imotor):
                     if (len(self.right_error_counts) and self.a==0)or 5 in self.right_error_counts:
                         self.right_log_errors()
                         break
+            sleep(1)
 
         self.left_error_counts=[]
         self.left_error_messages=[]
@@ -256,9 +266,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_PWM.value = speed
                 self.left_in1.on()
                 self.left_in2.off()
+                self.left_PWM.value = speed
                 self.a=0
                 break
             except Exception as e:
@@ -268,6 +278,7 @@ class Motor(Imotor):
                 if (len(self.right_error_counts)and self.a==0)or 5 in self.left_error_counts:
                     self.left_log_errors()
                     break
+            sleep(1)
 
         self.judge_error()
 
@@ -281,9 +292,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.right_PWM.value = 0
                 self.right_in1.on()
                 self.right_in2.on()
+                self.right_PWM.value = 0
                 self.a = 0
                 break
             except Exception as e:
@@ -293,6 +304,7 @@ class Motor(Imotor):
                 if (len(self.right_error_counts) and self.a == 0) or 5 in self.right_error_counts:
                     self.right_log_errors()
                     break
+            sleep(1)
 
         self.left_error_counts = []
         self.left_error_messages = []
@@ -301,9 +313,9 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_PWM.value = 0
                 self.left_in1.on()
                 self.left_in2.on()
+                self.left_PWM.value = 0
                 self.a = 0
                 break
             except Exception as e:
@@ -313,52 +325,18 @@ class Motor(Imotor):
                 if (len(self.left_error_counts) and self.a == 0) or 5 in self.left_error_counts:
                     self.left_log_errors()
                     break
+            sleep(1)
         
         self.judge_error()
 
     def release(self):
-        self.right_error_counts = []
-        self.right_error_messages = []
-        self.right_error_log = "right motor log"
-        self.a = 1
-        self.ini=False
+        self.right_in1.off()
+        self.right_in2.off()
+        self.right_PWM.value = 0
 
-        while True:
-            try:
-                self.right_in1.off()
-                self.right_in2.off()
-                self.right_PWM.value = 0
-                self.a = 0
-                break
-            except Exception as e:
-                error = f"right motor error during release--detail {e}"
-                self.right_handle_error(error)
-            finally:
-                if (len(self.right_error_counts) and self.a == 0) or 5 in self.right_error_counts:
-                    self.right_log_errors()
-                    break
-
-        self.left_error_counts = []
-        self.left_error_messages = []
-        self.left_error_log = "left motor log"
-        self.a = 1
-
-        while True:
-            try:
-                self.left_in1.off()
-                self.left_in2.off()
-                self.left_PWM.value = 0
-                self.a = 0
-                break
-            except Exception as e:
-                error = f"left motor error during release--detail {e}"
-                self.left_handle_error(error)
-            finally:
-                if (len(self.left_error_counts) and self.a == 0) or 5 in self.left_error_counts:
-                    self.left_log_errors()
-                    break
-        
-        self.judge_error()
+        self.left_in1.off()
+        self.left_in2.off()
+        self.left_PWM.value = 0
 
     def right_handle_error(self, error):
         if str(error) not in self.right_error_messages:
