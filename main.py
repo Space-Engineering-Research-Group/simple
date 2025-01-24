@@ -231,9 +231,9 @@ try:
             nlog("右モーターの逆転、左モーターの正転をして、機体を更新させます。")
         motor_log=[10,None,[],None]
         try:
+            motors.backward()
             if wait_time>0:
-                motors.backward()
-            sleep(wait_time)
+                sleep(wait_time)
         except RuntimeError:
             tools[3]=False
             import sys
