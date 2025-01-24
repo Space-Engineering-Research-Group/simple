@@ -819,7 +819,8 @@ try:
                             camera_log=[6,1,None,False,None,None]
                             camera_log[2]=mget_time()
                             frame=mget_frame()
-                            judge=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                            contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                            judge=judge_cone(contour,frame_area)
                             camera_log[3]=judge
                             mxbee_send(camera_log)
                             mxcel(camera_log)
