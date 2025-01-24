@@ -333,8 +333,8 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    mxbee_send(camera.error_log)
-                    mxcel(camera.error_log)
+                    mxbee_send(camera_log)
+                    mxcel(camera_log)
 
     def mget_coordinate_xy(): #これはfeeds4の時に使う
         try:
