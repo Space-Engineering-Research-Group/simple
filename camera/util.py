@@ -2,12 +2,7 @@ import cv2
 import numpy as np
 
 def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
-    img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
-    clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
-    img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
-    img_bgr = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
-    img_hsv=cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
-
+    img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
     mask1 = cv2.inRange(img_hsv, lower_red1, upper_red1)
     mask2=cv2.inRange(img_hsv,lower_red2,upper_red2)
     mask=cv2.bitwise_or(mask1,mask2)          
@@ -25,12 +20,7 @@ def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
     return None
 
 def find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,phase):
-    img_yuv=cv2.cvtColor(frame,cv2.COLOR_BGR2YUV)
-    clahe=cv2.createCLAHE(clipLimit=2.0,tileGridSize=(8,8))
-    img_yuv[:,:,0]=clahe.apply(img_yuv[:,:,0])
-    img_bgr = cv2.cvtColor(img_yuv, cv2.COLOR_YUV2BGR)
-    img_hsv=cv2.cvtColor(img_bgr,cv2.COLOR_BGR2HSV)
-
+    img_hsv=cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)       
     mask = cv2.medianBlur(mask, 11)
 
