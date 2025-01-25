@@ -711,7 +711,6 @@ try:
                 plan2="B"
                 nlog("カメラが使えないため、プランbです。")
         
-        result=None
     #gps
 
         if plan2 in ["A","B"]and gps_seikou==False:
@@ -903,8 +902,8 @@ try:
                                 mstop()
                             
 
-                    elif kazu == 2:
-                        g=True #エラーって感じのところはgを使って抜け出すようにする。
+                    if kazu == 2:
+                        cone_kensyutu=True #エラーって感じのところはgを使って抜け出すようにする。
                         
                         
                         while True:
@@ -915,18 +914,29 @@ try:
                                 #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
                                 camera_log=[6,2,None,False,None,None,None]
                                 camera_log[2]=mget_time()
-                                frame=mget_frame()
-                                contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-                                if contour == None:
-                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
-                                    g=False
-                                    break
-                                judge=judge_cone(contour,frame_area)
-                                if judge == False:
-                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
-                                    g=False
-                                    mxbee_send(camera_log)
-                                    mxcel(camera_log)
+                                
+                                sikou_6_2=0
+                                for i in range(3):
+                                    frame=mget_frame()
+                                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
+                                    if contour == None:
+                                        mxbee_send(camera_log)
+                                        mxcel(camera_log)
+                                        nlog("コーンが検出出来なかったため、もう一度取得します。")
+                                        sikou_6_2+=1
+
+                                        continue
+                                    judge=judge_cone(contour,frame_area)
+                                    if judge==True:
+                                        break
+                                    elif judge == False:
+                                        mxbee_send(camera_log)
+                                        mxcel(camera_log)
+                                        nlog("コーンが検出出来なかったため、もう一度取得します。")
+                                        sikou_6_2+=1
+    
+                                if sikou_6_2==3:
+                                    cone_kensyutu=False
                                     break
                                 camera_log[3]=True
                                 sign=get_distance(contour,center)
@@ -947,7 +957,7 @@ try:
                                     nlog("コーンが中心の左側にあるため、反時計回りの回転を行います。")
                                     mturn_left(move_time)
                                 
-                            if g == False:
+                            if cone_kensyutu == False:
                                 kazu=1
                                 break
 
@@ -976,10 +986,10 @@ try:
                                         mxbee_send(camera_log)
                                         mxcel(camera_log)
                                         nlog("コーンが検出出来なかったため、もう一度取得します。")
-                                        sikou_6_2+=2
+                                        sikou_6_2+=1
     
                                 if sikou_6_2==3:
-                                    g=False
+                                    cone_kensyutu=False
                                     break
 
 
@@ -999,13 +1009,13 @@ try:
                                 if keika<1:
                                     sleep(keika)
                                     
-                            if g == False:
+                            if cone_kensyutu == False:
                                 kazu=1
                                 break
                             if cone_result ==True:
                                 kazu=3
                                 break
-                    else:
+                    if kazu==3:
                         #ここで終了したことを送る。
                         nlog("コーンに到着しました。")
                         break
