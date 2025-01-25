@@ -579,6 +579,7 @@ try:
                 mbackward(10)
             if judge==False:
                 nlog("パラシュートを検知しなかったため、機体を前進させ、GPSの位置情報から向いている向きを取得します。")
+                mforward(10)
 
             mstop()
                 
@@ -600,32 +601,45 @@ try:
             #５度以上回転がずれてたら戻すようにしようと思う。（勘）
             wait_time=abs(direction)/turn_speed
             if abs(direction)>5:
+                nlog("コーンに対する角度が５度より大きいため、回転してコーンと向き合うようにします。")
                 if direction >5:
                     mturn_right(wait_time)
                 else:
                     mturn_left(wait_time)
-                
+            else:
+                nlog("コーンに対する角度が５度以下なため、回転は行いません")    
 
                 mstop()
                     
             nlog("パラシュートの検出を行います。")
+
+            camera_log=[4,4,None,False,None,None,None]
+            camera_log[2]=mget_time()
             frame=mget_frame()        
-            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,1)                
-            
+            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,1) 
+            camera_log[3]=judge
+            camera_log[4]=sign
+            mxbee_send(camera_log)
+            mxcel(camera_log)
+
             if judge==True:
+                print("パラシュートが検知されたため、回避を行います。")
                 wait_time=90/turn_speed
                 if sign==1:
+                    print("パラシュートが機体に対して右側にあるため、左に回避します。")
                     mturn_left(wait_time)
                     mforward(10)
                     mturn_right(wait_time)
                 else:
+                    print("パラシュートが機体に対して左側にあるため、右に回避します。")
                     mturn_right(wait_time)
                     mforward(10)
                     mturn_left(wait_time)
-                
-                #１０は適当
-                mforward(10)
-                mstop()
+            else:
+                print("パラシュートが検知されなかったため、回避を行いません。")
+            #１０は適当
+            mforward(10)
+            mstop()
 
         except RuntimeError:
             pass   
