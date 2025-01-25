@@ -57,7 +57,7 @@ try:
     #ピンの値は回路班が後で決めるので仮の値
     factory = PiGPIOFactory()
     try:
-        servo=Servo(12,factory)
+        servo=Myservo(12,factory)
     except RuntimeError:
         tools[4]=False
     finally:
