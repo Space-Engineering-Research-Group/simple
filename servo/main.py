@@ -19,7 +19,7 @@ class Iservo(abc.ABC):
      def log_errors(self):
           pass
 
-class Servo(Iservo):
+class Myservo(Iservo):
      def __init__(self, pin,factory):
           self.error_counts = []
           self.error_messages = []
@@ -28,7 +28,7 @@ class Servo(Iservo):
           self.ini=True
           while True:
                try:
-                    self.servo = Servo(pin,factory)
+                    self.servo = Servo(pin,pin_factory=factory)
                     self.a = 0
                     break
                except IOError as e:
@@ -63,6 +63,7 @@ class Servo(Iservo):
                finally:
                     if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
                          self.log_errors()
+
                sleep(1)
 
      def stop(self):
