@@ -66,8 +66,9 @@ try:
             if 5 in servo.error_counts:
                 ins_error_tool.append("servo")
                 tools[4]=False
-
-
+    
+    #サーボモーターが回転する時間
+    srote_time=60
 
     try:
         gps=Gps()
@@ -218,7 +219,7 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=mget_time()
+                motor_log[1]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
@@ -243,7 +244,7 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=mget_time()
+                motor_log[1]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
@@ -268,7 +269,7 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=mget_time()
+                motor_log[1]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
@@ -294,7 +295,7 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=mget_time()
+                motor_log[1]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
@@ -314,7 +315,7 @@ try:
             sys.exit(1)
         finally:
             if len(motors.right_error_counts) or len(motors.left_error_counts):
-                motor_log[2]=mget_time()
+                motor_log[1]=mget_time()
                 motor_log[-1]=motors.error_log
                 if 5 in motors.right_error_counts:
                     motor_log[-2].append("right motor")
@@ -526,13 +527,40 @@ try:
     #変更点 
     try:            
         servo.rotate()
-        #個々の時間は後で計算する
-        sleep(30)
-        servo.stop()
+        
+        start_time=time()
+        while time()-start_time<srote_time:
+            now_time=time()
+            #左から、フェーズ、現在時間、残り時間
+            wait_log=[8,None,None]
+            jp_time=mget_time()
+            wait_log[1]=jp_time
+            wait_log[2]=int(srote_time-(now_time-start_time))
+            #xbeeで送信
+            mxbee_send(wait_log)
+            mxcel(wait_log)
+            keika=time()-now_time
+            if keika<2:
+                sleep(2-keika)
+        
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
         import sys
         sys.exit(1)
+    finally:
+        if len(servo.error_counts):
+            #左から順にフェーズ、時間、故障した部品、エラー文
+            servo_log=[-2,mget_time(),None,None]
+            servo_log[3]=servo.error_log
+            if 5 in servo.error_counts:
+                servo_log[2]="servo"
+            mxbee_send(servo_log)
+            mxcel(servo_log)
+
+    try:
+        servo.stop()
+    except RuntimeError:
+        pass
     finally:
         if len(servo.error_counts):
             #左から順にフェーズ、時間、故障した部品、エラー文
