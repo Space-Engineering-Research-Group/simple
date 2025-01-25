@@ -230,7 +230,7 @@ class Motor(Imotor):
                 self.left_handle_error(error)
             finally:
                 if (len(self.left_error_counts)and self.a==0) or 5 in self.left_error_counts:
-                    self.right_log_errors()
+                    self.left_log_errors()
                     break
             sleep(1)
         
