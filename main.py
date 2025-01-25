@@ -83,6 +83,7 @@ try:
     goal_lat = 0
     goal_lon = 0
 
+    #設定的に一番低そうなこれにする。
     width=640
     height=480
     fps=10
@@ -90,6 +91,8 @@ try:
     frame_area=width*height
     #カメラの画角（実験値）
     view_angle=120
+    #ここは機体が組みあがった後に実験して決める
+    parea_threshold=0.04
     try:
         camera=Camera(width,height,fps)
     finally:
@@ -111,14 +114,14 @@ try:
 
 
     #pin,pwmの値は決まった
-    rdir_1=35
-    rdir_2=37
-    rPWM=33
-    ldir_1=38
-    ldir_2=40
-    lPWM=36
+    rdir_1=19
+    rdir_2=26
+    rPWM=13
+    ldir_1=15
+    ldir_2=14
+    lPWM=18
     #機体の回転速度208度/s
-    turn_speed=280
+    turn_speed=208
     motor_sttime=(view_angle/2)/turn_speed
 
 
@@ -162,7 +165,7 @@ try:
             sys.exit(1)
         finally:
             if len(xbee.error_counts):
-                motor_log[2]=mget_time()
+                xcel_log[2]=mget_time()
                 xcel_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xcel_log[-2].append("xcel")
@@ -179,7 +182,7 @@ try:
             sys.exit(1)
         finally:
             if len(xbee.error_counts):
-                motor_log[2]=mget_time()
+                xbee_log[2]=mget_time()
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].append("xbee")
@@ -200,7 +203,7 @@ try:
 
     def mforward(wait_time):
         if wait_time>0:
-            nlog("右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
+            nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
         else:
             nlog("右モーターの正転、左モーターの逆転をして、機体を前進させます。")
         #フェーズ、時間、故障した部品、エラー文      
@@ -279,7 +282,7 @@ try:
         if wait_time>0:
             nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
         else:
-            nlog(f"右モーターの逆転、左モーターの逆転を行います。")
+            nlog("右モーターの逆転、左モーターの逆転を行います。")
         motor_log=[10,None,[],None]
         try:
             motors.turn_right()
@@ -566,7 +569,7 @@ try:
             camera_log=[4,1,None,False,None,None]
             camera_log[2]=mget_time()
             frame=mget_frame()
-            judge=find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,0)
+            judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,0)
             camera_log[3]=judge
             mxbee_send(camera_log)
             mxcel(camera_log)
@@ -607,7 +610,7 @@ try:
                     
             nlog("パラシュートの検出を行います。")
             frame=mget_frame()        
-            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,1)                
+            sign,judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,1)                
             
             if judge==True:
                 wait_time=90/turn_speed
