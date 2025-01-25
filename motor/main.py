@@ -225,6 +225,8 @@ class Motor(Imotor):
                 self.left_in1.off()
                 self.left_in2.on()
                 self.left_PWM.value = speed
+                self.a=0
+                break
             except Exception as e:
                 error = f"left motor error during right turn--detail {e}"
                 self.left_handle_error(error)
