@@ -19,7 +19,7 @@ def find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2):
         return max_contour
     return None
 
-def find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,phase):
+def find_parachute(frame,lower_yellow,upper_yellow,threshold,center,frame_area,phase):
     img_hsv=cv2.cvtColor(frame,cv2.COLOR_BGR2HSV)
     mask = cv2.inRange(img_hsv, lower_yellow, upper_yellow)       
     mask = cv2.medianBlur(mask, 11)
@@ -27,7 +27,6 @@ def find_parachute(frame,lower_yellow,upper_yellow,center,frame_area,phase):
     yellow_pixels=np.sum(mask==255)
     yellow_ratio=yellow_pixels/frame_area
 
-    threshold=0.03
     if yellow_ratio>=threshold:
         if phase==0:
             return True
