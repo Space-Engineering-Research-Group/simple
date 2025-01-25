@@ -123,7 +123,17 @@ try:
     lPWM=18
     #機体の回転速度208度/s
     turn_speed=208
-    motor_sttime=(view_angle/2)/turn_speed
+    #９０度回転するときの待機時間
+    sttime_90=90/turn_speed
+    
+
+    #フェーズ６、kazu=1のときの回転角度と、回転時間を定義
+    roteangle_6_1=60
+    sttime_6_1=roteangle_6_1/turn_speed
+
+    #フェーズ６，kazu=2の時の回転角度と、回転時間を定義
+    roteangle_6_2=1
+    sttime_6_1=roteangle_6_1/turn_speed
 
 
     try:
@@ -627,13 +637,13 @@ try:
             direction=gps.move_direction(prelat,prelon,nowlat,nowlon)
             gps_log[2]=direction
             #５度以上回転がずれてたら戻すようにしようと思う。（勘）
-            wait_time=abs(direction)/turn_speed
+            sttime_4_3=abs(direction)/turn_speed
             if abs(direction)>5:
                 nlog("コーンに対する角度が５度より大きいため、回転してコーンと向き合うようにします。")
                 if direction >5:
-                    mturn_right(wait_time)
+                    mturn_right(sttime_4_3)
                 else:
-                    mturn_left(wait_time)
+                    mturn_left(sttime_4_3)
             else:
                 nlog("コーンに対する角度が５度以下なため、回転は行いません")    
 
@@ -652,17 +662,16 @@ try:
 
             if judge==True:
                 print("パラシュートが検知されたため、回避を行います。")
-                wait_time=90/turn_speed
                 if sign==1:
                     print("パラシュートが機体に対して右側にあるため、左に回避します。")
-                    mturn_left(wait_time)
+                    mturn_left(sttime_90)
                     mforward(10)
-                    mturn_right(wait_time)
+                    mturn_right(sttime_90)
                 else:
                     print("パラシュートが機体に対して左側にあるため、右に回避します。")
-                    mturn_right(wait_time)
+                    mturn_right(sttime_90)
                     mforward(10)
-                    mturn_left(wait_time)
+                    mturn_left(sttime_90)
             else:
                 print("パラシュートが検知されなかったため、回避を行いません。")
             #１０は適当
@@ -691,6 +700,7 @@ try:
         if tools[1] is False:
             if tools[2] is True:
                 plan2="C"
+                nlog("GPSが使えないため、プランcです。")
             else:
                 plan2="D"
                 nlog("カメラとGPS両方使えないため、プログラムを停止します。")
@@ -699,6 +709,7 @@ try:
         else:
             if tools[2] is False:
                 plan2="B"
+                nlog("カメラが使えないため、プランbです。")
         
         result=None
     #gps
@@ -947,21 +958,30 @@ try:
                                 camera_log=[6,3,None,False,False,None,None]
                                 now_time=time()
                                 camera_log[2]=mget_time()
-                                frame=mget_frame()
-                                contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
-                                if contour == None:
-                                    mxbee_send(camera_log)
-                                    mxcel(camera_log)
-                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
+                                sikou_6_2=0
+                                for i in range(3):
+                                    frame=mget_frame()
+                                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
+                                    if contour == None:
+                                        mxbee_send(camera_log)
+                                        mxcel(camera_log)
+                                        nlog("コーンが検出出来なかったため、もう一度取得します。")
+                                        sikou_6_2+=1
+
+                                        continue
+                                    judge=judge_cone(contour,frame_area)
+                                    if judge==True:
+                                        break
+                                    elif judge == False:
+                                        mxbee_send(camera_log)
+                                        mxcel(camera_log)
+                                        nlog("コーンが検出出来なかったため、もう一度取得します。")
+                                        sikou_6_2+=2
+    
+                                if sikou_6_2==3:
                                     g=False
                                     break
-                                judge=judge_cone(contour,frame_area)
-                                if judge == False:
-                                    mxbee_send(camera_log)
-                                    mxcel(camera_log)
-                                    nlog("コーンが検出出来ないため、もう一度回転して、コーン検出をはじめます。")
-                                    g=False
-                                    break
+
 
                                 camera_log[3]=True
 
@@ -971,6 +991,7 @@ try:
                                 mxcel(camera_log)
                                 if cone_result:
                                     nlog("コーンに近づけたため、ゴール判定")
+                                    mstop()
                                     break
 
                                 #個々の秒数は適当
@@ -981,11 +1002,12 @@ try:
                             if g == False:
                                 kazu=1
                                 break
-                            if result ==True:
+                            if cone_result ==True:
                                 kazu=3
                                 break
                     else:
                         #ここで終了したことを送る。
+                        nlog("コーンに到着しました。")
                         break
             
 
