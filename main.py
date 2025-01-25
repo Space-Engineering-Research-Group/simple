@@ -254,9 +254,9 @@ try:
 
     def mturn_left(wait_time):
         if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
+            nlog(f"右モーターの正転、左モーターの正転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
         else:
-            nlog("右モーターの正転、左モーターの逆転をして、機体を反時計回りに回転させます。")
+            nlog("右モーターの正転、左モーターの正転をして、機体を反時計回りに回転させます。")
         motor_log=[10,None,[],None]
         try:
             motors.turn_left()
