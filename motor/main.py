@@ -138,7 +138,7 @@ class Motor(Imotor):
                 error = f"left motor error during forward motion--detail {e}"
                 self.left_handle_error(error)
             finally:
-                if (len(self.right_error_counts)and self.a==0)or 5 in self.left_error_counts:
+                if (len(self.left_error_counts)and self.a==0)or 5 in self.left_error_counts:
                     self.left_log_errors()
                     break
             sleep(1)
