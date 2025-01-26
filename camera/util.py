@@ -47,13 +47,21 @@ def find_parachute(frame,lower_yellow,upper_yellow,threshold,center,frame_area,p
         else:
             return [None,False]
 
-def judge_cone(contour,frame_area):
+def judge_cone(contour,frame_area,pettern=0):
+    #なぜかここだけパーセント
     area=cv2.contourArea(contour)
+
     raito=(area/frame_area)*100
-    #個々の値も適当
-    if raito >= 0.04:
-        return True
-    return False
+
+    if pettern==0:
+        #個々の値も適当
+        if raito >= 0.04:
+            return True
+        return False
+    else:
+        if raito>=10:
+            return True
+        return False
 
         
 def get_distance(contour,x):
