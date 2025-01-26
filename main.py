@@ -899,85 +899,74 @@ try:
                                     q += 1
                                     if q == 3:
                                         nlog("３回動いてもコーンが検出されなかったので、不可能と判断して停止します。")
-                                        import sys
-                                        sys.exit(1)
+                                        tools[2]==False
+                                        raise RuntimeError
                                     nlog("一周してもコーンが認識されないため、一度前進して動いてから、もう一度取得を始めます。")
                                     mforward(5)
                                     mstop()
                                     p = 0
                             
 
-                    if kazu == 2:
-                        cone_kensyutu=True #エラーって感じのところはgを使って抜け出すようにする。
-                        
-                        
+                    if kazu == 2:    
+                        nlog("コーンが画面の中心にくるまでで回転しながら画像を取得します。")
+
                         while True:
-                            nlog("コーンが画面の中心にくるまでで回転しながら画像を取得します。")
+                            #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
+                            camera_log=[6,2,None,False,None,None,None]
+                            camera_log[2]=mget_time()
+                            
+                            sikou_6_2=0
+                            for i in range(3):
+                                frame=mget_frame()
+                                contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
+                                if contour == None:
+                                    mxbee_send(camera_log)
+                                    mxcel(camera_log)
+                                    nlog("コーンが検出出来なかったため、もう一度取得します。")
+                                    sikou_6_2+=1
 
-                            sign=-1
-                            while sign!=0:
-                                #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
-                                camera_log=[6,2,None,False,None,None,None]
-                                camera_log[2]=mget_time()
-                                
-                                sikou_6_2=0
-                                for i in range(3):
-                                    frame=mget_frame()
-                                    contour=find_cone(frame,lower_red1,upper_red1,lower_red2,lower_red2)
-                                    if contour == None:
-                                        mxbee_send(camera_log)
-                                        mxcel(camera_log)
-                                        nlog("コーンが検出出来なかったため、もう一度取得します。")
-                                        sikou_6_2+=1
-
-                                        continue
-                                    judge=judge_cone(contour,frame_area)
-                                    if judge==True:
-                                        break
-                                    elif judge == False:
-                                        mxbee_send(camera_log)
-                                        mxcel(camera_log)
-                                        nlog("コーンが検出出来なかったため、もう一度取得します。")
-                                        sikou_6_2+=1
-    
-                                if sikou_6_2==3:
-                                    cone_kensyutu=False
+                                    continue
+                                judge=judge_cone(contour,frame_area)
+                                if judge==True:
                                     break
-                                camera_log[3]=True
-                                sign=get_distance(contour,center)
-                                camera_log[4]=sign
-                                mxbee_send(camera_log)
-                                mxcel(camera_log)
-                                if sign==0:
-                                    cone_result=to_stop(contour,frame_area)
-                                    if cone_result==True:
-                                        break
-                                    nlog("コーンが画面の中心にあるため、コーンに向かって前進をします。")
-                                    dis_judge=judge_cone(contour,frame_area,1)
-                                    if dis_judge==True:
+                                elif judge == False:
+                                    mxbee_send(camera_log)
+                                    mxcel(camera_log)
+                                    nlog("コーンが検出出来なかったため、もう一度取得します。")
+                                    sikou_6_2+=1
 
-                                        mforward()
-                                    else:
-                                        mforward()                    
-                                    break
-                                #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
-                                elif sign==1:
-                                    nlog("コーンが中心の右側にあるため、時計回りの回転を行います。")
-                                    mturn_right(sttime_6_2)
-                                    mstop()
-                                    
-                                else :
-                                    nlog("コーンが中心の左側にあるため、反時計回りの回転を行います。")
-                                    mturn_left(sttime_6_2)
-                                    mstop()
-                                
-                            if cone_kensyutu == False:
+                            if sikou_6_2==3:
                                 kazu=1
                                 break
+                            camera_log[3]=True
+                            sign=get_distance(contour,center)
+                            camera_log[4]=sign
+                            mxbee_send(camera_log)
+                            mxcel(camera_log)
+                            if sign==0:
+                                cone_result=to_stop(contour,frame_area)
+                                if cone_result==True:
+                                    kazu=3
+                                    break
+                                nlog("コーンが画面の中心にあるため、コーンに向かって前進をします。")
+                                dis_judge=judge_cone(contour,frame_area,1)
+                                if dis_judge==True:
 
-                            if cone_result==True:
-                                kazu=3
-                                break
+                                    mforward(sttime_close)
+                                else:
+                                    mforward(sttime_far)
+                                mstop()
+                            #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
+                            elif sign==1:
+                                nlog("コーンが中心の右側にあるため、時計回りの回転を行います。")
+                                mturn_right(sttime_6_2)
+                                mstop()
+                                
+                            else :
+                                nlog("コーンが中心の左側にあるため、反時計回りの回転を行います。")
+                                mturn_left(sttime_6_2)
+                                mstop()
+                            
                     if kazu==3:
                         #ここで終了したことを送る。
                         nlog("コーンに到着しました。")
