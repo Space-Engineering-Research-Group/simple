@@ -756,7 +756,6 @@ try:
                     mstop()      
 
                 stack_count = 0
-                B_of_judge = 0
 
                #loop started
                 while True:
@@ -773,7 +772,7 @@ try:
 
                         mbackward(5)
                         mstop()
-                        mturn_left(90/208)  
+                        mturn_left(sttime_90)  
                         mstop()
                         mforward(5)
                         mstop()  
@@ -783,14 +782,12 @@ try:
                     #judge
                     distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)            
                     
-                    if B_of_judge == 0:
-                        if distance<4:
-                            mforward(20)
-                            mstop()
-                            if plan2 == "B":
-                                B_of_judge = 1
+                    if distance<4:
+                        mforward(20)
+                        mstop()
+                        if plan2 == "A":
                             gps_seikou=True
-                            continue
+                        continue
                        
                     if distance<2:
 
