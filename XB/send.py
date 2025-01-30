@@ -25,34 +25,43 @@ class XBeeCommunication(IXBeeDevice):
         self.DATA_TO_SEND = "Hello XBee!"
         self.REMOTE_NODE_ID = "raspi_node"
 
-# ls -l /dev/serial/by-id
+# ls -l /dev/serial/by-idして、青い文字をportに入れる
 
-    def main(self):
+    def main(self,data):
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log="gps Error Log"
+        self.a=1
+        self.ini=True
+
+
+        self.DATA_TO_SEND = data
         print(" +--------------------------------------+")
         print(" | XBee Python Library Send Data Sample |")
         print(" +--------------------------------------+\n")
 
         device = XBeeDevice(self.PORT, self.BAUD_RATE)
 
-        try:    
-            device.open()
+        while True:
+            try:    
+                device.open()
 
-            # Obtain the remote XBee device from the XBee network.
-            xbee_network = device.get_network()
-            remote_device = xbee_network.discover_device(self.REMOTE_NODE_ID)
-            if remote_device is None:
-                print("Could not find the remote device")
-                exit(1)
+                # Obtain the remote XBee device from the XBee network.
+                xbee_network = device.get_network()
+                remote_device = xbee_network.discover_device(self.REMOTE_NODE_ID)
+                if remote_device is None:
+                    print("Could not find the remote device")
+                    exit(1)
 
-            print("Sending data to %s >> %s..." % (remote_device.get_64bit_addr(), self.DATA_TO_SEND))
+                print("Sending data to %s >> %s..." % (remote_device.get_64bit_addr(), self.DATA_TO_SEND))
 
-            device.send_data(remote_device, self.DATA_TO_SEND)
+                device.send_data(remote_device, self.DATA_TO_SEND)
 
-            print("Success")
+                print("Success")
 
-        finally:
-            if device is not None and device.is_open():
-                device.close()
+            finally:
+                if device is not None and device.is_open():
+                    device.close()
 
 
 if __name__ == '__main__':
