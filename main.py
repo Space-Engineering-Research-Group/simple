@@ -912,7 +912,7 @@ try:
                             camera_log=[6,2,None,False,None,None,None]
                             camera_log[2]=mget_time()
                             
-                            sikou_6_2=0
+                            sippai_6_2=0
                             for i in range(3):
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
@@ -920,7 +920,7 @@ try:
                                     mxbee_send(camera_log)
                                     mxcel(camera_log)
                                     nlog("コーンが検出出来なかったため、もう一度取得します。")
-                                    sikou_6_2+=1
+                                    sippai_6_2+=1
 
                                     continue
                                 judge=judge_cone(contour,frame_area)
@@ -930,9 +930,10 @@ try:
                                     mxbee_send(camera_log)
                                     mxcel(camera_log)
                                     nlog("コーンが検出出来なかったため、もう一度取得します。")
-                                    sikou_6_2+=1
+                                    sippai_6_2+=1
 
-                            if sikou_6_2==3:
+                            if sippai_6_2==3:
+                                nlog("三回コーンが検出できなかったため、もう一度回転してコーンを探します。")
                                 kazu=1
                                 break
                             camera_log[3]=True
