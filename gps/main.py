@@ -12,9 +12,6 @@ class IGps(abc.ABC):
     def get_coordinate_xy(self):
         pass
     
-    @abc.abstractmethod
-    def move_direction(self):
-        pass
     
     @abc.abstractmethod
     def delete(self):
@@ -31,7 +28,7 @@ class IGps(abc.ABC):
     @abc.abstractmethod
     def handle_error(self,error):
         pass
-
+judge = False 
 
 class Gps(IGps):
     def __init__(self):
@@ -40,6 +37,7 @@ class Gps(IGps):
         self.error_log="gps Error Log"
         self.a=1
         self.ini=True
+
         while True:
             try:
                 self.__gps_uart = serial.Serial('/dev/serial0', 9600, timeout=10)
@@ -51,14 +49,14 @@ class Gps(IGps):
                 if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
                     self.__gps_uart.close()
                     #ポートがビジー状態または存在しない
-                error ="Failed to open the serial port:: /dev/serial0. Ensure the port is not busy or unavailable.:--detail{e}"
+                error =f"Failed to open the serial port:: /dev/serial0. Ensure the port is not busy or unavailable.:--detail{e}"
                 self.handle_error(error)
                                     
             except Exception as e:
             # その他のエラー（MicropyGPS の初期化エラーなど）
                 if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
                     self.__gps_uart.close()
-                error = "Failed to _init_ the GPS:--detail{e}"
+                error = f"Failed to _init_ the GPS:--detail{e}"
                 self.handle_error(error)
                                     #micropyGPS の設定やデータ受信に問題がある
                         
@@ -75,21 +73,41 @@ class Gps(IGps):
         
 
     def update_gps(self):
+        global judge
         self.error_counts = []
         self.error_messages = []
         self.error_log = "gps Error Log"
         self.a = 1
         self.ini=False
+
+
         while True:
             try:
                 self.sentence = self.__gps_uart.readline()
                 if self.sentence:
-                    for x in self.sentence.decode('ascii', errors='ignore'):
-                        self.__gps.update(x)
-                        self.a = 0
-                        break
+                    #kokode decode dekiruka tasikameru
+                    while True:
+                        try:
+                            if self.sentence.decode('utf-8'):
+                                break
+                        except UnicodeDecodeError:
+                            print("エラー")
+                            self.sentence = self.__gps_uart.readline()
+                            
+
+                    if "$GPGGA" in self.sentence.decode('utf-8') or "$GPRMC" in self.sentence.decode('utf-8') or "$GPGLL" in self.sentence.decode('utf-8'):       
+                        for x in self.sentence.decode('utf-8', errors='ignore'):
+                            self.__gps.update(x)
+                            self.a = 0  
+                            judge = True    
+                    else:
+                        judge = False               
                 else:
+                    print("ない")
                     raise Exception("failed to get info of gps")
+                
+                break#消してもいいのか
+
 
             except serial.SerialException as e:
                 error = f"GPS communication error:--detail{e}"
@@ -109,82 +127,60 @@ class Gps(IGps):
 
 
     def get_coordinate_xy(self):
+        global judge
         self.error_counts = []
         self.error_messages = []
         self.error_log="gps Error Log"
         self.a=1
         self.ini=False
+
+        latlist = []
+        lonlist = []
+  
+        q=0
         
-        lali = [] #latitude_list
-        loli = [] #longitude_list
-        for i in range(30):
-            start_time = time.time()
-
-            self.update_gps()
-
-
-            while True:
-                try:
-
+        while True:
+            try:
+            
+                while q<30:
+                    self.update_gps()
                     self.latitude = self.__gps.latitude[0]
                     self.longitude = self.__gps.longitude[0]
-                    self.a = 0
+                    if judge == True and self.latitude != 0 and self.longitude != 0:
+                        print(f"{q} Latitude: {self.__gps.latitude[0]}, Longitude: {self.__gps.longitude[0]}")
+                        latlist.append(self.latitude)
+                        lonlist.append(self.longitude)
+                        q+=1
+
+
+                ave_lat = sum(latlist) / len(latlist)
+                ave_lon = sum(lonlist) / len(lonlist)
+                print(f'average_latitude:{ave_lat}, average_longitude:{ave_lon}')
+                self.a = 0
+                print('終わった')
+                return ave_lat, ave_lon
+                
+            except ValueError as e:
+                error = f"Failed _ GPS get_coordinate_xy:--detail{e}"
+                self.handle_error(error)
+            except serial.SerialException as e:
+                error = "GPS communication error: --detail{e}"
+                self.handle_error(error)
+            except Exception as e:
+                error =f"Failed _ GPS xy_coordinates:--detail{e}"
+                self.handle_error(error)
+            finally:
+                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                    if 5 in self.error_counts:
+                            if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                self.__gps_uart.close()
+                    self.log_errors()
                     break
-                    
-                except ValueError as e:
-                    error = f"Failed _ GPS get_coordinate_xy:--detail{e}"
-                    self.handle_error(error)
-                except serial.SerialException as e:
-                    error = "GPS communication error: --detail{e}"
-                    self.handle_error(error)
-                except Exception as e:
-                    error =f"Failed _ GPS xy_coordinates:--detail{e}"
-                    self.handle_error(error)
-                finally:
-                    if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
-                        if 5 in self.error_counts:
-                                if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
-                                    self.__gps_uart.close()
-                        self.log_errors()
-                        break
 
-                sleep(1) 
+            sleep(1) 
 
 
-
-
-            if self.latitude is None and self.longitude is None:      
-                raise ValueError( "lat , lon is None")
-            dis_time=time()-start_time
-            if dis_time<0.11:
-                sleep(0.11-dis_time)
-
-            m_latitude, m_longitude = self.dms_to_decimal
-        
-            lali.append(m_latitude)
-            loli.append(m_longitude)
-
-        ave_lat = sum(lali)/len(lali)
-        ave_lon = sum(loli)/len(loli)            
-        return ave_lat, ave_lon
             
-    
-
-
-    def move_direction(self,past_lat, past_lon, now_lat, now_lon):
-        import math
-        direction = [] 
-        for i in range(30):
-            past_lat, past_lon, now_lat, now_lon = map(math.radians, [past_lat, past_lon, now_lat, now_lon])
-            delta_lon = now_lon - past_lon
-            delta_lat = now_lat - past_lat
-            bearing = math.atan2(delta_lon, delta_lat)
-            bearing = math.degrees(bearing)  # ラジアンから度に変換
-            direction.append(bearing)
-
-        ave_direction = sum(direction)/len(direction)
-        self.a=0
-        return ave_direction
 
     def delete(self):
         self.error_counts=[]
@@ -249,6 +245,3 @@ class Gps(IGps):
         else:
             index = self.error_messages.index(str(error))
             self.error_counts[index] += 1
-
-
-    

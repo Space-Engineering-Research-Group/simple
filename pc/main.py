@@ -124,15 +124,16 @@ def feeds_1(sheet,data,num):
 def feeds1(sheet,data,num):
     #最初num = 1
     sheet.range(num,1).value = "フェーズ"
-    sheet.range(num,2).value = "時間"
-    sheet.range(num,3).value = "cds"
-    sheet.range(num,4).value = "GPS"
-    sheet.range(num,5).value = "camera"
-    sheet.range(num,6).value = "motor"
-    sheet.range(num,7).value = "servo motor"
-    sheet.range(num,8).value = "xbee"
-    sheet.range(num,9).value = "故障した部品"
-    sheet.range(num,10).value = "error"
+    sheet.range(num,2).value = "プラン"
+    sheet.range(num,3).value = "時間"
+    sheet.range(num,4).value = "cds"
+    sheet.range(num,5).value = "GPS"
+    sheet.range(num,6).value = "camera"
+    sheet.range(num,7).value = "motor"
+    sheet.range(num,8).value = "servo motor"
+    sheet.range(num,9).value = "xbee"
+    sheet.range(num,10).value = "故障した部品"
+    sheet.range(num,11).value = "error"
 
     Faulty_parts = []
     for index, value in enumerate(data, start=1):
