@@ -44,6 +44,7 @@ class Gps(IGps):
                 self.__gps = micropyGPS.MicropyGPS(9, "dd")
                 self.a = 0
                 break
+
             except serial.SerialException as e:
                 # シリアルポートが開けなかった場合
                 if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
@@ -245,3 +246,4 @@ class Gps(IGps):
         else:
             index = self.error_messages.index(str(error))
             self.error_counts[index] += 1
+
