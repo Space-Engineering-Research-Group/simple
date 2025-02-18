@@ -717,7 +717,7 @@ try:
         
     #gps
 
-        if plan2 in ["A","B"]and gps_seikou==False:
+        if plan2 in ["A","B"]:
             try:
                 #最初の緯度経度の取得は特別なので、関数化しない
                 #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
@@ -749,7 +749,7 @@ try:
                     mforward(20)
                     mstop()
                     gps_seikou=True
-                    continue
+                    raise RuntimeError
                    
                 else:
                     mforward(30)
@@ -787,7 +787,7 @@ try:
                         mstop()
                         if plan2 == "A":
                             gps_seikou=True
-                        continue
+                            raise RuntimeError
                        
                     if distance<2:
 
@@ -826,6 +826,7 @@ try:
 
                             if distance<0.5:#適当
                                 gps_seikou=True
+                                raise RuntimeError
                                 #成功したことを送る
 
                             rotation_angle = m5get_dire_rot(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon) 
@@ -840,7 +841,7 @@ try:
 
                         else:#not B
                             gps_seikou=True
-                            continue
+                            raise RuntimeError
 
                     #distanceが大きくてもまだ4m以上ある
                     grotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
@@ -856,6 +857,7 @@ try:
         
             
             except RuntimeError:
+                #成功したらここに来る
                 continue
 
                 
