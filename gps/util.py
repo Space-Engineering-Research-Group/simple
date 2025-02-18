@@ -45,6 +45,7 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
     #度をmに変換
     dlat = geodesic((latitude, longitude), (goal_lat, longitude)).meters  
     dlon = geodesic((latitude, longitude), (latitude, goal_lon)).meters
+    print('できた')
 
     # 南北方向での符号を調整
     if goal_lat < latitude:
@@ -55,6 +56,8 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
         dlon = -dlon
 
     rotation_angle = math.degrees(math.atan2(dlon, dlat))
+    if rotation_angle == None:
+        print('None')
 
     rotation = rotation_angle - move_direction
     z_rot = abs(rotation)
@@ -66,3 +69,4 @@ def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction):
             return rotation - 360
         else:
             return rotation + 360
+       
