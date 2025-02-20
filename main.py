@@ -88,7 +88,7 @@ try:
     width=640
     height=480
     fps=10
-    center=width/2
+    center=width//2
     frame_area=width*height
     #カメラの画角（実験値）
     view_angle=120
