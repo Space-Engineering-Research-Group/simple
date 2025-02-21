@@ -838,13 +838,15 @@ try:
                             mstop()
                             mforward(4) #1/208の単位と、2m移動にかかる時間計算
                             mstop()
+                            gps_seikou=True
+                            raise RuntimeError
 
                         else:#not B
                             gps_seikou=True
                             raise RuntimeError
 
                     #distanceが大きくてもまだ4m以上ある
-                    grotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                    rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
                     if rotation_angle > 0:
                         mturn_right(rotation_angle/208)  
                     else:
