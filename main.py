@@ -88,7 +88,7 @@ try:
     width=640
     height=480
     fps=10
-    center=width/2
+    center=width//2
     frame_area=width*height
     #カメラの画角（実験値）
     view_angle=120
@@ -893,14 +893,13 @@ try:
                             if judge == False:
                                 p += 1
                                 nlog(f"コーンが見つからないため、機体を時計回りに回転させたのち、再び検出を行います。")
-                                wait_time = (view_angle / 2) / turn_speed
-                                mturn_right(wait_time)
+                                mturn_right(sttime_6_1)
                                 mstop()
                                 if p == int(360 / roteangle_6_1):
                                     q += 1
                                     if q == 3:
                                         nlog("３回動いてもコーンが検出されなかったので、不可能と判断して停止します。")
-                                        tools[2]==False
+                                        tools[2]=False
                                         raise RuntimeError
                                     nlog("一周してもコーンが認識されないため、一度前進して動いてから、もう一度取得を始めます。")
                                     mforward(5)
@@ -920,7 +919,7 @@ try:
                             for i in range(3):
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-                                if contour == None:
+                                if contour is None:
                                     mxbee_send(camera_log)
                                     mxcel(camera_log)
                                     nlog("コーンが検出出来なかったため、もう一度取得します。")
@@ -934,6 +933,7 @@ try:
                                     mxbee_send(camera_log)
                                     mxcel(camera_log)
                                     nlog("コーンが検出出来なかったため、もう一度取得します。")
+
                                     sippai_6_2+=1
 
                             if sippai_6_2==3:
@@ -953,9 +953,10 @@ try:
                                 nlog("コーンが画面の中心にあるため、コーンに向かって前進をします。")
                                 dis_judge=judge_cone(contour,frame_area,1)
                                 if dis_judge==True:
-
+                                    nlog("コーンが近くにあります。")
                                     mforward(sttime_close)
                                 else:
+                                    nlog("コーンが遠くにあります。")
                                     mforward(sttime_far)
                                 mstop()
                             #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。

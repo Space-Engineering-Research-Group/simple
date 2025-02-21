@@ -48,10 +48,10 @@ def find_parachute(frame,lower_yellow,upper_yellow,threshold,center,frame_area,p
             return [None,False]
 
 def judge_cone(contour,frame_area,pettern=0):
-    #なぜかここだけパーセント
+    
     area=cv2.contourArea(contour)
 
-    raito=(area/frame_area)*100
+    raito=(area/frame_area)
 
     if pettern==0:
         #個々の値も適当
@@ -59,7 +59,7 @@ def judge_cone(contour,frame_area,pettern=0):
             return True
         return False
     else:
-        if raito>=10:
+        if raito>=0.1:
             return True
         return False
 
