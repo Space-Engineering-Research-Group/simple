@@ -128,7 +128,7 @@ class Camera(ICamera):
                     self.log_errors()
             sleep(1)
     
-    def parachute_hozon(self, frame,yellow_lower,yellow_upper):
+    def parachute_hozon(self, frame):
         self.error_counts = []
         self.error_messages = []
         self.error_log = "camera:Error"
@@ -137,18 +137,9 @@ class Camera(ICamera):
 
         while True:
             try:
-                img_hsv = cv2.cvtColor(frame, cv2.COLOR_BGR2HSV)
-                mask = cv2.inRange(img_hsv, yellow_lower, yellow_upper) 
-                mask = cv2.medianBlur(mask, 11)
-                mask[0, :] = 0            
-                mask[-1, :] = 0            
-                mask[:, 0] = 0            
-                mask[:, -1] = 0 
-                mask=cv2.Canny(mask,80.0,175.0)
-                contours, _ = cv2.findContours(mask, cv2.RETR_EXTERNAL, cv2.CHAIN_APPROX_SIMPLE)
-                if contours:
-                    cv2.drawContours(frame, contours, -1, (255,0, 0), 3)
-                self.out.write(frame)
+                date = dt.now().strftime("%Y%m%d_%H%M%S")
+                path = "./" + date + ".jpg"
+                cv2.imwrite(path,frame)
                 self.a = 0
                 break
             except Exception as e:
