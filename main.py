@@ -725,8 +725,8 @@ try:
                 try:
                     gps_log[1]=time()
                     pre_lat,pre_lon = gps.get_coordinate_xy()
-                    gps_log[2]=lat
-                    gps_log[3]=lon
+                    gps_log[2]=pre_lat
+                    gps_log[3]=pre_lon
 
                     distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
                     gps_log[4]=distance
