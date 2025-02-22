@@ -3,6 +3,7 @@ from picamera2 import Picamera2
 from abc import ABC,abstractmethod
 from time import sleep
 from datetime import datetime as dt
+import os
 
 class ICamera(ABC):
     @abstractmethod
@@ -26,6 +27,7 @@ class Camera(ICamera):
         self.error_counts = []
         self.error_messages = []
         self.error_log = "camera:Error"
+        save_dir="/home/spacelab/videos/cone_2025/"
         self.a = 1
         self.ini=True
         while True:
@@ -41,7 +43,7 @@ class Camera(ICamera):
 
                 # 出力ファイル名設定
                 date = dt.now().strftime("%Y%m%d_%H%M")
-                path = "./" + date + ".mp4"
+                path = os.path.join(save_dir,date+".mp4")
 
                 # 出力ファイル設定
                 fourcc = cv2.VideoWriter_fourcc(*'mp4v')  
@@ -134,11 +136,11 @@ class Camera(ICamera):
         self.error_log = "camera:Error"
         self.a = 1
         self.ini = False
-
+        save_dir="/home/spacelab/images/parachute_2025/"
         while True:
             try:
                 date = dt.now().strftime("%Y%m%d_%H%M%S")
-                path = "./" + date + ".jpg"
+                path = os.path.join(save_dir, date + ".jpg") 
                 cv2.imwrite(path,frame)
                 self.a = 0
                 break

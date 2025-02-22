@@ -612,6 +612,7 @@ try:
             camera_log[2]=mget_time()
             frame=mget_frame()
             judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,0)
+            camera.parachute_hozon(frame)
             camera_log[3]=judge
             mxbee_send(camera_log)
             mxcel(camera_log)
@@ -659,6 +660,7 @@ try:
             camera_log[2]=mget_time()
             frame=mget_frame()        
             sign,judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,1) 
+            camera.parachute_hozon(frame)
             camera_log[3]=judge
             camera_log[4]=sign
             mxbee_send(camera_log)
@@ -881,6 +883,7 @@ try:
                             frame = mget_frame()
                             contour = find_cone(frame, lower_red1, upper_red1, lower_red2, upper_red2)
                             if contour is not None:
+                                camera.cone_hozon(frame)
                                 judge = judge_cone(contour, frame_area)
                                 camera_log[3] = judge
                             else:
@@ -891,6 +894,7 @@ try:
                                 kazu = 2
                                 break
                             if judge == False:
+                                camera.frame_hozon(frame)
                                 p += 1
                                 nlog(f"コーンが見つからないため、機体を時計回りに回転させたのち、再び検出を行います。")
                                 mturn_right(sttime_6_1)
@@ -920,6 +924,7 @@ try:
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
                                 if contour is None:
+                                    camera.frame_hozon(frame)
                                     mxbee_send(camera_log)
                                     mxcel(camera_log)
                                     nlog("コーンが検出出来なかったため、もう一度取得します。")
@@ -928,8 +933,10 @@ try:
                                     continue
                                 judge=judge_cone(contour,frame_area)
                                 if judge==True:
+                                    camera.cone_hozon(frame)
                                     break
                                 elif judge == False:
+                                    camera.frame_hozon(frame)
                                     mxbee_send(camera_log)
                                     mxcel(camera_log)
                                     nlog("コーンが検出出来なかったため、もう一度取得します。")
