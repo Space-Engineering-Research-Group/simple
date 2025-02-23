@@ -247,6 +247,7 @@ try:
             nlog(f"右モーターの逆転、左モーターの正転を{wait_time}秒間続けて、機体を後進させます。")
         else:
             nlog("右モーターの逆転、左モーターの正転をして、機体を更新させます。")
+        #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
             motors.backward()
@@ -272,6 +273,7 @@ try:
             nlog(f"右モーターの正転、左モーターの正転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
         else:
             nlog("右モーターの正転、左モーターの正転をして、機体を反時計回りに回転させます。")
+        #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
             motors.turn_left()
@@ -477,20 +479,20 @@ try:
                     break
                 cds.get_brightness()
                 cds_log[2]=cds.brightness
-                if cds.brightness > brightness_threshold:
+                if cds.brightness >= brightness_threshold:
                     cds_log[3]=True
                     mxbee_send(cds_log)
                     mxcel(cds_log)
 
-                    start_time=time()
+                    fall_start_time=time()
                     nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
-                    while time()-start_time<fall_time:
+                    while time()-fall_start_time<fall_time:
                         now_time=time()
                         #左からフェーズ、時間、残り時間
                         time_log=[8,None,None]
                         jp_time=mget_time()
                         time_log[1]=jp_time
-                        time_log[2]=fall_time-(now_time-start_time)
+                        time_log[2]=fall_time-(now_time-fall_start_time)
                         mxbee_send(time_log)
                         mxcel(time_log)
                         keika=time()-now_time
@@ -883,7 +885,6 @@ try:
                             frame = mget_frame()
                             contour = find_cone(frame, lower_red1, upper_red1, lower_red2, upper_red2)
                             if contour is not None:
-                                camera.cone_hozon(frame)
                                 judge = judge_cone(contour, frame_area)
                                 camera_log[3] = judge
                             else:
@@ -891,7 +892,8 @@ try:
                             mxbee_send(camera_log)
                             mxcel(camera_log)
                             if judge == True:
-                                kazu = 2
+                                camera.cone_hozon(frame,contour)
+                                kazu = 2   
                                 break
                             if judge == False:
                                 camera.frame_hozon(frame)
@@ -901,8 +903,8 @@ try:
                                 mstop()
                                 if p == int(360 / roteangle_6_1):
                                     q += 1
-                                    if q == 3:
-                                        nlog("３回動いてもコーンが検出されなかったので、不可能と判断して停止します。")
+                                    if q == 5:
+                                        nlog("５回動いてもコーンが検出されなかったので、不可能と判断して停止します。")
                                         tools[2]=False
                                         raise RuntimeError
                                     nlog("一周してもコーンが認識されないため、一度前進して動いてから、もう一度取得を始めます。")
@@ -933,7 +935,7 @@ try:
                                     continue
                                 judge=judge_cone(contour,frame_area)
                                 if judge==True:
-                                    camera.cone_hozon(frame)
+                                    camera.cone_hozon(frame,contour)
                                     break
                                 elif judge == False:
                                     camera.frame_hozon(frame)
