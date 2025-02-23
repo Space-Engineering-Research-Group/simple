@@ -917,12 +917,11 @@ try:
                         nlog("コーンが画面の中心にくるまでで回転しながら画像を取得します。")
 
                         while True:
-                            #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
-                            camera_log=[6,2,None,False,None,None,None]
-                            camera_log[2]=mget_time()
-                            
                             sippai_6_2=0
                             for i in range(3):
+                                #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
+                                camera_log=[6,2,None,False,None,None,None]
+                                camera_log[2]=mget_time()
                                 frame=mget_frame()
                                 contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
                                 if contour is None:
