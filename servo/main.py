@@ -97,18 +97,18 @@ class Myservo(Iservo):
                self.error_counts[index] += 1
 
      def log_errors(self):
-          list = []
+          error_list = []
           for count, message in zip(self.error_counts, self.error_messages):
-               list.append(f"{count}*{message}")
+               error_list.append(f"{count}*{message}")
           if self.a == 0:
-               self.error_log = ",".join(list)
+               self.error_log = ",".join(error_list)
           elif 5 in self.error_counts:
-               if len(list) == 1:
-                    self.error_log = f"Servo: Error--{list[0]}"
+               if len(error_list) == 1:
+                    self.error_log = f"Servo: Error--{error_list[0]}"
                else:
                     index = self.error_counts.index(5)
-                    result = list[:index] + list[index + 1:]
+                    result = error_list[:index] + error_list[index + 1:]
                     result = ",".join(result)
-                    self.error_log = f"Servo: Error--{list[index]} other errors--{result}"
+                    self.error_log = f"Servo: Error--{error_list[index]} other errors--{result}"
                if self.ini==False:
                     raise RuntimeError
