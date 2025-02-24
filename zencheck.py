@@ -440,6 +440,16 @@ try:
         mxbee_send(camera_log)
         mxcel(camera_log)
         
+    camera_log=[4,1,None,False,None,None]
+    camera_log[2]=mget_time()
+    frame=mget_frame()
+    judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,0)
+    camera.parachute_hozon(frame)
+    camera_log[3]=judge
+    mxbee_send(camera_log)
+    mxcel(camera_log)
+
+
     nlog("cdsの確認を開始します。")
     sleep(2)
     for i in range(10):
