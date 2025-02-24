@@ -90,10 +90,6 @@ class Gps(IGps):
             try:
                 self.sentence = self.__gps_uart.readline()
 
-                if self.sentence :
-                    if p in [1]:
-                        raise Exception("GPS communication error:--detail{e}")
-
                 if self.sentence:
                     while True:
                         try:
