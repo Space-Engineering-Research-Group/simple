@@ -154,6 +154,20 @@ try:
     go_dis_4_4=200
     go_time_4_4=go_dis_4_4/go_speed
 
+    #フェーズ5、前進するときの距離,回転角度と、回転時間を定義
+    roteangle_5=90
+    sttime_5=roteangle_5/turn_speed
+
+    go_dis_5_2=200
+    go_time_5_2=go_dis_5_2/go_speed
+
+    go_dis_5_4=400
+    go_time_5_4=go_dis_5_4/go_speed
+
+    go_dis_5_5=500
+    go_time_5_5=go_dis_5_5/go_speed
+
+
     #フェーズ６、kazu=1のときの回転角度と、回転時間を定義
     roteangle_6_1=60
     sttime_6_1=roteangle_6_1/turn_speed
@@ -188,7 +202,7 @@ try:
 
 
     try:
-        xbee=Xxbb()
+        xbee=XBeeCommunication()
     finally:
         if len(xbee.error_counts)>0:
             ins_error.append(xbee.error_log)
@@ -788,7 +802,7 @@ try:
 
                     if plan2 == "A":
                         if distance<=A_x:
-                            mforward(20)
+                            mforward(go_time_5_4)
                             mstop()
                             gps_seikou=True
                             print("始めからコーンが近いので成功")
@@ -796,7 +810,7 @@ try:
                             
                         else:
                             print("コーンが遠いので前進")
-                            mforward(30)
+                            mforward(go_time_5_5)
                             mstop()      
 
                     stack_count = 0
@@ -817,11 +831,11 @@ try:
                                 import sys
                                 sys.exit(1)
 
-                            mbackward(5)
+                            mbackward(go_time_5_4)
                             mstop()
                             mturn_left(sttime_90)  
                             mstop()
-                            mforward(5)
+                            mforward(go_time_5_4)
                             mstop()  
 
                             now_lat,now_lon = m5get_coodinate_xy()
@@ -833,7 +847,7 @@ try:
                         
                         if distance<=A_x and distance>B_x:
                             print("距離が4m以内")
-                            mforward(20)
+                            mforward(go_time_5_4)
                             mstop()
                             if plan2 == "A":
                                 print('planAより成功')
@@ -887,14 +901,13 @@ try:
                                     #成功したことを送る
 
                                 rotation_angle = m5get_dire_rot(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon) 
-                                print(rotation_angle)
                                 if rotation_angle > 0:
                                     mturn_right(rotation_angle/208)  
                                 else:
                                     z_rot = abs(rotation_angle)   
                                     mturn_left(z_rot/208) 
                                 mstop()
-                                mforward(4) #1/208の単位と、2m移動にかかる時間計算
+                                mforward(go_dis_5_2) #1/208の単位と、2m移動にかかる時間計算
                                 mstop()
                                 print("2m進んだので成功")
                                 gps_seikou=True
@@ -914,7 +927,7 @@ try:
                             mturn_left(z_rot/208)
 
                         mstop()
-                        mforward(4)#この4秒は適当　あとで計算
+                        mforward(go_dis_5_4)#この4秒は適当　あとで計算
                         mstop()
                         print("距離が4m以上。進んでやり直し")
                     break        
