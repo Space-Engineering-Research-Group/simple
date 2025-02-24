@@ -805,11 +805,11 @@ try:
                             mforward(go_time_5_4)
                             mstop()
                             gps_seikou=True
-                            print("始めからコーンが近いので成功")
+                            nlog("始めからコーンが近いので成功")
                             break
                             
                         else:
-                            print("コーンが遠いので前進")
+                            nlog("コーンが遠いので前進")
                             mforward(go_time_5_5)
                             mstop()      
 
@@ -843,22 +843,21 @@ try:
                         #judge
                         distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)     
                         
-                        print(f"distance:{distance}")
                         
                         if distance<=A_x and distance>B_x:
-                            print("距離が4m以内")
+                            nlog("距離が4m以内")
                             mforward(go_time_5_4)
                             mstop()
                             if plan2 == "A":
-                                print('planAより成功')
+                                nlog('planAより成功')
                                 gps_seikou=True
                                 break
                             
                         if distance<=B_x and distance>s_x:
-                            print("距離が2m以内")
+                            nlog("距離が2m以内")
 
                             if plan2 == "B": 
-                                print("planBより以下を行う")
+                                nlog("planBより以下を行う")
                                 #カメラが壊れていた場合
                                 #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
                                 try:
@@ -878,7 +877,6 @@ try:
                                     gps_B_lon_ave = sum(gps_B_lon)/2   
                                     gps_log[3]=gps_B_lat_ave
                                     gps_log[4]=gps_B_lon_ave  #60回の平均
-                                    print("60回の平均")
 
                                     distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
                                     gps_log[5] = distance
@@ -895,7 +893,7 @@ try:
                                     
 
                                 if distance<=B_x2:#適当、必要に応じて変える
-                                    print("しかも距離が0.5m以内なので成功")
+                                    nlog("しかも距離が0.5m以内なので成功")
                                     gps_seikou=True
                                     break
                                     #成功したことを送る
@@ -909,12 +907,12 @@ try:
                                 mstop()
                                 mforward(go_dis_5_2) #1/208の単位と、2m移動にかかる時間計算
                                 mstop()
-                                print("2m進んだので成功")
+                                nlog("2m進んだので成功")
                                 gps_seikou=True
                                 break
 
                             else:#not B
-                                print("planAより成功")
+                                nlog("planAより成功")
                                 gps_seikou=True
                                 break
 
@@ -929,22 +927,20 @@ try:
                         mstop()
                         mforward(go_dis_5_4)#この4秒は適当　あとで計算
                         mstop()
-                        print("距離が4m以上。進んでやり直し")
+                        nlog("距離が4m以上。進んでやり直し")
                     break        
             
             except Exception :
                 tools[1]=False
             finally:
-                print("fin")
                 if len(gps.error_counts):
                     gps_log[7]=gps.error_log
                     if 5 in gps.error_counts:
-                        print("5")
                         gps_log[6]="gps"  
                 mxbee_send(gps_log)
                 mxcel(gps_log)   
 
-        print("gps終了")        
+        nlog("gps終了")        
         if plan2 == "B":
             break       
         
