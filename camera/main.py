@@ -2,6 +2,8 @@ import cv2
 from picamera2 import Picamera2
 from abc import ABC,abstractmethod
 from time import sleep
+from datetime import datetime as dt
+import os
 
 class ICamera(ABC):
     @abstractmethod
@@ -25,6 +27,8 @@ class Camera(ICamera):
         self.error_counts = []
         self.error_messages = []
         self.error_log = "camera:Error"
+        self.oya_cone_dir="/home/spacelab/Pictures/cone_2024/"
+        self.oya_parachute_dir="/home/spacelab/Pictures/parachute_2024/"
         self.a = 1
         self.ini=True
         while True:
@@ -37,6 +41,12 @@ class Camera(ICamera):
                 )
                 self.capture.configure(config)
                 self.capture.start()
+
+                date=dt.now().strftime("%Y%m%d_%H%M")
+                self.save_cone_dir=os.path.join(self.oya_cone_dir,date)
+                self.save_parachute_dir=os.path.join(self.oya_parachute_dir,date)
+                os.mkdir(self.save_cone_dir)
+                os.mkdir(self.save_parachute_dir)
                 self.a = 0
                 break
             except Exception as e:
@@ -75,7 +85,72 @@ class Camera(ICamera):
                     self.log_errors()
             sleep(1)
                 
+    def frame_hozon(self,frame):
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log = "camera:Error"
+        self.a = 1
+        self.ini = False
 
+        while True:
+            try:
+                date = dt.now().strftime("%Y%m%d_%H%M%S")
+                path = os.path.join(self.save_cone_dir, date + ".jpg")
+                cv2.imwrite(path, frame)
+                self.a = 0
+                break
+            except Exception as e:
+                error = f"camera error during frame hozon -- detail {e}"
+                self.handle_error(error)
+            finally:
+                if (len(self.error_counts) and self.a == 0) or 5 in self.error_counts:
+                    self.log_errors()              
+            sleep(1)
+
+
+    def cone_hozon(self, frame, contour):
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log = "camera:Error"
+        self.a = 1
+        self.ini = False
+
+        while True:
+            try:
+                date=dt.now().strftime("%Y%m%d_%H%M%S")
+                path=os.path.join(self.save_cone_dir,date+".jpg")
+                img=cv2.drawContours(frame, contour, -1, (0, 255, 0), 3)
+                cv2.imwrite(path,img)
+                self.a = 0
+                break
+            except Exception as e:
+                error = f"camera error during cone hozon -- detail {e}"
+                self.handle_error(error)
+            finally:
+                if (len(self.error_counts) and self.a == 0) or 5 in self.error_counts:
+                    self.log_errors()
+            sleep(1)
+    
+    def parachute_hozon(self, frame):
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log = "camera:Error"
+        self.a = 1
+        self.ini = False
+        while True:
+            try:
+                date = dt.now().strftime("%Y%m%d_%H%M%S")
+                path = os.path.join(self.save_parachute_dir, date + ".jpg") 
+                cv2.imwrite(path,frame)
+                self.a = 0
+                break
+            except Exception as e:
+                error = f"camera error during parachute hozon -- detail {e}"
+                self.handle_error(error)
+            finally:
+                if (len(self.error_counts) and self.a == 0) or 5 in self.error_counts:
+                    self.log_errors()
+            sleep(1)
     
 
     def release(self):

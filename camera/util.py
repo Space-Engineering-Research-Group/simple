@@ -65,13 +65,14 @@ def judge_cone(contour,frame_area,pettern=0):
 
         
 def get_distance(contour,x):
+    kyori=50
     M=cv2.moments(contour)
     cx = int(M["m10"] / M["m00"])
     dx=cx-x
     #ここの５０は仮の値(実験でかえる)
-    if dx<-50:
+    if dx<-kyori:
         sign=-1 
-    elif dx>50:
+    elif dx>kyori:
         sign=1
     else:
         sign=0
