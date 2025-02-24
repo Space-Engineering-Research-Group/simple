@@ -896,7 +896,7 @@ try:
                                 mstop()
                                 mforward(4) #1/208の単位と、2m移動にかかる時間計算
                                 mstop()
-                                print("]]]]]2m進んだので成功]]]]")
+                                print("2m進んだので成功")
                                 gps_seikou=True
                                 break
 
@@ -931,7 +931,7 @@ try:
                 mxbee_send(gps_log)
                 mxcel(gps_log)   
 
-        print("とーちゃく")        
+        print("gps終了")        
         if plan2 == "B":
             break       
         
