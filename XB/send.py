@@ -27,7 +27,7 @@ class XBeeCommunication(IXBeeDevice):
 
 # ls -l /dev/serial/by-idして、青い文字をportに入れる
 
-    def main(self,data):
+    def send(self,data):
         self.error_counts = []
         self.error_messages = []
         self.error_log="gps Error Log"
