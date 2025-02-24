@@ -104,9 +104,9 @@ try:
                 tools[2]=False
 
     #ここの具体的な値はコーンの検査をして考える。
-    lower_red1 = np.array([0, 100, 100])   # 下の範囲1 (0〜10度)
+    lower_red1 = np.array([0, 100, 70])   # 下の範囲1 (0〜10度)
     upper_red1 = np.array([10, 255, 255])  # 上の範囲1
-    lower_red2 = np.array([170, 100, 100]) # 下の範囲2 (170〜180度)
+    lower_red2 = np.array([170, 100, 70]) # 下の範囲2 (170〜180度)
     upper_red2 = np.array([180, 255, 255]) # 上の範囲2
 
     #パラシュートの黄色をしっかり検出出来るようにする。
@@ -158,7 +158,6 @@ try:
         xbee=Xxbb()
     finally:
         if len(xbee.error_counts)>0:
-            ins_error_tool.append("xbee")
             ins_error.append(xbee.error_log)
             if 5 in xbee.error_counts:
                 ins_error_tool.append("xbee")
