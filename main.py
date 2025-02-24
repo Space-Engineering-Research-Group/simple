@@ -123,21 +123,43 @@ try:
     lPWM=18
     #機体の回転速度208度/s
     turn_speed=208
+    #機体の前進速度20cm/s
+    go_speed=20
     #９０度回転するときの待機時間
     sttime_90=90/turn_speed
     
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+    #以下の前進する距離はすべて単位がcm、角度の単位は度
+
+    #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+    #フェーズ４＿３の時の角度のしきい値
+    dire_threshold=5
+    #フェーズ４＿1の時の進む距離を回転時間を定義
+    go_dis_4_1=200
+    go_time_4_1=go_dis_4_1/go_speed
+
+    #フェーズ４＿４で前進するときの距離と回転時間を定義
+    go_dis_4_4=200
+    go_time_4_4=go_dis_4_4/go_speed
 
     #フェーズ６、kazu=1のときの回転角度と、回転時間を定義
     roteangle_6_1=60
     sttime_6_1=roteangle_6_1/turn_speed
 
+    #フェーズ６，kazu=1で前進するときの距離と回転時間を定義
+    go_dis6_1=100
+    go_time_6_1=go_dis6_1/go_speed
+
     #フェーズ６，kazu=2の時の回転角度と、回転時間を定義
     roteangle_6_2=1
     sttime_6_2=roteangle_6_2/turn_speed
 
-    #フェーズ６，kazu=2の時の前進する時間
-    sttime_far=5
-    sttime_close=0.1
+    #フェーズ６，kazu=2の時の前進する時間と回転角度を定義
+    go_dis_far=100
+    go_dis_close=2
+    go_time_far=go_dis_far/go_speed
+    go_time_close=go_dis_close/go_speed
 
 
     try:
@@ -618,12 +640,13 @@ try:
             mxbee_send(camera_log)
             mxcel(camera_log)
 
+            
             if judge==True:
                 nlog("パラシュートを検知したため、機体を後進させ、GPSの位置情報から向いている向きを取得します。")
-                mbackward(10)
+                mbackward(go_time_4_1)
             if judge==False:
                 nlog("パラシュートを検知しなかったため、機体を前進させ、GPSの位置情報から向いている向きを取得します。")
-                mforward(10)
+                mforward(go_time_4_1)
 
             mstop()
                 
@@ -644,9 +667,9 @@ try:
             gps_log[2]=direction
             #５度以上回転がずれてたら戻すようにしようと思う。（勘）
             sttime_4_3=abs(direction)/turn_speed
-            if abs(direction)>5:
+            if abs(direction)>dire_threshold:
                 nlog("コーンに対する角度が５度より大きいため、回転してコーンと向き合うようにします。")
-                if direction >5:
+                if direction >dire_threshold:
                     mturn_right(sttime_4_3)
                 else:
                     mturn_left(sttime_4_3)
@@ -672,17 +695,17 @@ try:
                 if sign==1:
                     print("パラシュートが機体に対して右側にあるため、左に回避します。")
                     mturn_left(sttime_90)
-                    mforward(10)
+                    mforward(go_time_4_4)
                     mturn_right(sttime_90)
                 else:
                     print("パラシュートが機体に対して左側にあるため、右に回避します。")
                     mturn_right(sttime_90)
-                    mforward(10)
+                    mforward(go_time_4_4)
                     mturn_left(sttime_90)
             else:
                 print("パラシュートが検知されなかったため、回避を行いません。")
             #１０は適当
-            mforward(10)
+            mforward(go_time_4_4)
             mstop()
 
         except RuntimeError:
@@ -903,11 +926,11 @@ try:
                                 if p == int(360 / roteangle_6_1):
                                     q += 1
                                     if q == 5:
-                                        nlog(f"{p}回してもコーンが検出されなかったので、不可能と判断して停止します。")
+                                        nlog(f"{q}回してもコーンが検出されなかったので、不可能と判断して停止します。")
                                         tools[2]=False
                                         raise RuntimeError
                                     nlog("一周してもコーンが認識されないため、一度前進して動いてから、もう一度取得を始めます。")
-                                    mforward(5)
+                                    mforward(go_time_6_1)
                                     mstop()
                                     p = 0
                             
@@ -961,10 +984,10 @@ try:
                                 dis_judge=judge_cone(contour,frame_area,1)
                                 if dis_judge==True:
                                     nlog("コーンが近くにあります。")
-                                    mforward(sttime_close)
+                                    mforward(go_time_close)
                                 else:
                                     nlog("コーンが遠くにあります。")
-                                    mforward(sttime_far)
+                                    mforward(go_time_far)
                                 mstop()
                             #ここの回転方向が正しいのかをしっかり確認するようにする。また、回転スピードなども考えるようにする。
                             elif sign==1:
