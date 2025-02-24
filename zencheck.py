@@ -6,7 +6,7 @@ try:
 
     #このふぁいるは、エラーが出たら即死にしたいため、通常であればエラーを吐くようなところをsys.exit(1)としています。そこを覚えておいてください。
 
-
+    #xbeeのエラーとかちゃんと追加してね
 
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -219,6 +219,11 @@ try:
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
     mxbee_send(ins_log)    
     mxcel(ins_log)    
+
+    if False in tools:
+        import sys
+        sys.exit(1)
+
 
     def nlog(ward):
         notice_log=[9,ward]
