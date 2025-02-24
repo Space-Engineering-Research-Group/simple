@@ -84,6 +84,16 @@ try:
     #ここは大会の時に測る。
     goal_lat = 0
     goal_lon = 0
+    #以下４個は実験をして値を決める
+    #planAの時は4m以内の時に成功
+    A_x = 4
+    #planBの時は2m以内の時に成功
+    B_x = 2
+    #sackの判別メートル
+    s_x = 1.5
+    #カメラが壊れてplanBになった時の成功
+    B_x2 = 0.5
+
 
     #設定的に一番低そうなこれにする。
     width=640
@@ -744,152 +754,188 @@ try:
         
     #gps
 
+
         if plan2 in ["A","B"]:
             try:
-                #最初の緯度経度の取得は特別なので、関数化しない
-                #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
-                gps_log = [5,None,None,None,None,None,None,None,None,None]
-                try:
-                    gps_log[1]=time()
-                    pre_lat,pre_lon = gps.get_coordinate_xy()
-                    gps_log[2]=lat
-                    gps_log[3]=lon
-
-                    distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
-                    gps_log[4]=distance
-
-                except RuntimeError:
-                    tools[1]=False
-                    raise RuntimeError
-                finally:
-                    if len(gps.error_counts):
-                        gps_log[10]=gps.error_log
-                        if 5 in gps.error_counts:
-                            gps_log[9]="gps"  
-                    mxbee_send(gps_log)
-                    mxcel(gps_log) 
-
-
-                    #初めからコーンが近い場合の処理     
-                distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
-                if distance<4:
-                    mforward(20)
-                    mstop()
-                    gps_seikou=True
-                    raise RuntimeError
-                   
-                else:
-                    mforward(30)
-                    mstop()      
-
-                stack_count = 0
-
-               #loop started
                 while True:
-                    now_lat,now_lon = m5get_coodinate_xy()   
-            
-                    distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)            
+                    #最初の緯度経度の取得は特別なので、関数化しない
+                    #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
+                    gps_log = [5,None,None,None,None,None,None,None,None,None,None]
+                    try:
+                        gps_log[1]=time()
+                        pre_lat,pre_lon = gps.get_coordinate_xy()
+                        gps_log[2]=pre_lat
+                        gps_log[3]=pre_lon
 
-                    if distance<1.4:
-                        #stuckした場合の処理
-                        stack_count+=1
-                        if stack_count==4:
-                            import sys
-                            sys.exit(1)
+                        distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
 
-                        mbackward(5)
-                        mstop()
-                        mturn_left(sttime_90)  
-                        mstop()
-                        mforward(5)
-                        mstop()  
+                        gps_log[4]=distance
 
-                        now_lat,now_lon = m5get_coodinate_xy()
+                    except RuntimeError:
+                        tools[1]=False
+                        raise RuntimeError
+                    finally:
+                        if len(gps.error_counts):
+                            gps_log[10]=gps.error_log
+                            if 5 in gps.error_counts:
+                                gps_log[9]="gps"  
+                        mxbee_send(gps_log)
+                        mxcel(gps_log) 
 
-                    #judge
-                    distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)            
-                    
-                    if distance<4:
-                        mforward(20)
-                        mstop()
-                        if plan2 == "A":
+
+                        #初めからコーンが近い場合の処理     
+                    distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
+
+                    if plan2 == "A":
+                        if distance<=A_x:
+                            mforward(20)
+                            mstop()
                             gps_seikou=True
-                            raise RuntimeError
-                       
-                    if distance<2:
-
-                        if plan2 == "B": #planは適当あとで確認。
-                            #カメラが壊れていた場合
-                            #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
-                            gps_log = [5,1,None,None,None,None,None,None]
-                            try:
-                                gps_log[2]=time()
-                                gps_B_lat = []
-                                gps_B_lon = []
+                            print("始めからコーンが近いので成功")
+                            break
                             
-                                for i in range(2):
-                                    lat,lon = gps.get_coordinate_xy()
-                                    gps_B_lat.append(lat)
-                                    gps_B_lon.append(lon)
-                                    sleep(0.1)
+                        else:
+                            print("コーンが遠いので前進")
+                            mforward(30)
+                            mstop()      
 
-                                gps_B_lat_ave = sum(gps_B_lat)/2
-                                gps_B_lon_ave = sum(gps_B_lon)/2   
-                                gps_log[3]=gps_B_lat_ave
-                                gps_log[4]=gps_B_lon_ave  #60回の平均
+                    stack_count = 0
+                    p=0
 
-                                distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
-                                gps_log[5] = distance
-                            except RuntimeError:
-                                tools[1]=False
-                                raise RuntimeError
-                            finally:
-                                if len(gps.error_counts):
-                                    gps_log[7]=gps.error_log
-                                    if 5 in gps.error_counts:
-                                        gps_log[6]="gps"  
-                                mxbee_send(gps_log)
-                                mxcel(gps_log)
-
-                            if distance<0.5:#適当
-                                gps_seikou=True
-                                raise RuntimeError
-                                #成功したことを送る
-
-                            rotation_angle = m5get_dire_rot(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon) 
-                            if rotation_angle > 0:
-                                mturn_right(rotation_angle/208)  
-                            else:
-                                z_rot = abc(rotation_angle)    
-                                mturn_left(z_rot/208)
-                            mstop()
-                            mforward(4) #1/208の単位と、2m移動にかかる時間計算
-                            mstop()
-                            gps_seikou=True
-                            raise RuntimeError
-
-                        else:#not B
-                            gps_seikou=True
-                            raise RuntimeError
-
-                    #distanceが大きくてもまだ4m以上ある
-                    rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
-                    if rotation_angle > 0:
-                        mturn_right(rotation_angle/208)  
-                    else:
-                        z_rot = abc(rotation_angle)    
-                        mturn_left(z_rot/208)
-
-                    mstop()
-                    mforward(4)#この4秒は適当　あとで計算
-                    mstop()
-        
-            
-            except RuntimeError:
-                #成功したらここに来る
-                continue
-
+                    #loop started
+                    while True:
+                        p+=1
+                        now_lat,now_lon = m5get_coodinate_xy()   
                 
+                        distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)    
+
+                        if distance<=s_x:
+                            #stuckした場合の処理
+                            stack_count+=1
+                            if stack_count==5:#必要に応じて増やす
+                                print("スタック5回目なので強制終了")
+                                import sys
+                                sys.exit(1)
+
+                            mbackward(5)
+                            mstop()
+                            mturn_left(sttime_90)  
+                            mstop()
+                            mforward(5)
+                            mstop()  
+
+                            now_lat,now_lon = m5get_coodinate_xy()
+
+                        #judge
+                        distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)     
+                        
+                        print(f"distance:{distance}")
+                        
+                        if distance<=A_x and distance>B_x:
+                            print("距離が4m以内")
+                            mforward(20)
+                            mstop()
+                            if plan2 == "A":
+                                print('planAより成功')
+                                gps_seikou=True
+                                break
+                            
+                        if distance<=B_x and distance>s_x:
+                            print("距離が2m以内")
+
+                            if plan2 == "B": 
+                                print("planBより以下を行う")
+                                #カメラが壊れていた場合
+                                #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
+                                try:
+                                    gps_log = [5,1,None,None,None,None,None,None]
+                            
+                                    gps_log[2]=time()
+                                    gps_B_lat = []
+                                    gps_B_lon = []
+                                
+                                    for i in range(2):
+                                        lat,lon = gps.get_coordinate_xy()
+                                        gps_B_lat.append(lat)
+                                        gps_B_lon.append(lon)
+                                        sleep(0.1)
+
+                                    gps_B_lat_ave = sum(gps_B_lat)/2
+                                    gps_B_lon_ave = sum(gps_B_lon)/2   
+                                    gps_log[3]=gps_B_lat_ave
+                                    gps_log[4]=gps_B_lon_ave  #60回の平均
+                                    print("60回の平均")
+
+                                    distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
+                                    gps_log[5] = distance
+
+                                except Exception :
+                                    tools[1]=False
+                                finally:
+                                    if len(gps.error_counts):
+                                        gps_log[7]=gps.error_log
+                                        if 5 in gps.error_counts:
+                                            gps_log[6]="gps"  
+                                    mxbee_send(gps_log)
+                                    mxcel(gps_log) #変則的なのでエラーつける
+                                    
+
+                                if distance<=B_x2:#適当、必要に応じて変える
+                                    print("しかも距離が0.5m以内なので成功")
+                                    gps_seikou=True
+                                    break
+                                    #成功したことを送る
+
+                                rotation_angle = m5get_dire_rot(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon) 
+                                print(rotation_angle)
+                                if rotation_angle > 0:
+                                    mturn_right(rotation_angle/208)  
+                                else:
+                                    z_rot = abs(rotation_angle)   
+                                    mturn_left(z_rot/208) 
+                                mstop()
+                                mforward(4) #1/208の単位と、2m移動にかかる時間計算
+                                mstop()
+                                print("2m進んだので成功")
+                                gps_seikou=True
+                                break
+
+                            else:#not B
+                                print("planAより成功")
+                                gps_seikou=True
+                                break
+
+                        #distanceが大きくてもまだ4m以上ある
+                        rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                        if rotation_angle > 0:
+                            mturn_right(rotation_angle/208)  
+                        else:
+                            z_rot = abs(rotation_angle)    
+                            mturn_left(z_rot/208)
+
+                        mstop()
+                        mforward(4)#この4秒は適当　あとで計算
+                        mstop()
+                        print("距離が4m以上。進んでやり直し")
+                    break        
+            
+            except Exception :
+                tools[1]=False
+            finally:
+                print("fin")
+                if len(gps.error_counts):
+                    gps_log[7]=gps.error_log
+                    if 5 in gps.error_counts:
+                        print("5")
+                        gps_log[6]="gps"  
+                mxbee_send(gps_log)
+                mxcel(gps_log)   
+
+        print("gps終了")        
+        if plan2 == "B":
+            break       
+        
+
 
 
             #ここに、回転を行うコードを書く

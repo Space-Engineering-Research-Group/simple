@@ -73,6 +73,7 @@ class Gps(IGps):
                         self.log_errors()   
                         break  
             sleep(1)
+
         
 
     def update_gps(self):
@@ -83,16 +84,11 @@ class Gps(IGps):
         self.a = 1
         self.ini=False
         p=0
-
-
         while True:
             p+=1
             try:
+                kako = time()
                 self.sentence = self.__gps_uart.readline()
-
-                if self.sentence :
-                    if p in [1]:
-                        raise Exception("GPS communication error:--detail{e}")
 
                 if self.sentence:
                     while True:
@@ -124,7 +120,10 @@ class Gps(IGps):
                     self.log_errors()
                     break
 
-            sleep(1)
+            while True:        
+                ima = time()
+                if ima - kako > 0.1:
+                    break
 
 
     def get_coordinate_xy(self):
@@ -170,7 +169,6 @@ class Gps(IGps):
                             break    
         
                 if gpsjudge == True and self.latitude != 0 and self.longitude != 0:
-                    print(f"{q} Latitude: {self.__gps.latitude[0]}, Longitude: {self.__gps.longitude[0]}")
                     latlist.append(self.latitude)
                     lonlist.append(self.longitude)
                     q+=1
