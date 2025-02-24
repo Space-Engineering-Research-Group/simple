@@ -1,5 +1,6 @@
 try:
     from camera import *
+    import numpy as np
     from gps import *
     from motor import *
     from gpiozero.pins.pigpio import PiGPIOFactory
