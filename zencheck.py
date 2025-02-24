@@ -541,3 +541,6 @@ finally:
         nlog("故障した部品があるため、ラズパイをシャットダウンさせます。")
         import os
         os.system("sudo shutdown now")
+    else:
+        nlog("全ての部品の確誋が終了しました。")
+        nlog("待機モードに移ります。")
