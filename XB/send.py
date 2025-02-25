@@ -1,91 +1,109 @@
-
-
 from digi.xbee.devices import XBeeDevice
 import abc
+from time import sleep,time
 
-
-class IXBeeDevice(abc.ABC):
-    
+class IXBee(abc.ABC):
     @abc.abstractmethod
-    def __init__(self):
+    def send(self):
         pass
 
-    @abc.abstractmethod    
-    def main(self):
+    @abc.abstractmethod
+    def log_errors(self):
         pass
 
-class XBeeCommunication(IXBeeDevice):
+    @abc.abstractmethod
+    def handle_error(self,error):
+        pass
 
+class XBee(IXBee):
     def __init__(self):
-        # TODO: Replace with the serial port where your local module is connected to.
-        self.PORT = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AL035I0R-if00-port0"
-        # TODO: Replace with the baud rate of your local module.
-        self.BAUD_RATE = 9600
-
-        self.DATA_TO_SEND = "Hello XBee!"
-        self.REMOTE_NODE_ID = "raspi_node"
-
-# ls -l /dev/serial/by-idして、青い文字をportに入れる
-
-    def send(self,data):
         self.error_counts = []
         self.error_messages = []
-        self.error_log="gps Error Log"
+        self.error_log="XBee Error Log"
         self.a=1
         self.ini=True
 
-
-        self.DATA_TO_SEND = data
-        print(" +--------------------------------------+")
-        print(" | XBee Python Library Send Data Sample |")
-        print(" +--------------------------------------+\n")
-
-        device = XBeeDevice(self.PORT, self.BAUD_RATE)
-
         while True:
-            try:    
-                device.open()
-
-                # Obtain the remote XBee device from the XBee network.
-                xbee_network = device.get_network()
-                remote_device = xbee_network.discover_device(self.REMOTE_NODE_ID)
-                if remote_device is None:
+            try:
+                # TODO: Replace with the serial port where your local module is connected to.
+                self. PORT = "rasupaioID ls/devのやつ"
+                # TODO: Replace with the baud rate of your local module.
+                self.BAUD_RATE = 9600
+                self.REMOTE_NODE_ID = "raspi_node" 
+                 # ls -l /dev/serial/by-id　これをして適宜入れる
+                self.device = XBeeDevice(self.PORT, self.BAUD_RATE)
+                self.device.open()
+                self.xbee_network = self.device.get_network()
+                self.remote_device = self.xbee_network.discover_device(self.REMOTE_NODE_ID)
+                if self.remote_device is None:
                     print("Could not find the remote device")
-                    exit(1)
-
-                print("Sending data to %s >> %s..." % (remote_device.get_64bit_addr(), self.DATA_TO_SEND))
-
-                device.send_data(remote_device, self.DATA_TO_SEND)
-
-                print("Success")
+                    raise Exception #ここは実験によって変えていく
+                
                 self.a = 0
                 break
+
             except Exception as e:
-                error = f"Failed to open the serial port:: /dev/serial0. Ensure the port is not busy or unavailable.:--detail{e}"
+                # その他のエラー（MicropyGPS の初期化エラーなど）
+                self.delete()
+                error = f"Failed to _init_ the XBee:--detail{e}"
                 self.handle_error(error)
-                if device is not None and device.is_open():
-                    device.close()
+                                    #micropyGPS の設定やデータ受信に問題がある
+                        
             finally:
-                if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                    if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
                         if 5 in self.error_counts:
-                            if device is not None and device.is_open():
-                                device.close()
-                        self.xbee_errors()   
+                            self.delete()
+                        self.log_errors()   
                         break  
-                
+            sleep(1)    
+
+    def send(self,DATA_TO_SEND):
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log = "xbee Error Log"
+        self.a = 1
+
+        while True:
+            try: 
+                data = ",".join(map(str, DATA_TO_SEND)) 
+                self.device.send_data(self.remote_device, data)
+
+                self.a = 0
+                break
+
+            except Exception as e:
+                error = f"Failed to send the XBee:---etail{e}"
+                self.handle_error(error)    
+                print(e)
+            
+            finally:
+                    if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
+                        if 5 in self.error_counts:
+                                self.delete()
+                        self.log_errors()
+                        break
+
+    def delete(self):
+        if self.device is not None and self.device.is_open():
+                self.device.close()
+
     def log_errors(self):
-        list=[]
-        for count,message in zip(self.error_counts,self.error_messages):
-            list.append(f"{count}*{message}")
-        if self.a==0:
-            self.error_log=",".join(list)
+        error_list = []
+        for count, message in zip(self.error_counts, self.error_messages):
+            error_list.append(f"{count}*{message}")
+        if self.a == 0:
+            self.error_log = "xbee:Error--"+",".join(error_list)
         elif 5 in self.error_counts:
-            index=self.error_counts.index(5)
-            result=list[:index]+list[index+1:]
-            result=",".join(result)
-            self.error_log=f"xbee:Error--{list[index]} other errors--{result}"
-        if self.ini==False:    
-            raise RuntimeError
+            if len(error_list) == 1:
+                self.error_log=f"xbee:Error--{error_list[0]}"
+            else:
+                index = self.error_counts.index(5)
+                result = error_list[:index] + error_list[index + 1:]
+                result = ",".join(result)
+                self.error_log = f"xbee:Error--{error_list[index]} other errors--{result}"
+            if self.ini==False:
+                raise RuntimeError
+
 
     def handle_error(self,error):
         if str(error) not in self.error_messages:
@@ -94,9 +112,3 @@ class XBeeCommunication(IXBeeDevice):
         else:
             index = self.error_messages.index(str(error))
             self.error_counts[index] += 1
-            
-
-
-if __name__ == '__main__':
-    xbee_com = XBeeCommunication()
-    xbee_com.main()
