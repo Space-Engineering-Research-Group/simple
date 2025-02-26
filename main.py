@@ -76,7 +76,7 @@ try:
     finally:
         if len(gps.error_counts)>0:
             ins_error.append(gps.error_log)
-            if 5 in gps.error_log:
+            if 5 in gps.error_counts:
                ins_error_tool.append("gps") 
                tools[1]=False
 
