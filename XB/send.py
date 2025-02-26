@@ -44,7 +44,6 @@ class XBee(IXBee):
 
             except Exception as e:
                 # その他のエラー（MicropyGPS の初期化エラーなど）
-                self.delete()
                 error = f"Failed to _init_ the XBee:--detail{e}"
                 self.handle_error(error)
                                     #micropyGPS の設定やデータ受信に問題がある
