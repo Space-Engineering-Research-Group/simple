@@ -202,7 +202,7 @@ try:
 
 
     try:
-        xbee=XBeeCommunication()
+        xbee=XBee()
     finally:
         if len(xbee.error_counts)>0:
             ins_error.append(xbee.error_log)
