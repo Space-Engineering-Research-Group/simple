@@ -458,8 +458,8 @@ try:
     nlog("cdsの確認を開始します。")
     sleep(2)
     for i in range(10):
-        #左からフェーズ、時間、明るさ、故障した部品、エラー文
-        cds_log=[2,None,None,None,None,None]
+        #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
+        cds_log=[-1,None,None,None,None,None]
         cds_log[1]=mget_time()
         try:
             cds.get_brightness()
@@ -473,8 +473,10 @@ try:
                 cds_log[4]=cds.error_log
                 if 5 in cds.error_counts:
                     cds_log[3]="cds"          
-                mxbee_send(cds_log)
-                mxcel(cds_log)
+            mxbee_send(cds_log)
+            mxcel(cds_log)
+
+        sleep(1)
 
     
     nlog("motorの確認を開始します")
