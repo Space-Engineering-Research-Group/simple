@@ -59,8 +59,6 @@ try:
     factory = PiGPIOFactory()
     try:
         servo=Myservo(12,factory)
-    except RuntimeError:
-        tools[4]=False
     finally:
         if len(servo.error_counts)>0:
             ins_error.append(servo.error_log)
