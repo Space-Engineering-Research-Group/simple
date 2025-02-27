@@ -548,10 +548,9 @@ try:
                     cds_log[5]=cds.error_log
                     if 5 in cds.error_counts:
                         cds_log[4]="cds"
-                        mxbee_send(cds_log)
-                        mxcel(cds_log)
-            mxbee_send(cds_log)
-            mxcel(cds_log)
+                mxbee_send(cds_log)
+                mxcel(cds_log)
+
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
