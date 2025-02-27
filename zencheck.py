@@ -47,8 +47,6 @@ try:
     ins_error_tool=[]
     ins_error=[]
 
-    #箱の中に入れるまでの時間計測する。
-    preparation_time=60
     #光センサで明るいことを検知してから落下するまでにかかると想定する時間
     fall_time=60
     #光センサで判断できなかった場合に置ける処理が起動してから落下するまでにかかるだろうとする時間
@@ -167,7 +165,7 @@ try:
 
 
     try:
-        xbee=Xxbb()
+        xbee=XBee()
     finally:
         if len(xbee.error_counts)>0:
             ins_error.append(xbee.error_log)
@@ -212,13 +210,23 @@ try:
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].append("xbee")
-                mxcel(xbee_log)    
+                mxcel(xbee_log)  
+
+    def rog(log):
+        if tools[5] and tools[6]:
+            mxbee_send(log)
+            mxcel(log)
+        elif tools[5]:
+            mxbee_send(log)
+        elif tools[6]:
+            mxcel(log)
+        else:
+            pass  
 
 
     #ここで、ログを送信する
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
-    mxbee_send(ins_log)    
-    mxcel(ins_log)    
+    rog(ins_log)       
 
     if False in tools:
         import sys
@@ -254,8 +262,8 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
-                mxcel(motor_log)
+                rog(motor_log)
+
 
     def mbackward(wait_time):
         if wait_time>0:
@@ -280,8 +288,7 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
-                mxcel(motor_log)
+                rog(motor_log)
 
     def mturn_left(wait_time):
         if wait_time>0:
@@ -306,8 +313,7 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
-                mxcel(motor_log)
+                rog(motor_log)
 
 
     def mturn_right(wait_time):
@@ -332,8 +338,7 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
-                mxcel(motor_log)
+                rog(motor_log)
 
     def mstop():
         motor_log=[10,None,[],None]
@@ -352,8 +357,7 @@ try:
                     motor_log[-2].append("right motor")
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
-                mxbee_send(motor_log)
-                mxcel(motor_log)
+                rog(motor_log)
 
 
     def mget_frame():
@@ -369,8 +373,7 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    mxbee_send(camera_log)
-                    mxcel(camera_log)
+                    rog(camera_log)
 
     def mget_coordinate_xy(): #これはfeeds4の時に使う
         try:
@@ -386,8 +389,7 @@ try:
                 gps_log[-1]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[-2]="gps"
-                    mxbee_send(gps_log)
-                    mxcel(gps_log)
+                    rog(gps_log)
 
     def m5get_coodinate_xy():
         #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
@@ -409,8 +411,7 @@ try:
                 gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[6]="gps"  
-            mxbee_send(gps_log)
-            mxcel(gps_log)
+            rog(gps_log)
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
@@ -442,8 +443,7 @@ try:
         else:
             camera_log[3]=False
             camera.frame_hozon(frame)
-        mxbee_send(camera_log)
-        mxcel(camera_log)
+        rog(camera_log)
         
     camera_log=[4,1,None,False,None,None]
     camera_log[2]=mget_time()
@@ -473,8 +473,7 @@ try:
                 cds_log[4]=cds.error_log
                 if 5 in cds.error_counts:
                     cds_log[3]="cds"          
-            mxbee_send(cds_log)
-            mxcel(cds_log)
+            rog(cds_log)
 
         sleep(1)
 
@@ -527,8 +526,7 @@ try:
             servo_log[3]=servo.error_log
             if 5 in servo.error_counts:
                 servo_log[2]="servo"
-            mxbee_send(servo_log)
-            mxcel(servo_log)
+            rog(servo_log)
 
     try:
         servo.stop()
@@ -543,8 +541,10 @@ try:
             servo_log[3]=servo.error_log
             if 5 in servo.error_counts:
                 servo_log[2]="servo"
-            mxbee_send(servo_log)
-            mxcel(servo_log)
+            rog(servo_log)
+
+
+    nlog("GPSの確認を開始します。")
     
        
         
