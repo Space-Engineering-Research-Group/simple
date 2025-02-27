@@ -457,63 +457,52 @@ try:
                     
 
     nlog("箱入れ待機時間")
-    start_time=time()
 
 
     #箱に入れるまでの時間を仮に一分と置き、その間ずっと明るさを取得して、xbeeで送るようにする。
 
     if tools[0]==True:
+        p=0
         while True:
-            #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
-            fir_cds_log=[-1,None,None,None,None,None]
+            #左から、フェーズ、時間、明るさ、評価、故障した部品、エラー文
+            fir_cds_log=[-1,None,None,"high",None,None]
             try:
                 now_time=time()
-                if now_time-start_time>=preparation_time:
-                    nlog("60秒間立ったため、次のフェーズに移ります。")
                 jp_time=mget_time()
                 fir_cds_log[1]=jp_time
-                fir_cds_log[2]=int(preparation_time-(now_time-start_time))
                 cds.get_brightness()
-                fir_cds_log[3]=cds.brightness
+                fir_cds_log[2]=cds.brightness
+                if cds.brightness<=brightness_threshold:
+                    fir_cds_log[3]="low"
+                    p+=1
+                else:
+                    p=0
+                if p==10:
+                    nlog("箱に入ったことを認識しました。")
+                    break
                     
             except RuntimeError:
                 tools[0]=False
                 break
             finally:
                 if len(cds.error_counts):
-                    fir_cds_log[5]=cds.error_log
+                    fir_cds_log[-1]=cds.error_log
                     if 5 in cds.error_counts:
-                        fir_cds_log[4]="cds"
+                        fir_cds_log[-2]="cds"
                 mxbee_send(cds.error_log)
                 mxcel(cds.error_log)
             
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
-    if tools[0]==False:
-        nlog("cdsが使えないため、普通に待機します。")
-        
-        while time()-start_time<preparation_time:
-            now_time=time()
-            wait_log=[8,None,None]
-            jp_time=mget_time()
-            wait_log[1]=jp_time
-            wait_log[2]=int(preparation_time-(now_time-start_time))
-            #xbeeで送信
-            mxbee_send(wait_log)
-            mxcel(wait_log)
-            keika=time()-now_time
-            if keika<2:
-                sleep(2-keika)
-        
-        nlog("６０秒待機したため、次のフェーズに移ります。")
 
 
-
+    start_time=time()
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
+        p=1
         while True:
-            #左からフェーズ、時間、明るさ、落下判断、使えない部品、エラー文
+            #左からフェーズ、時間、明るさ、明るさの評価、使えない部品、エラー文
             cds_log=[2,None,None,None,None,None]
             try:
                 now_time=time()
@@ -527,9 +516,13 @@ try:
                 cds_log[2]=cds.brightness
                 if cds.brightness >= brightness_threshold:
                     cds_log[3]=True
+                    p+=1
                     mxbee_send(cds_log)
                     mxcel(cds_log)
-
+                else:
+                    p=0
+                
+                if p==3:
                     fall_start_time=time()
                     nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
                     while time()-fall_start_time<fall_time:
