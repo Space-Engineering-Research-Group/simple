@@ -67,14 +67,13 @@ class Camera(ICamera):
 
         while True:
             try:
-                while True:
-                    frame = self.capture.capture_array()
-                    if frame is not None:
-                        frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
-                        self.a=0
-                        return frame_bgr
-                    else:
-                        raise RuntimeError("Failed to capture a frame from the camera.")
+                frame = self.capture.capture_array()
+                if frame is not None:
+                    frame_bgr = cv2.cvtColor(frame, cv2.COLOR_RGB2BGR)
+                    self.a=0
+                    return frame_bgr
+                else:
+                    raise RuntimeError("Failed to capture a frame from the camera.")
             except Exception as e:
                 error=f"camera error during getting frame--detail{e}"
                 self.handle_error(error)
