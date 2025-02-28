@@ -479,6 +479,7 @@ try:
                 else:
                     p=0
                 if p==10:
+                    rog(fir_cds_log)
                     nlog("箱に入ったことを認識しました。")
                     break
                     
@@ -490,7 +491,7 @@ try:
                     fir_cds_log[-1]=cds.error_log
                     if 5 in cds.error_counts:
                         fir_cds_log[-2]="cds"
-                rog(cds.error_log)
+                rog(fir_cds_log)
             
             keika=time()-now_time
             if keika<2:
