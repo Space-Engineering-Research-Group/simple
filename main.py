@@ -440,12 +440,12 @@ try:
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
         gps_log = [5,1,None,None,None,None]
         gps_log[2]=mget_time()
-        move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
-        get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
+        m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
+        g_r = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,m_d)   
         gps_log[3] = move_direction
         gps_log[4] = get_rotation_angle  
         rog(gps_log)
-        return get_rotation_angle              
+        return g_r             
 
 
 
