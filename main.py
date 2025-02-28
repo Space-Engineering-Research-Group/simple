@@ -314,7 +314,6 @@ try:
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
                 rog(motor_log)
-                
 
     def mturn_left(wait_time):
         if wait_time>0:
@@ -340,7 +339,7 @@ try:
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
                 rog(motor_log)
-               
+
 
 
     def mturn_right(wait_time):
@@ -366,7 +365,6 @@ try:
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
                 rog(motor_log)
-                
 
     def mstop():
         motor_log=[10,None,[],None]
@@ -386,7 +384,6 @@ try:
                 if 5 in motors.left_error_counts:
                     motor_log[-2].append("left motor")
                 rog(motor_log)
-              
 
 
     def mget_frame():
@@ -402,7 +399,6 @@ try:
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
                     rog(camera_log)
-                   
 
     def mget_coordinate_xy(): #これはfeeds4の時に使う
         try:
@@ -418,7 +414,6 @@ try:
                 if 5 in gps.error_counts:
                     gps_log[-2]="gps"
                     rog(gps_log)
-                    
 
     def m5get_coodinate_xy():
         #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
@@ -440,18 +435,17 @@ try:
                 if 5 in gps.error_counts:
                     gps_log[6]="gps"  
             rog(gps_log)
-        
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
         gps_log = [5,1,None,None,None,None]
         gps_log[2]=mget_time()
-        move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
-        get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
+        m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
+        g_r = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,m_d)   
         gps_log[3] = move_direction
         gps_log[4] = get_rotation_angle  
         rog(gps_log)
-        return get_rotation_angle              
+        return g_r             
 
 
 
@@ -471,6 +465,7 @@ try:
                 now_time=time()
                 jp_time=mget_time()
                 fir_cds_log[1]=jp_time
+              
                 cds.get_brightness()
                 fir_cds_log[2]=cds.brightness
                 if cds.brightness<=brightness_threshold:
@@ -482,7 +477,6 @@ try:
                     rog(fir_cds_log)
                     nlog("箱に入ったことを認識しました。")
                     break
-                    
             except RuntimeError:
                 tools[0]=False
                 break
@@ -496,8 +490,6 @@ try:
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
-
-
     start_time=time()
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
@@ -703,12 +695,12 @@ try:
             if judge==True:
                 print("パラシュートが検知されたため、回避を行います。")
                 if sign==1:
-                    print("パラシュートが機体に対して右側にあるため、左に回避します。")
+                    nlog("パラシュートが機体に対して右側にあるため、左に回避します。")
                     mturn_left(sttime_90)
                     mforward(go_time_4_4)
                     mturn_right(sttime_90)
                 else:
-                    print("パラシュートが機体に対して左側にあるため、右に回避します。")
+                    nlog("パラシュートが機体に対して左側にあるため、右に回避します。")
                     mturn_right(sttime_90)
                     mforward(go_time_4_4)
                     mturn_left(sttime_90)
@@ -753,7 +745,7 @@ try:
         
     #gps
 
-        
+
         if plan2 in ["A","B"]:
             try:
                 while True:
@@ -882,12 +874,11 @@ try:
                                     #成功したことを送る
 
                                 rotation_angle = m5get_dire_rot(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon) 
-                                
                                 if rotation_angle > 0:
-                                    mturn_right(rotation_angle/208)  
+                                    mturn_right(rotation_angle/ turn_speed)  
                                 else:
                                     z_rot = abs(rotation_angle)   
-                                    mturn_left(z_rot/208) 
+                                    mturn_left(z_rot/ turn_speed) 
                                 mstop()
                                 mforward(go_dis_5_2) #1/208の単位と、2m移動にかかる時間計算
                                 mstop()
@@ -903,10 +894,10 @@ try:
                         #distanceが大きくてもまだ4m以上ある
                         rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
                         if rotation_angle > 0:
-                            mturn_right(rotation_angle/208)  
+                            mturn_right(rotation_angle/turn_speed)  
                         else:
                             z_rot = abs(rotation_angle)    
-                            mturn_left(z_rot/208)
+                            mturn_left(z_rot/turn_speed)
 
                         mstop()
                         mforward(go_dis_5_4)#この4秒は適当　あとで計算

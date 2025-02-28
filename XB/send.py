@@ -22,11 +22,12 @@ class XBee(IXBee):
         self.error_log="XBee Error Log"
         self.a=1
         self.ini=True
-
+        p = 0
         while True:
+            p+=1
             try:
                 # TODO: Replace with the serial port where your local module is connected to.
-                self. PORT = "rasupaioID ls/devのやつ"
+                self. PORT = "usb-FTDI_FT232R_USB_UART_AL035I0R-if00-port0"
                 # TODO: Replace with the baud rate of your local module.
                 self.BAUD_RATE = 9600
                 self.REMOTE_NODE_ID = "raspi_node" 
@@ -66,14 +67,12 @@ class XBee(IXBee):
             try: 
                 data = ",".join(map(str, DATA_TO_SEND)) 
                 self.device.send_data(self.remote_device, data)
-
                 self.a = 0
                 break
 
             except Exception as e:
                 error = f"Failed to send the XBee:---etail{e}"
                 self.handle_error(error)    
-                print(e)
             
             finally:
                     if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:

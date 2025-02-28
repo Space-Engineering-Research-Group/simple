@@ -16,10 +16,6 @@ class IGps(abc.ABC):
     @abc.abstractmethod
     def delete(self):
         pass
-
-    @abc.abstractmethod
-    def dms_to_decimal(self,lat,lon):
-        pass
     
     @abc.abstractmethod
     def log_errors(self):
@@ -192,6 +188,7 @@ class Gps(IGps):
         
             if self.__gps_uart:
                 try:
+                    kako = time()
                     if self.__gps_uart.is_open:
                         self.__gps_uart.close()
                         self.a=0
@@ -205,24 +202,11 @@ class Gps(IGps):
                             if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
                                 self.__gps_uart.close()
                         self.log_errors()
+                while True:        
+                    ima = time()
+                    if ima - kako > 0.1:
+                        break        
                         
-                sleep(1)
-
-
-    def dms_to_decimal(self):
-
-            # 度と分に分割する
-        lat_degrees = int(self.latitude / 100)  # 整数部分（度）
-        lat_minutes = self.latitude % 100  # 小数部分（分）
-
-        lon_degrees = int(self.longitude / 100)  # 整数部分（度）
-        lon_minutes = self.longitude % 100  # 小数部分（分）
-
-        # 10進法に変換
-        m_latitude = lat_degrees + lat_minutes / 60
-        m_longitude = lon_degrees + lon_minutes / 60
-
-        return m_latitude, m_longitude
     
     def log_errors(self):
         error_list = []
