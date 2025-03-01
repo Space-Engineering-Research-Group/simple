@@ -459,7 +459,7 @@ try:
     if tools[0]==True:
         p=0
         while True:
-            #左から、フェーズ、時間、明るさ、評価、故障した部品、エラー文
+            #左から、フェーズ、時間、明るさ、明るさの評価、故障した部品、エラー文
             fir_cds_log=[-1,None,None,"high",None,None]
             try:
                 now_time=time()
