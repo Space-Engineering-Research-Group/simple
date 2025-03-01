@@ -441,7 +441,7 @@ try:
         gps_log = [5,2,None,None,None,None]
         gps_log[2]=mget_time()
         m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
-        g_r = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,m_d)   
+        g_r = get_rotation_angle(goal_lat,goal_lon,now_lat,now_lon,m_d)   
         gps_log[3] = move_direction
         gps_log[4] = get_rotation_angle  
         rog(gps_log)
@@ -667,7 +667,7 @@ try:
             #変更点
             #左からフェーズ、フェーズの中のフェーズ、時間、コーンに対する角度
             gps_log=[4,3,None,None]
-            direction=gps.move_direction(prelat,prelon,nowlat,nowlon)
+            direction=move_direction(prelat,prelon,nowlat,nowlon)
             gps_log[2]=mget_time
             gps_log[3]=direction
             rog(gps_log)
@@ -769,7 +769,7 @@ try:
                         md=move_direction(pre_lat, pre_lon, goal_lat, goal_lon)
                         gps_log[6]=md
 
-                        rot=get_rotation_angle()
+                        rot=get_rotation_angle(goal_lat,goal_lon,pre_lat,pre_lon,md)
                         gps_log[7]=rot
 
                     except RuntimeError:
@@ -803,9 +803,9 @@ try:
                     p=0
 
                     #loop started
+                    now_lat,now_lon = m5get_coodinate_xy() 
                     while True:
                         p+=1
-                        now_lat,now_lon = m5get_coodinate_xy()   
                 
                         distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)    
 
@@ -822,7 +822,8 @@ try:
                             mturn_left(sttime_90)  
                             mstop()
                             mforward(go_time_5_4)
-                            mstop()  
+                            mstop()
+                            nlog("スタックしたので後進して前進した")  
 
                             now_lat,now_lon = m5get_coodinate_xy()
 
@@ -864,7 +865,7 @@ try:
                                     gps_log[3]=gps_B_lat_ave
                                     gps_log[4]=gps_B_lon_ave  #60回の平均
 
-                                    distance = get_distance(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon)
+                                    distance = get_distance(goal_lat,goal_lon,gps_B_lat_ave,gps_B_lon_ave)
                                     gps_log[5] = distance
 
                                 except Exception :
@@ -883,7 +884,7 @@ try:
                                     break
                                     #成功したことを送る
 
-                                rotation_angle = m5get_dire_rot(gps_B_lat_ave,gps_B_lon_ave,goal_lat,goal_lon) 
+                                rotation_angle = m5get_dire_rot(pre_lat,pre_lon,gps_B_lat_ave,gps_B_lon_ave) 
                                 if rotation_angle > 0:
                                     mturn_right(rotation_angle/ turn_speed)  
                                 else:
@@ -902,7 +903,7 @@ try:
                                 break
 
                         #distanceが大きくてもまだ4m以上ある
-                        rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                        rotation_angle = m5get_dire_rot(goal_lat,goal_lon,now_lat,now_lon)
                         if rotation_angle > 0:
                             mturn_right(rotation_angle/turn_speed)  
                         else:
@@ -913,6 +914,9 @@ try:
                         mforward(go_dis_5_4)#この4秒は適当　あとで計算
                         mstop()
                         nlog("距離が4m以上。前進してやり直し")
+                        pre_lat=now_lat
+                        pre_lon=now_lon
+                        now_lat,now_lon = m5get_coodinate_xy() 
                     break        
             
             except Exception :
