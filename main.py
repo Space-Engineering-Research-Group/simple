@@ -215,7 +215,7 @@ try:
         #フェーズ、故障した部品、エラー分
         xcel_log = [11,None,[],None] #raspyのみ書く
         try:
-            xcel.main(data)
+            xcel.xcel(data)
         except RuntimeError:
             tools[6]=False
             import sys
@@ -226,13 +226,13 @@ try:
                 xcel_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xcel_log[-2].append("xcel")
-                xbee.xbee_send(xcel_log)
+                xbee.send(xcel_log)
 
     def mxbee_send(data):
         #フェーズ、故障した部品、エラー分
         xbee_log = [12,None,[],None] #raspyのみ書く
         try:
-            xbee.xbee_send(data)
+            xbee.send(data)
         except RuntimeError:
             tools[5]=False
         finally:
@@ -240,7 +240,7 @@ try:
                 xbee_log[2]=mget_time()
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
-                    xbee_log[-2].append("xbee")
+                    xbee_log[-2].appned("xbee")
                 mxcel(xbee_log)    
 
     def rog(log):
@@ -253,7 +253,6 @@ try:
             mxcel(log)
         else:
             pass
-        sleep(0.1)
 
 
     #ここで、ログを送信する
@@ -264,6 +263,7 @@ try:
     def nlog(ward):
         notice_log=[9,ward]
         rog(notice_log)
+      
 
     def mforward(wait_time):
         if wait_time>0:
