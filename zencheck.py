@@ -169,22 +169,6 @@ try:
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
 
-    def mxcel(data):
-        #フェーズ、故障した部品、エラー分
-        xcel_log = [11,None,[],None] #raspyのみ書く
-        try:
-            xcel.main(data)
-        except RuntimeError:
-            tools[6]=False
-            import sys
-            sys.exit(1)
-        finally:
-            if len(xbee.error_counts):
-                xcel_log[2]=mget_time()
-                xcel_log[-1]=xbee.error_log
-                if 5 in xbee.error_counts:
-                    xcel_log[-2].append("xcel")
-                xbee.xbee_send(xcel_log)
 
     def mxcel(data):
         #フェーズ、故障した部品、エラー分
@@ -207,7 +191,7 @@ try:
         #フェーズ、故障した部品、エラー分
         xbee_log = [12,None,[],None] #raspyのみ書く
         try:
-            xbee.xbee_send(data)
+            xbee.send(data)
         except RuntimeError:
             tools[5]=False
             import sys
@@ -383,21 +367,6 @@ try:
                     camera_log[-2]="camera"
                     rog(camera_log)
 
-    def mget_coordinate_xy(): #これはfeeds4の時に使う
-        try:
-            lat,lon=gps.get_coordinate_xy()
-            return lat,lon
-        except RuntimeError:
-            tools[1]=False
-            import sys
-            sys.exit(1)
-            
-        finally:
-            if len(gps.error_counts)>0:
-                gps_log[-1]=gps.error_log
-                if 5 in gps.error_counts:
-                    gps_log[-2]="gps"
-                    rog(gps_log)
 
     def m5get_coodinate_xy():
         #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
@@ -431,7 +400,10 @@ try:
         gps_log[4] = get_rotation_angle  
         mxbee_send(gps_log)
         mxcel(gps_log)
-        return get_rotation_angle              
+        return get_rotation_angle       
+
+    nlog("xbeeの確認テストを開始します")
+    mxbee_send(data)       
 
     nlog("カメラの確認を開始します")
     sleep(2)
@@ -549,6 +521,36 @@ try:
 
 
     nlog("GPSの確認を開始します。")
+    p=0
+    while True:
+        p+=1
+        try:
+            lat,lon = gps.get_xy_ceak()
+            if lat and lon:
+                break
+            else:
+                if p==60:
+                    raise RuntimeError
+        except RuntimeError:
+            tools[1]=False
+            import sys
+            sys.exit(1)
+        finally:
+            if len(gps.error_counts):
+            #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー
+                gps_log=[5,1,mget_time(),None,None,None,None,None]
+                gps_log[3]=lat
+                gps_log=[4]=lon
+                gps_log=get_distance(goal_lat, goal_lon, lat, lon)
+                gps_log[7]=gps.error_log
+                if 5 in gps.error_counts:
+                    gps_log[6]="gps" 
+                rog(gps_log)    
+
+        
+                
+
+
        
         
 
