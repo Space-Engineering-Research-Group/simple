@@ -687,7 +687,7 @@ try:
     
                     
             nlog("パラシュートの検出を行います。")
-
+            #左から、フェーズ、フェーズの中のフェーズ、時間、パラシュート検知、パラシュートのある方向、故障した部品、エラー文
             camera_log=[4,4,None,False,None,None,None]
             camera_log[2]=mget_time()
             frame=mget_frame()        
