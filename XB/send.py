@@ -22,12 +22,11 @@ class XBee(IXBee):
         self.error_log="XBee Error Log"
         self.a=1
         self.ini=True
-        p = 0
+
         while True:
-            p+=1
             try:
                 # TODO: Replace with the serial port where your local module is connected to.
-                self. PORT = "usb-FTDI_FT232R_USB_UART_AL035I0R-if00-port0"
+                self. PORT = "/dev/serial/by-id/usb-FTDI_FT232R_USB_UART_AL035I0R-if00-port0"
                 # TODO: Replace with the baud rate of your local module.
                 self.BAUD_RATE = 9600
                 self.REMOTE_NODE_ID = "raspi_node" 
@@ -45,6 +44,7 @@ class XBee(IXBee):
 
             except Exception as e:
                 # その他のエラー（MicropyGPS の初期化エラーなど）
+                self.delete()
                 error = f"Failed to _init_ the XBee:--detail{e}"
                 self.handle_error(error)
                                     #micropyGPS の設定やデータ受信に問題がある
@@ -58,6 +58,10 @@ class XBee(IXBee):
             sleep(1)    
 
     def send(self,DATA_TO_SEND):
+        print(" +--------------------------------------+")
+        print(" | XBee Python Library Send Data Sample |")
+        print(" +--------------------------------------+\n")
+
         self.error_counts = []
         self.error_messages = []
         self.error_log = "xbee Error Log"
@@ -66,13 +70,17 @@ class XBee(IXBee):
         while True:
             try: 
                 data = ",".join(map(str, DATA_TO_SEND)) 
+                print("Sending data to %s >> %s..." % (self.remote_device.get_64bit_addr(), DATA_TO_SEND))
                 self.device.send_data(self.remote_device, data)
+
+                print("Success")
                 self.a = 0
                 break
 
             except Exception as e:
                 error = f"Failed to send the XBee:---etail{e}"
                 self.handle_error(error)    
+                print(e)
             
             finally:
                     if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
