@@ -473,10 +473,7 @@ try:
                     p+=1
                 else:
                     p=0
-                if p==10:
-                    rog(fir_cds_log)
-                    nlog("箱に入ったことを認識しました。")
-                    break
+                
             except RuntimeError:
                 tools[0]=False
                 break
@@ -487,49 +484,35 @@ try:
                         fir_cds_log[-2]="cds"
                 rog(fir_cds_log)
             
+            if p==10:
+                nlog("箱に入ったことを認識しました。")
+                break
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
+
     start_time=time()
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
-        p=1
+        p=0
         while True:
             #左からフェーズ、時間、明るさ、明るさの評価、使えない部品、エラー文
-            cds_log=[2,None,None,None,None,None]
-            try:
-                now_time=time()
+            cds_log=[2,None,None,"low",None,None]
+            now_time=time()
+            if now_time-start_time>=land_time:
+                nlog("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
+                break
+            try:            
                 jp_time=mget_time()
                 cds_log[1]=jp_time
-                if now_time-start_time>=land_time:
-                    land_judge=True
-                    nlog("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
-                    break
                 cds.get_brightness()
                 cds_log[2]=cds.brightness
                 if cds.brightness >= brightness_threshold:
-                    cds_log[3]=True
+                    cds_log[3]="high"
                     p+=1
-                    rog(cds_log)
                 else:
                     p=0
                 
-                if p==3:
-                    fall_start_time=time()
-                    nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
-                    while time()-fall_start_time<fall_time:
-                        now_time=time()
-                        #左からフェーズ、時間、残り時間
-                        time_log=[8,None,None]
-                        jp_time=mget_time()
-                        time_log[1]=jp_time
-                        time_log[2]=fall_time-(now_time-fall_start_time)
-                        rog(time_log)
-                        keika=time()-now_time
-                        if keika<2:
-                            sleep(2-keika)
-                    nlog("１分経過したため着地したと判定")
-                    break
 
             except RuntimeError :
                     tools[0]=False
@@ -541,6 +524,24 @@ try:
                         cds_log[4]="cds"
                 rog(cds_log)
 
+            if p==3:
+                fall_start_time=time()
+                nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
+                while time()-fall_start_time<fall_time:
+                    now_time=time()
+                    #左からフェーズ、時間、残り時間
+                    time_log=[8,None,None]
+                    jp_time=mget_time()
+                    time_log[1]=jp_time
+                    remaining_time=fall_time-(now_time-fall_start_time)
+                    time_log[2]=round(remaining_time,2)
+                    rog(time_log)
+                    keika=time()-now_time
+                    if keika<2:
+                        sleep(2-keika)
+                nlog("１分経過したため着地したと判定")
+                break
+
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
@@ -548,13 +549,14 @@ try:
         
     if tools[0]==False:
         nlog("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
-        while time()-start_time()<land_time:
+        while time()-start_time<land_time:
             #左からフェーズ、時間、残り時間
             time_log=[8,None,None]
             now_time=time()
             jp_time=mget_time()
             time_log[1]=jp_time
-            time_log[2]=land_time-(now_time-start_time)
+            remaining_time=land_time-(now_time-start_time)
+            time_log[2]=round(remaining_time,2)
             rog(time_log)
             keika=time()-now_time
             if keika<2:
