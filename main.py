@@ -253,6 +253,7 @@ try:
             mxcel(log)
         else:
             pass
+        sleep(0.1)
 
 
     #ここで、ログを送信する
@@ -263,7 +264,6 @@ try:
     def nlog(ward):
         notice_log=[9,ward]
         rog(notice_log)
-      
 
     def mforward(wait_time):
         if wait_time>0:
