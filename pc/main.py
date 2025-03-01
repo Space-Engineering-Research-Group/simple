@@ -28,15 +28,6 @@ class Xcel():
             raise FileNotFoundError(f"The file {file_path} does not exist.")
         return False  # CSVファイルは常に開いていると仮定します
 
-    def get_last_element_first_column(self):
-        with open(self.file_path, 'r') as file:
-            reader = csv.reader(file)
-            first_column = [row[0] for row in reader if row]
-            if first_column:
-                return first_column[-1]
-            else:
-                return 0 
-
     def feeds(self, writer, data):
         if data[0] == -1:
             writer.writerow(["フェーズ", "時間", "明るさ", "評価", "故障した部品", "error"])
@@ -75,6 +66,5 @@ class Xcel():
         if data[0] != y:
             with open(self.file_path, mode='a', newline='', encoding='utf-8') as file: # 追記モードで開く
                 writer = csv.writer(file)
-                self.feeds(writer, data)
-        else:
+            self.feeds(writer, data)
             writer.writerow(data)
