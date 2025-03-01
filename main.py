@@ -649,7 +649,7 @@ try:
             if judge==True:
                 nlog("パラシュートを検知したため、機体を後進させ、GPSの位置情報から向いている向きを取得します。")
                 mbackward(go_time_4_1)
-            if judge==False:
+            else:
                 nlog("パラシュートを検知しなかったため、機体を前進させ、GPSの位置情報から向いている向きを取得します。")
                 mforward(go_time_4_1)
 
@@ -665,10 +665,11 @@ try:
             gps_log[4]=nowlon
             rog(gps_log)
             #変更点
-            #左からフェーズ、フェーズの中のフェーズ、コーンに対する角度
-            gps_log=[4,3,None]
+            #左からフェーズ、フェーズの中のフェーズ、時間、コーンに対する角度
+            gps_log=[4,3,None,None]
             direction=gps.move_direction(prelat,prelon,nowlat,nowlon)
-            gps_log[2]=direction
+            gps_log[2]=mget_time
+            gps_log[3]=direction
             rog(gps_log)
             #５度以上回転がずれてたら戻すようにしようと思う。（勘）
             sttime_4_3=abs(direction)/turn_speed
@@ -678,10 +679,12 @@ try:
                     mturn_right(sttime_4_3)
                 else:
                     mturn_left(sttime_4_3)
+                
+                mstop()
             else:
                 nlog("コーンに対する角度が５度以下なため、回転は行いません")    
 
-                mstop()
+    
                     
             nlog("パラシュートの検出を行います。")
 
