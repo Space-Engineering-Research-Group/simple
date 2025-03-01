@@ -442,8 +442,8 @@ try:
         gps_log[2]=mget_time()
         m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
         g_r = get_rotation_angle(goal_lat,goal_lon,now_lat,now_lon,m_d)   
-        gps_log[3] = move_direction
-        gps_log[4] = get_rotation_angle  
+        gps_log[3] = m_d
+        gps_log[4] = g_r  
         rog(gps_log)
         return g_r             
 
@@ -668,14 +668,15 @@ try:
             #左からフェーズ、フェーズの中のフェーズ、時間、コーンに対する角度
             gps_log=[4,3,None,None]
             direction=move_direction(prelat,prelon,nowlat,nowlon)
-            gps_log[2]=mget_time
-            gps_log[3]=direction
+            rotation = get_rotation_angle(goal_lat,goal_lon,nowlat,nowlon,direction) 
+            gps_log[2]=mget_time()
+            gps_log[3]=rotation
             rog(gps_log)
             #５度以上回転がずれてたら戻すようにしようと思う。（勘）
-            sttime_4_3=abs(direction)/turn_speed
-            if abs(direction)>dire_threshold:
+            sttime_4_3=abs(rotation)/turn_speed
+            if abs(rotation)>dire_threshold:
                 nlog("コーンに対する角度が５度より大きいため、回転してコーンと向き合うようにします。")
-                if direction >dire_threshold:
+                if rotation >dire_threshold:
                     mturn_right(sttime_4_3)
                 else:
                     mturn_left(sttime_4_3)
@@ -710,7 +711,7 @@ try:
                     mforward(go_time_4_4)
                     mturn_left(sttime_90)
             else:
-                print("パラシュートが検知されなかったため、回避を行いません。")
+                nlog("パラシュートが検知されなかったため、回避を行いません。")
             #１０は適当
             mforward(go_time_4_4)
             mstop()
@@ -757,16 +758,18 @@ try:
                     #最初の緯度経度の取得は特別なので、関数化しない
                     #フェーズ、フェーズの中のフェーズ、時間、緯度、経度,ゴールまでの距離,進行方向、回転角度、故障した部品、エラー文
                     gps_log = [5,0,None,None,None,None,None,None,None,None,None,None]
-                    try:
+                    try: #nowlot,nowlat はfeeds4のときの緯度経度
+                        pre_nowlat = nowlat
+                        pre_nowlon = nowlon
                         gps_log[2]=mget_time()
-                        pre_lat,pre_lon = gps.get_coordinate_xy()
+                        now_lat,now_lon = gps.get_coordinate_xy()
                         gps_log[3]=pre_lat
                         gps_log[4]=pre_lon
 
-                        distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
+                        distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
                         gps_log[5]=distance
 
-                        md=move_direction(pre_lat, pre_lon, goal_lat, goal_lon)
+                        md=move_direction(pre_lat, pre_lon, now_lat, now_lon)
                         gps_log[6]=md
 
                         rot=get_rotation_angle(goal_lat,goal_lon,pre_lat,pre_lon,md)
@@ -784,7 +787,7 @@ try:
 
 
                         #初めからコーンが近い場合の処理     
-                    distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
+                    distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
 
                     if plan2 == "A":
                         if distance<=A_x:
@@ -807,7 +810,7 @@ try:
                     while True:
                         p+=1
                 
-                        distance = get_distance(now_lat, now_lon, pre_lat, pre_lon)    
+                        distance = get_distance(goal_lat,goal_lon,now_lat,now_lon)    
 
                         if distance<=s_x:
                             #stuckした場合の処理
@@ -903,7 +906,7 @@ try:
                                 break
 
                         #distanceが大きくてもまだ4m以上ある
-                        rotation_angle = m5get_dire_rot(goal_lat,goal_lon,now_lat,now_lon)
+                        rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
                         if rotation_angle > 0:
                             mturn_right(rotation_angle/turn_speed)  
                         else:
