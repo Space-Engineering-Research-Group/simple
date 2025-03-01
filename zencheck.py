@@ -12,6 +12,7 @@ try:
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     from camera import *
+    import numpy as np
     from gps import *
     from motor import *
     from gpiozero.pins.pigpio import PiGPIOFactory
@@ -68,8 +69,6 @@ try:
     factory = PiGPIOFactory()
     try:
         servo=Myservo(12,factory)
-    except RuntimeError:
-        tools[4]=False
     finally:
         if len(servo.error_counts)>0:
             ins_error.append(servo.error_log)
@@ -78,14 +77,14 @@ try:
                 tools[4]=False
     
     #サーボモーターが回転する時間
-    srote_time=20
+    srote_time=10
 
     try:
         gps=Gps()
     finally:
         if len(gps.error_counts)>0:
             ins_error.append(gps.error_log)
-            if 5 in gps.error_log:
+            if 5 in gps.error_counts:
                ins_error_tool.append("gps") 
                tools[1]=False
 
@@ -93,6 +92,16 @@ try:
     #ここは大会の時に測る。
     goal_lat = 0
     goal_lon = 0
+    #以下４個は実験をして値を決める
+    #planAの時は4m以内の時に成功
+    A_x = 4
+    #planBの時は2m以内の時に成功
+    B_x = 2
+    #sackの判別メートル
+    s_x = 1.5
+    #カメラが壊れてplanBになった時の成功
+    B_x2 = 0.5
+
 
     #設定的に一番低そうなこれにする。
     width=640
@@ -128,27 +137,9 @@ try:
     rdir_1=19
     rdir_2=26
     rPWM=13
-    ldir_1=15
-    ldir_2=14
+    ldir_1=23
+    ldir_2=24
     lPWM=18
-    #機体の回転速度208度/s
-    turn_speed=208
-    #９０度回転するときの待機時間
-    sttime_90=90/turn_speed
-    
-
-    #フェーズ６、kazu=1のときの回転角度と、回転時間を定義
-    roteangle_6_1=60
-    sttime_6_1=roteangle_6_1/turn_speed
-
-    #フェーズ６，kazu=2の時の回転角度と、回転時間を定義
-    roteangle_6_2=1
-    sttime_6_2=roteangle_6_2/turn_speed
-
-    #フェーズ６，kazu=2の時の前進する時間
-    sttime_far=5
-    sttime_close=0.1
-
 
     try:
         motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory)
@@ -177,6 +168,23 @@ try:
         xcel = Xcel() #deleteの時に使う
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
+
+    def mxcel(data):
+        #フェーズ、故障した部品、エラー分
+        xcel_log = [11,None,[],None] #raspyのみ書く
+        try:
+            xcel.main(data)
+        except RuntimeError:
+            tools[6]=False
+            import sys
+            sys.exit(1)
+        finally:
+            if len(xbee.error_counts):
+                xcel_log[2]=mget_time()
+                xcel_log[-1]=xbee.error_log
+                if 5 in xbee.error_counts:
+                    xcel_log[-2].append("xcel")
+                xbee.xbee_send(xcel_log)
 
     def mxcel(data):
         #フェーズ、故障した部品、エラー分
@@ -428,7 +436,8 @@ try:
     nlog("カメラの確認を開始します")
     sleep(2)
     for i in range(10):
-        camera_log=[4,1,None,False,None,None]
+        # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
+        camera_log=[6,1,None,False,None,None]
         camera_log[2]=mget_time()
         frame=mget_frame()
         contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
@@ -459,7 +468,7 @@ try:
     sleep(2)
     for i in range(10):
         #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
-        cds_log=[-1,None,None,None,None,None]
+        cds_log=[-1,None,None,"high",None,None]
         cds_log[1]=mget_time()
         try:
             cds.get_brightness()
@@ -480,17 +489,12 @@ try:
     
     nlog("motorの確認を開始します")
     sleep(2)
-    for i in range(5):
-        motors.forward()
-        sleep(1)
-        motors.backward()
-        sleep(1)
-        motors.turn_left()
-        sleep(1)
-        motors.turn_right()
-        sleep(1)
-        motors.stop()
-        sleep(1)
+    mforward(5)
+    mturn_left(5)
+    mturn_right(5)
+    mbackward(5)
+    mstop()
+    sleep(2)
     
     nlog("servoの確認をします。")
     sleep(2)
@@ -545,7 +549,6 @@ try:
 
 
     nlog("GPSの確認を開始します。")
-    
        
         
 
