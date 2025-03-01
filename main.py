@@ -813,7 +813,7 @@ try:
                             #stuckした場合の処理
                             stack_count+=1
                             if stack_count==5:#必要に応じて増やす
-                                print("スタック5回目なので強制終了")
+                                nlog("スタック5回目なので強制終了")
                                 import sys
                                 sys.exit(1)
 
