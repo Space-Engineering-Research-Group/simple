@@ -29,12 +29,14 @@ class Xcel():
         return False  # CSVファイルは常に開いていると仮定します
 
     def feeds(self, writer, data):
+        if data[0] == -2:
+            writer.writerow(["フェーズ","時間","故障した部品","error"])
         if data[0] == -1:
-            writer.writerow(["フェーズ", "時間", "明るさ", "評価", "故障した部品", "error"])
+            writer.writerow(["フェーズ", "時間", "明るさ", "明るさの評価", "故障した部品", "error"])
         if data[0] == 1:
             writer.writerow(["フェーズ", "時間", "cds", "GPS", "camera", "motor", "servo", "xbee", "故障した部品", "error"])
         if data[0] == 2:
-            writer.writerow(["フェーズ", "時間", "明るさ", "落下判断", "故障した部品", "error"])
+            writer.writerow(["フェーズ", "時間", "明るさ", "明るさの評価", "故障した部品", "error"])
         if data[0] == 4:
             if data[1] == 1:
                 writer.writerow(["フェーズ", "フェーズ中のフェーズ", "時間", "パラシュート検知", "故障した部品", "error"])
@@ -43,7 +45,12 @@ class Xcel():
             if data[1] == 3:
                 writer.writerow(["フェーズ", "フェーズ中のフェーズ", "コーンに対する角度"])
         if data[0] == 5:
-            writer.writerow(["フェーズ", "時間", "緯度", "経度", "ゴールまでの距離", "時間", "進行方向", "回転角度", '故障した部品', 'error'])
+            if data[1] == 0:
+                writer.writerow(["フェーズ","フェーズの中のフェーズ", "時間", "緯度", "経度", "ゴールまでの距離", "進行方向", "回転角度", '故障した部品', 'error'])
+            if data[1] == 1:
+                writer.writerow(["フェーズ","フェーズの中のフェーズ", "時間", "緯度", "経度", "ゴールまでの距離",'故障した部品', 'error'])
+            if data[1] == 2:#左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度  
+                writer.writerow(["フェーズ","フェーズの中のフェーズ", "時間","進行方向", "回転角度"])  
         if data[0] == 6:
             if data[1] == 1:
                 writer.writerow(["フェーズ", 'フェーズ中のフェーズ', "時間", "コーン検出", '故障した部品', 'error'])

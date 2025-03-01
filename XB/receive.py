@@ -125,7 +125,25 @@ def is_row_empty(sheet, col_letter):
         print(col_values)
         print("今から書く列は空白ではない")
         return False
+def feeds_2(sheet,data,num):
+    #最初num = 7 
+    num_list = []
+    num_list.append(num)
+    if len(num_list) > 2:
+        num_list.pop(-1) 
+        
+    result = is_row_empty(sheet,num_list[0])
+    if result == True:
+        sheet.range(num,1).value = "フェーズ"
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "使えない部品"
+        sheet.range(num,4).value = "error"    
 
+    for index, value in enumerate(data, start=1):
+        sheet.range(num+1, index).value = str(value)   
+    workbook.save()      
+    return num         
+            
 def feeds_1(sheet,data,num):
     #最初num = 4
     num_list = []
@@ -138,14 +156,12 @@ def feeds_1(sheet,data,num):
         sheet.range(num,1).value = "フェーズ"
         sheet.range(num,2).value = "時間"
         sheet.range(num,3).value = "明るさ"
-        sheet.range(num,4).value = "評価"
+        sheet.range(num,4).value = "明るさの評価"
         sheet.range(num,5).value = "故障した部品"
         sheet.range(num,6).value = "error" 
 
     for index, value in enumerate(data, start=1):
         sheet.range(num+1, index).value = str(value)
-        if data[2] == None:
-            sheet.range(num+1,4).value = "cds"
 
     num += 1
     workbook.save()
@@ -155,16 +171,15 @@ def feeds_1(sheet,data,num):
 def feeds1(sheet,data,num):
     #最初num = 1
     sheet.range(num,1).value = "フェーズ"
-    sheet.range(num,2).value = "プラン"
-    sheet.range(num,3).value = "時間"
-    sheet.range(num,4).value = "cds"
-    sheet.range(num,5).value = "GPS"
-    sheet.range(num,6).value = "camera"
-    sheet.range(num,7).value = "motor"
-    sheet.range(num,8).value = "servo motor"
-    sheet.range(num,9).value = "xbee"
-    sheet.range(num,10).value = "故障した部品"
-    sheet.range(num,11).value = "error"
+    sheet.range(num,2).value = "時間"
+    sheet.range(num,3).value = "cds"
+    sheet.range(num,4).value = "GPS"
+    sheet.range(num,5).value = "camera"
+    sheet.range(num,6).value = "motor"
+    sheet.range(num,7).value = "servo motor"
+    sheet.range(num,8).value = "xbee"
+    sheet.range(num,9).value = "故障した部品"
+    sheet.range(num,10).value = "error"
 
     Faulty_parts = []
     for index, value in enumerate(data, start=1):
@@ -201,12 +216,11 @@ def feeds2(sheet,data,num):
     result = is_row_empty(sheet,num_list[0])
     if result == True:
         sheet.range(num,1).value = "フェーズ"
-        sheet.range(num,2).value = "プラン"
-        sheet.range(num,3).value = "時間"
-        sheet.range(num,4).value = "明るさ"
-        sheet.range(num,5).value = "落下判断"
-        sheet.range(num,6).value = "使えない部品"
-        sheet.range(num,7).value = "error"    
+        sheet.range(num,2).value = "時間"
+        sheet.range(num,3).value = "明るさ"
+        sheet.range(num,4).value = "明るさの評価"
+        sheet.range(num,5).value = "使えない部品"
+        sheet.range(num,6).value = "error"    
 
 
     for index, value in enumerate(data, start=1):
@@ -214,11 +228,6 @@ def feeds2(sheet,data,num):
     workbook.save()      
     return num          
 
-def feeds3(sheet,data,num):
-    #以下feeds、最初はわからん
-    pass 
-    workbook.save()
-    return num
 
 def feeds4(sheet,data,num):
     #フェーズ、時間、パラシュート検知,時間、緯度、経度,コーンに対する角度、故障した部品、エラー文
@@ -288,16 +297,28 @@ def feeds5(sheet,data,num):
         sheet.range(num,3).value = "緯度"
         sheet.range(num,4).value = "経度"
         sheet.range(num,5).value = "ゴールまでの距離"
-        sheet.range(num,6).value = "時間"
-        sheet.range(num,7).value = "進行方向"
-        sheet.range(num,8).value = "回転角度"
-        sheet.range(num,9).value = "故障した部品"
-        sheet.range(num,10).value = "エラー文"
+        sheet.range(num,6).value = "進行方向"
+        sheet.range(num,7).value = "回転角度"
+        sheet.range(num,8).value = "故障した部品"
+        sheet.range(num,9).value = "エラー文"
 
     sheet.range(num+1,1).value = "5"
     Faulty_parts = []
     error_list = []
-    #フェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
+    
+    if data[1] == 0:
+        #フェーズ、フェーズの中のフェーズ、時間、緯度、経度,ゴールまでの距離,進行方向、回転角度、故障した部品、エラー文
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,3).value = str(data[3])
+        sheet.range(num+1,4).value = str(data[4])
+        sheet.range(num+1,5).value = str(data[5])
+        sheet.range(num+1,6).value = str(data[6])
+        sheet.range(num+1,7).value = str(data[7])
+        if data[8] is not None and data[9] is not None:
+            Faulty_parts.append(data[8])
+            error_list.append(data[9])
+
+     ##左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
     if data[1] == 1:
         sheet.range(num+1,2).value = str(data[2])
         sheet.range(num+1,3).value = str(data[3])
@@ -307,20 +328,15 @@ def feeds5(sheet,data,num):
             Faulty_parts.append(data[6])
             error_list.append(data[7])
 
-     #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
-    if data[1] == 2:
-        sheet.range(num+1,6).value = str(data[2])
-        sheet.range(num+1,7).value = str(data[3])
-        sheet.range(num+1,8).value = str(data[4])
-
-    else: #最初の緯度経度だけ特別
-        for index, value in enumerate(data, start=1):
-            sheet.range(num+1, index).value = str(value)
+    if data[1] == 2:#左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度  
+        sheet.range(num+1,2).value = str(data[2])
+        sheet.range(num+1,6).value = str(data[3])
+        sheet.range(num+1,7).value = str(data[4])
 
     F_P = ','.join(Faulty_parts)  
     e_l = ','.join(error_list) 
-    sheet.range(num+1,9).value = F_P
-    sheet.range(num+1,10).value = e_l
+    sheet.range(num+1,8).value = F_P
+    sheet.range(num+1,9).value = e_l
     workbook.save() 
     return num     
 
@@ -507,6 +523,9 @@ while True:
 
         for i in range(1,13):
             if data[0] == i:
+                if i == -2:
+                    num = feeds_2(sheet,data,num)
+                    break
                 if i == 1:
                     num = feeds1(sheet,data,num)
                     break
@@ -514,10 +533,7 @@ while True:
                     num = feeds_1(sheet,data,num)
                     break
                 if i == 2:
-                    num = feeds2(sheet,data,num)
-                    break
-                if i == 3:
-                    num = feeds3(sheet,data,num) 
+                    num = feeds2(sheet,data,num) 
                     break 
                 if i == 4:
                     num = feeds4(sheet,data,num)
