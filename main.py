@@ -125,8 +125,8 @@ try:
     rdir_1=19
     rdir_2=26
     rPWM=13
-    ldir_1=15
-    ldir_2=14
+    ldir_1=23
+    ldir_2=24
     lPWM=18
     #機体の回転速度208度/s
     turn_speed=208
