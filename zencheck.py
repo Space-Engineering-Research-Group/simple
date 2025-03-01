@@ -558,6 +558,7 @@ finally:
     motors.release()
     gps.delete()
     camera.release()
+    xbee.delete()
 
     if False in tools:
         nlog("故障した部品があるため、ラズパイをシャットダウンさせます。")
