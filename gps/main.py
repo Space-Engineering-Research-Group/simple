@@ -174,9 +174,43 @@ class Gps(IGps):
             print(f'average_latitude:{ave_lat}, average_longitude:{ave_lon}')
             self.a = 0
             return ave_lat, ave_lon
-
-
-            
+ 
+    def get_xy_ceak(self):
+        global gpsjudge
+        self.error_counts = []
+        self.error_messages = []
+        self.error_log="gps Error Log"
+        self.a=1
+        self.ini=False
+        p=0
+        while True:
+                while True:
+                    try:
+                        self.update_gps()
+                        break
+                    except Exception as e:
+                        if gpsjudge == False:
+                            self.update_gps()
+                            
+                self.a = 1            
+                while True:
+                    p+=1
+                    try:
+                        latitude = self.__gps.latitude[0]
+                        longitude = self.__gps.longitude[0]
+                        if gpsjudge == True and latitude != 0 and longitude != 0:
+                            self.a = 0    
+                            return latitude,longitude
+                    except Exception as e:
+                        error = f"Failed to get latitude and longitude:--detail{e}"
+                        self.handle_error(error)
+                    finally:
+                        if (len(self.error_messages)and self.a==0)or 5 in self.error_counts:
+                            if 5 in self.error_counts:
+                                if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
+                                    self.__gps_uart.close()    
+                            self.log_errors()
+                            break    
 
     def delete(self):
         self.error_counts=[]
