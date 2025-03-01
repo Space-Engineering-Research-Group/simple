@@ -438,7 +438,7 @@ try:
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
-        gps_log = [5,1,None,None,None,None]
+        gps_log = [5,2,None,None,None,None]
         gps_log[2]=mget_time()
         m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
         g_r = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,m_d)   
@@ -695,7 +695,7 @@ try:
             rog(camera_log)
 
             if judge==True:
-                print("パラシュートが検知されたため、回避を行います。")
+                nlog("パラシュートが検知されたため、回避を行います。")
                 if sign==1:
                     nlog("パラシュートが機体に対して右側にあるため、左に回避します。")
                     mturn_left(sttime_90)
@@ -752,26 +752,31 @@ try:
             try:
                 while True:
                     #最初の緯度経度の取得は特別なので、関数化しない
-                    #フェーズ、時間、緯度、経度,ゴールまでの距離,時間、進行方向、回転角度、故障した部品、エラー文
-                    gps_log = [5,None,None,None,None,None,None,None,None,None,None]
+                    #フェーズ、フェーズの中のフェーズ、時間、緯度、経度,ゴールまでの距離,進行方向、回転角度、故障した部品、エラー文
+                    gps_log = [5,0,None,None,None,None,None,None,None,None,None,None]
                     try:
-                        gps_log[1]=time()
+                        gps_log[2]=mget_time()
                         pre_lat,pre_lon = gps.get_coordinate_xy()
-                        gps_log[2]=pre_lat
-                        gps_log[3]=pre_lon
+                        gps_log[3]=pre_lat
+                        gps_log[4]=pre_lon
 
                         distance=get_distance(pre_lat,pre_lon,goal_lat,goal_lon)
+                        gps_log[5]=distance
 
-                        gps_log[4]=distance
+                        md=move_direction(pre_lat, pre_lon, goal_lat, goal_lon)
+                        gps_log[6]=md
+
+                        rot=get_rotation_angle()
+                        gps_log[7]=rot
 
                     except RuntimeError:
                         tools[1]=False
                         raise RuntimeError
                     finally:
                         if len(gps.error_counts):
-                            gps_log[10]=gps.error_log
+                            gps_log[9]=gps.error_log
                             if 5 in gps.error_counts:
-                                gps_log[9]="gps"  
+                                gps_log[8]="gps"  
                         rog(gps_log)
 
 
@@ -839,9 +844,9 @@ try:
                                 #カメラが壊れていた場合
                                 #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
                                 try:
-                                    gps_log = [5,1,None,None,None,None,None,None]
+                                    gps_log= [5,1,None,None,None,None,None,None]
                             
-                                    gps_log[2]=time()
+                                    gps_log[2] =mget_time()
                                     gps_B_lat = []
                                     gps_B_lon = []
                                 
@@ -904,7 +909,7 @@ try:
                         mstop()
                         mforward(go_dis_5_4)#この4秒は適当　あとで計算
                         mstop()
-                        nlog("距離が4m以上。進んでやり直し")
+                        nlog("距離が4m以上。前進してやり直し")
                     break        
             
             except Exception :
