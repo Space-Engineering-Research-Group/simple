@@ -469,3 +469,4 @@ finally:
     else:
         nlog("全ての部品の確認が終了しました。")
         nlog("待機モードに移ります。")    
+        xbee.delete()
