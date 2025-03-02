@@ -26,7 +26,7 @@ class Xcel():
     def is_workbook_closed(self, file_path):
         if not os.path.exists(file_path):
             raise FileNotFoundError(f"The file {file_path} does not exist.")
-        return False  # CSVファイルは常に開いていると仮定します
+        return False  
 
     def feeds(self, writer, data):
         if data[0] == -2:
@@ -68,7 +68,7 @@ class Xcel():
     def xcel(self, data):
         self.open_workbook(self.file_path) # open_workbookを最初に呼び出す
 
-        with open(self.file_path, mode='a', newline='', encoding='utf-8') as file: # 追記モードで開く
+        with open(self.file_path, mode='a', newline='', encoding='utf-8') as file: 
             writer = csv.writer(file)
         self.feeds(writer, data)
         writer.writerow(data)
