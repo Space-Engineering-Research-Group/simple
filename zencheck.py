@@ -231,6 +231,8 @@ try:
         else:
             pass  
 
+        sleep(7)
+
 
     #ここで、ログを送信する
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
@@ -248,10 +250,6 @@ try:
       
 
     def mforward(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
-        else:
-            nlog("右モーターの正転、左モーターの逆転をして、機体を前進させます。")
         #フェーズ、時間、故障した部品、エラー文      
         motor_log=[10,None,[],None]
         try:
@@ -274,10 +272,6 @@ try:
 
 
     def mbackward(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの逆転、左モーターの正転を{wait_time}秒間続けて、機体を後進させます。")
-        else:
-            nlog("右モーターの逆転、左モーターの正転をして、機体を更新させます。")
         #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
@@ -299,10 +293,6 @@ try:
                 rog(motor_log)
 
     def mturn_left(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの正転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
-        else:
-            nlog("右モーターの正転、左モーターの正転をして、機体を反時計回りに回転させます。")
         #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
@@ -325,10 +315,6 @@ try:
 
 
     def mturn_right(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
-        else:
-            nlog("右モーターの逆転、左モーターの逆転を行います。")
         motor_log=[10,None,[],None]
         try:
             motors.turn_right()
@@ -352,7 +338,6 @@ try:
         motor_log=[10,None,[],None]
         try:
             motors.stop()
-            nlog("モーターの回転を止めました。")
         except RuntimeError:
             tools[3]=False
             import sys
@@ -381,7 +366,7 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    rog(camera_log)
+            rog(camera_log)
 
     def mget_coordinate_xy(): #これはfeeds4の時に使う
         try:
