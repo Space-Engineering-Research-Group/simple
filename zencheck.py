@@ -324,7 +324,7 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    rog(camera_log)
+                rog(camera_log)
 
 
     def m5get_coodinate_xy():
@@ -346,7 +346,7 @@ try:
                 gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[6]="gps"  
-            rog(gps_log)
+                rog(gps_log)
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
@@ -361,52 +361,29 @@ try:
       
 
     nlog("カメラの確認を開始します")
-    for i in range(10):
-        # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
-        camera_log=[6,1,None,False,None,None]
-        camera_log[2]=mget_time()
-        frame=mget_frame()
-        contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-        if contour is not None:
-            judge=judge_cone(contour,frame_area)
-        else:
-            judge=False
-        
-        if judge:
-            camera_log[3]=True
-            camera.cone_hozon(frame,contour)
-        else:
-            camera_log[3]=False
-            camera.frame_hozon(frame)
-        rog(camera_log)
-        
-    camera_log=[4,1,None,False,None,None]
+    # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
+    camera_log=[6,1,None,False,None,None]
     camera_log[2]=mget_time()
     frame=mget_frame()
-    judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,0)
-    camera.parachute_hozon(frame)
-    camera_log[3]=judge
-    rog(camera_log)
+    camera.frame_hozon(frame)
 
 
     nlog("cdsの確認を開始します。")
-    sleep(2)
-    for i in range(10):
         #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
-        cds_log=[-1,None,None,"high",None,None]
-        cds_log[1]=mget_time()
-        try:
-            cds.get_brightness()
-            cds_log[2]=cds.brightness
-        except:
-            tools[0]=False
-            import sys
-            sys.exit(1)
-        finally:
-            if len(cds.error_counts):
-                cds_log[4]=cds.error_log
-                if 5 in cds.error_counts:
-                    cds_log[3]="cds"          
+    cds_log=[-1,None,None,"high",None,None]
+    cds_log[1]=mget_time()
+    try:
+        cds.get_brightness()
+        cds_log[2]=cds.brightness
+    except:
+        tools[0]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(cds.error_counts):
+            cds_log[4]=cds.error_log
+            if 5 in cds.error_counts:
+                cds_log[3]="cds"          
             rog(cds_log)
 
         sleep(1)
@@ -428,20 +405,7 @@ try:
     #変更点 
     try:            
         servo.rotate()
-        
-        start_time=time()
-        while time()-start_time<srote_time:
-            now_time=time()
-            #左から、フェーズ、現在時間、残り時間
-            wait_log=[8,None,None]
-            jp_time=mget_time()
-            wait_log[1]=jp_time
-            wait_log[2]=int(srote_time-(now_time-start_time))
-            #xbeeで送信
-            rog(wait_log)
-            keika=time()-now_time
-            if keika<2:
-                sleep(2-keika)
+        sleep(5)
         
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
@@ -513,6 +477,7 @@ finally:
 
     if False in tools:
         nlog("故障した部品があるため、ラズパイをシャットダウンさせます。")
+
         import os
         os.system("sudo shutdown now")
     else:
