@@ -215,16 +215,16 @@ try:
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
     rog(ins_log)       
 
+    if False in tools:
+        import sys
+        sys.exit(1)
+
     def nlog(ward):
         notice_log=[9,ward]
         rog(notice_log)
       
 
     def mforward(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
-        else:
-            nlog("右モーターの正転、左モーターの逆転をして、機体を前進させます。")
         #フェーズ、時間、故障した部品、エラー文      
         motor_log=[10,None,[],None]
         try:
@@ -247,10 +247,6 @@ try:
 
 
     def mbackward(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの逆転、左モーターの正転を{wait_time}秒間続けて、機体を後進させます。")
-        else:
-            nlog("右モーターの逆転、左モーターの正転をして、機体を更新させます。")
         #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
@@ -272,10 +268,6 @@ try:
                 rog(motor_log)
 
     def mturn_left(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの正転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
-        else:
-            nlog("右モーターの正転、左モーターの正転をして、機体を反時計回りに回転させます。")
         #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
@@ -298,10 +290,6 @@ try:
 
 
     def mturn_right(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
-        else:
-            nlog("右モーターの逆転、左モーターの逆転を行います。")
         motor_log=[10,None,[],None]
         try:
             motors.turn_right()
@@ -325,7 +313,6 @@ try:
         motor_log=[10,None,[],None]
         try:
             motors.stop()
-            nlog("モーターの回転を止めました。")
         except RuntimeError:
             tools[3]=False
             import sys
@@ -358,37 +345,7 @@ try:
                 rog(camera_log)
 
 
-    def m5get_coodinate_xy():
-        #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
-        gps_log = [5,1,None,None,None,None,None,None]
-        try:
-            gps_log[2]=mget_time()
-            lat,lon = gps.get_coordinate_xy()
-            gps_log[3]=lat
-            gps_log[4]=lon
-            distance = get_distance(goal_lat, goal_lon, lat, lon)
-            gps_log[5]=distance
-            return lat,lon
-        except RuntimeError:
-            tools[1]=False
-            raise RuntimeError
-        finally:
-            if len(gps.error_counts):
-                gps_log[7]=gps.error_log
-                if 5 in gps.error_counts:
-                    gps_log[6]="gps"  
-                rog(gps_log)
-
-    def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
-        #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
-        gps_log = [5,2,None,None,None,None]
-        gps_log[2]=mget_time()
-        m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
-        g_r = get_rotation_angle(goal_lat,goal_lon,now_lat,now_lon,m_d)   
-        gps_log[3] = m_d
-        gps_log[4] = g_r  
-        rog(gps_log)
-        return g_r          
+         
       
 
     nlog("カメラの確認を開始します")
@@ -469,9 +426,13 @@ try:
 
     nlog("GPSの確認を開始します。")
     while True:
+        #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー
+        gps_log=[5,1,mget_time(),None,None,'なし',None,None]
         try:
             lat,lon = gps.get_xy_ceak()
             if lat != 0 and lon != 0:
+                gps_log[3]=lat
+                gps_log=[4]=lon
                 break
         except RuntimeError:
             tools[1]=False
@@ -479,15 +440,16 @@ try:
             sys.exit(1)
         finally:
             if len(gps.error_counts):
-            #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー
-                gps_log=[5,1,mget_time(),None,None,None,None,None]
-                gps_log[3]=lat
-                gps_log=[4]=lon
                 gps_log=get_distance(goal_lat, goal_lon, lat, lon)
                 gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[6]="gps" 
                 rog(gps_log) 
+
+    rog(gps_log)
+    nlog('gps取得しました')
+    
+    
 
         
                 
