@@ -194,7 +194,7 @@ try:
 
     def nlog(ward):
         notice_log=[9,ward]
-        rog(word)
+        rog(ward)
       
 
     def mforward(wait_time):
@@ -364,12 +364,9 @@ try:
         get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
         gps_log[3] = move_direction
         gps_log[4] = get_rotation_angle  
-        mxbee_send(gps_log)
-        mxcel(gps_log)
+        rog(gps_log)
         return get_rotation_angle       
-
-    nlog("xbeeの確認テストを開始します")
-    mxbee_send(data)       
+      
 
     nlog("カメラの確認を開始します")
     sleep(2)
