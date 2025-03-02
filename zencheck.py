@@ -76,8 +76,7 @@ try:
                 ins_error_tool.append("servo")
                 tools[4]=False
     
-    #サーボモーターが回転する時間
-    srote_time=10
+
 
     try:
         gps=Gps()
@@ -215,6 +214,8 @@ try:
         else:
             pass  
 
+        sleep(7)
+
 
     #ここで、ログを送信する
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
@@ -232,10 +233,6 @@ try:
       
 
     def mforward(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの逆転を{wait_time}秒間続けて、機体を前進させます。")
-        else:
-            nlog("右モーターの正転、左モーターの逆転をして、機体を前進させます。")
         #フェーズ、時間、故障した部品、エラー文      
         motor_log=[10,None,[],None]
         try:
@@ -243,6 +240,7 @@ try:
             if wait_time>0:
                 sleep(wait_time)
         except RuntimeError:
+            nlog("モーターが使えないのでコードを停止します。")
             tools[3]=False
             import sys
             sys.exit(1)
@@ -258,10 +256,6 @@ try:
 
 
     def mbackward(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの逆転、左モーターの正転を{wait_time}秒間続けて、機体を後進させます。")
-        else:
-            nlog("右モーターの逆転、左モーターの正転をして、機体を更新させます。")
         #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
@@ -269,6 +263,7 @@ try:
             if wait_time>0:
                 sleep(wait_time)
         except RuntimeError:
+            nlog("モーターが使えないのでコードを停止します。")
             tools[3]=False
             import sys
             sys.exit(1)
@@ -283,10 +278,6 @@ try:
                 rog(motor_log)
 
     def mturn_left(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの正転、左モーターの正転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
-        else:
-            nlog("右モーターの正転、左モーターの正転をして、機体を反時計回りに回転させます。")
         #フェーズ、時間、故障した部品、エラー文
         motor_log=[10,None,[],None]
         try:
@@ -294,6 +285,7 @@ try:
             if wait_time>0:
                 sleep(wait_time)
         except RuntimeError:
+            nlog("モーターが使えないのでコードを停止します。")
             tools[3]=False
             import sys
             sys.exit(1)
@@ -309,16 +301,13 @@ try:
 
 
     def mturn_right(wait_time):
-        if wait_time>0:
-            nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
-        else:
-            nlog("右モーターの逆転、左モーターの逆転を行います。")
         motor_log=[10,None,[],None]
         try:
             motors.turn_right()
             if wait_time>0:
                 sleep(wait_time)
         except RuntimeError:
+            nlog("モーターが使えないのでコードを停止します。")
             tools[3]=False
             import sys
             sys.exit(1)
@@ -336,8 +325,8 @@ try:
         motor_log=[10,None,[],None]
         try:
             motors.stop()
-            nlog("モーターの回転を止めました。")
         except RuntimeError:
+            nlog("モーターが使えないのでコードを停止します。")
             tools[3]=False
             import sys
             sys.exit(1)
@@ -357,6 +346,7 @@ try:
             frame=camera.get_frame()
             return frame       
         except RuntimeError:
+            nlog("カメラが使えないのでコードを停止します。")
             tools[2]=False
             import sys
             sys.exit(1)
@@ -365,7 +355,7 @@ try:
                 camera_log[-1]=camera.error_log
                 if 5 in camera.error_counts:
                     camera_log[-2]="camera"
-                    rog(camera_log)
+            rog(camera_log)
 
 
     def m5get_coodinate_xy():
@@ -404,93 +394,48 @@ try:
 
     nlog("xbeeの確認テストを開始します")
     mxbee_send(data)       
+    sleep(7)
 
     nlog("カメラの確認を開始します")
-    sleep(2)
-    for i in range(10):
-        # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
-        camera_log=[6,1,None,False,None,None]
-        camera_log[2]=mget_time()
-        frame=mget_frame()
-        contour=find_cone(frame,lower_red1,upper_red1,lower_red2,upper_red2)
-        if contour is not None:
-            judge=judge_cone(contour,frame_area)
-        else:
-            judge=False
-        
-        if judge:
-            camera_log[3]=True
-            camera.cone_hozon(frame,contour)
-        else:
-            camera_log[3]=False
-            camera.frame_hozon(frame)
-        rog(camera_log)
-        
-    camera_log=[4,1,None,False,None,None]
-    camera_log[2]=mget_time()
-    frame=mget_frame()
-    judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,0)
-    camera.parachute_hozon(frame)
-    camera_log[3]=judge
-    mxbee_send(camera_log)
-    mxcel(camera_log)
+    # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
+    camera_log=[6,1,None,False,None,None]
+    mget_frame()
+
 
 
     nlog("cdsの確認を開始します。")
-    sleep(2)
-    for i in range(10):
-        #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
-        cds_log=[-1,None,None,"high",None,None]
-        cds_log[1]=mget_time()
-        try:
-            cds.get_brightness()
-            cds_log[2]=cds.brightness
-        except:
-            tools[0]=False
-            import sys
-            sys.exit(1)
-        finally:
-            if len(cds.error_counts):
-                cds_log[4]=cds.error_log
-                if 5 in cds.error_counts:
-                    cds_log[3]="cds"          
+    #左から、フェーズ、時間、残り時間、明るさ、故障した部品、エラー文
+    cds_log=[-1,None,None,"high",None,None]
+    cds_log[1]=mget_time()
+    try:
+        cds.get_brightness()
+        cds_log[2]=cds.brightness
+    except:
+        nlog("cdsが使えないのでコードを停止します。")
+        tools[0]=False
+        import sys
+        sys.exit(1)
+    finally:
+        if len(cds.error_counts):
+            cds_log[4]=cds.error_log
+            if 5 in cds.error_counts:
+                cds_log[3]="cds"          
             rog(cds_log)
-
-        sleep(1)
-
     
     nlog("motorの確認を開始します")
-    sleep(2)
     mforward(5)
     mturn_left(5)
     mturn_right(5)
     mbackward(5)
     mstop()
-    sleep(2)
     
     nlog("servoの確認をします。")
-    sleep(2)
     
 
     #変更点 
     try:            
         servo.rotate()
-        
-        start_time=time()
-        while time()-start_time<srote_time:
-            now_time=time()
-            #左から、フェーズ、現在時間、残り時間
-            wait_log=[8,None,None]
-            jp_time=mget_time()
-            wait_log[1]=jp_time
-            wait_log[2]=int(srote_time-(now_time-start_time))
-            #xbeeで送信
-            mxbee_send(wait_log)
-            mxcel(wait_log)
-            keika=time()-now_time
-            if keika<2:
-                sleep(2-keika)
-        
+        sleep(5)
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
         import sys
@@ -507,6 +452,7 @@ try:
     try:
         servo.stop()
     except RuntimeError:
+        nlog("サーボモーターが使えなくなったため、コードを停止します。")
         tools[0]=False
         import sys
         sys.exit(1)
@@ -565,5 +511,5 @@ finally:
         import os
         os.system("sudo shutdown now")
     else:
-        nlog("全ての部品の確誋が終了しました。")
+        nlog("全ての部品の確認が終了しました。")
         nlog("待機モードに移ります。")
