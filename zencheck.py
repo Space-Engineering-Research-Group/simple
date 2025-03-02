@@ -160,25 +160,17 @@ try:
 
 
     def mxcel(data):
-        #フェーズ、故障した部品、エラー分
-        xcel_log = [11,None,[],None] #raspyのみ書く
         try:
-            xcel.main(data)
-        except RuntimeError:
+            xcel.xcel(data)
+        except Exception as e:
             tools[6]=False
-            import sys
-            sys.exit(1)
-        finally:
-            if len(xbee.error_counts):
-                xcel_log[2]=mget_time()
-                xcel_log[-1]=xbee.error_log
-                if 5 in xbee.error_counts:
-                    xcel_log[-2].append("xcel")
-                xbee.xbee_send(xcel_log)
+            xcel_log = [11,None,[],None]
+            print(f'xcel_error:{xcel_log}')
 
 
     def rog(log):
-        mxcel(log)
+        if tools[6]==True:
+            mxcel(log)
         print(log)
 
 
@@ -446,8 +438,7 @@ try:
             wait_log[1]=jp_time
             wait_log[2]=int(srote_time-(now_time-start_time))
             #xbeeで送信
-            mxbee_send(wait_log)
-            mxcel(wait_log)
+            rog(wait_log)
             keika=time()-now_time
             if keika<2:
                 sleep(2-keika)
@@ -519,7 +510,6 @@ finally:
     motors.release()
     gps.delete()
     camera.release()
-    xbee.delete()
 
     if False in tools:
         nlog("故障した部品があるため、ラズパイをシャットダウンさせます。")
