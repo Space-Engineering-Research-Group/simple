@@ -206,7 +206,8 @@ try:
             xcel.xcel(data)
         except Exception as e:
             tools[6]=False
-            print(e)
+            xcel_log = [11,None,[],None]
+            print(f'xcel_error:{xcel_log}')
 
     def rog(log):
         if tools[6]==True:
@@ -888,7 +889,7 @@ try:
                     gps_log[7]=gps.error_log
                     if 5 in gps.error_counts:
                         gps_log[6]="gps"  
-                mxcel(gps_log)   
+                rog(gps_log)   
 
         nlog("gps終了")        
         if plan2 == "B":
