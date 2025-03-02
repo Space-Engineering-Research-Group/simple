@@ -18,7 +18,6 @@ try:
     from gpiozero.pins.pigpio import PiGPIOFactory
     from cds import *
     from servo import *
-    from XB import *
     from raspberry_log import *
     from time import sleep,time
     from datetime import datetime, timedelta, timezone
@@ -395,8 +394,7 @@ try:
     judge=find_parachute(frame,lower_yellow,upper_yellow,parea_threshold,center,frame_area,0)
     camera.parachute_hozon(frame)
     camera_log[3]=judge
-    mxbee_send(camera_log)
-    mxcel(camera_log)
+    rog(camera_log)
 
 
     nlog("cdsの確認を開始します。")
