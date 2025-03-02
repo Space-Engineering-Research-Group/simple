@@ -317,7 +317,8 @@ try:
             return frame       
         except RuntimeError:
             tools[2]=False
-            raise RuntimeError
+            import sys
+            sys.exit(1)
         finally:
             if len(camera.error_counts):
                 camera_log[-1]=camera.error_log
@@ -360,7 +361,6 @@ try:
       
 
     nlog("カメラの確認を開始します")
-    sleep(2)
     for i in range(10):
         # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
         camera_log=[6,1,None,False,None,None]
