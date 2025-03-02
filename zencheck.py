@@ -440,8 +440,6 @@ try:
             sys.exit(1)
         finally:
             if len(gps.error_counts):
-                gps_log=get_distance(goal_lat, goal_lon, lat, lon)
-                gps_log[7]=gps.error_log
                 if 5 in gps.error_counts:
                     gps_log[6]="gps" 
                 rog(gps_log) 
@@ -465,9 +463,9 @@ finally:
 
     if False in tools:
         nlog("故障した部品があるため、ラズパイをシャットダウンさせます。")
-
+        xbee.delete()
         import os
         os.system("sudo shutdown now")
     else:
         nlog("全ての部品の確認が終了しました。")
-        nlog("待機モードに移ります。")
+        nlog("待機モードに移ります。")    
