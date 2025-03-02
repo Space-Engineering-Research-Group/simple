@@ -9,8 +9,8 @@
 #申し訳ございませんでした。
 
 #使う際
-# self.PORT = "COM9"
-#file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
+# self.PORT = "COM9" 73
+#file_path = r"C:/Users/ookam/OneDrive/log.xlsx" 494
 #を使うPCのPORTとPATHにする
 
 import xlwings as xw
@@ -70,7 +70,7 @@ import queue
 class Xbee():
     def __init__(self):
         # TODO: Replace with the serial port where your local module is connected to.
-        self.PORT = "COM9"
+        self.PORT = "COM6"
         # TODO: Replace with the baud rate of your local module.
         self.BAUD_RATE = 9600
 
@@ -491,8 +491,8 @@ try:
     i = 1
     print("インスタンス化が完了")
 
-    # file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
-    file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
+    file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
+    #file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
 
     app, workbook, sheet = xcel.open_workbook(file_path)
 
