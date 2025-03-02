@@ -6,7 +6,6 @@ try:
     from gpiozero.pins.pigpio import PiGPIOFactory
     from cds import *
     from servo import *
-    from XB import *
     from raspberry_log import *
     from time import sleep,time
     from datetime import datetime, timedelta, timezone
@@ -198,61 +197,21 @@ try:
 
 
     try:
-        xbee=XBee()
-    finally:
-        if len(xbee.error_counts)>0:
-            ins_error.append(xbee.error_log)
-            if 5 in xbee.error_counts:
-                ins_error_tool.append("xbee")
-                tools[5]=False
-
-    try:
         xcel = Xcel() #deleteの時に使う
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
 
     def mxcel(data):
-        #フェーズ、故障した部品、エラー分
-        xcel_log = [11,None,[],None] #raspyのみ書く
         try:
             xcel.xcel(data)
-        except RuntimeError:
+        except Exception as e:
             tools[6]=False
-            import sys
-            sys.exit(1)
-        finally:
-            if len(xbee.error_counts):
-                xcel_log[2]=mget_time()
-                xcel_log[-1]=xbee.error_log
-                if 5 in xbee.error_counts:
-                    xcel_log[-2].append("xcel")
-                xbee.send(xcel_log)
-
-    def mxbee_send(data):
-        #フェーズ、故障した部品、エラー分
-        xbee_log = [12,None,[],None] #raspyのみ書く
-        try:
-            xbee.send(data)
-        except RuntimeError:
-            tools[5]=False
-        finally:
-            if len(xbee.error_counts):
-                xbee_log[2]=mget_time()
-                xbee_log[-1]=xbee.error_log
-                if 5 in xbee.error_counts:
-                    xbee_log[-2].appned("xbee")
-                mxcel(xbee_log)    
+            print(e)
 
     def rog(log):
-        if tools[5] and tools[6]:
-            mxbee_send(log)
+        if tools[6]==True:
             mxcel(log)
-        elif tools[5]:
-            mxbee_send(log)
-        elif tools[6]:
-            mxcel(log)
-        else:
-            pass
+        print(log)
 
 
     #ここで、ログを送信する
@@ -929,7 +888,6 @@ try:
                     gps_log[7]=gps.error_log
                     if 5 in gps.error_counts:
                         gps_log[6]="gps"  
-                mxbee_send(gps_log)
                 mxcel(gps_log)   
 
         nlog("gps終了")        
