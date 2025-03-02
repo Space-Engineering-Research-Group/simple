@@ -5,6 +5,7 @@ try:
     from motor import *
     from gpiozero.pins.pigpio import PiGPIOFactory
     from cds import *
+    from XB import *
     from servo import *
     from raspberry_log import *
     from time import sleep,time
@@ -195,6 +196,14 @@ try:
                 tools[3]=False
 
 
+    try:
+        xbee=XBee()
+    finally:
+        if len(xbee.error_counts)>0:
+            ins_error.append(xbee.error_log)
+            if 5 in xbee.error_counts:
+                ins_error_tool.append("xbee")
+                tools[5]=False
 
     try:
         xcel = Xcel() #deleteの時に使う
@@ -202,16 +211,36 @@ try:
         tools[6]=False #ここの部分は要検討
 
     def mxcel(data):
+        #フェーズ、故障した部品、エラー分
+        xcel_log = [11,None,None] #raspyのみ書く
         try:
             xcel.xcel(data)
-        except Exception as e:
+        except RuntimeError as e:
             tools[6]=False
-            xcel_log = [11,None,[],None]
+            xcel_log[1]='csvファイル'
+            xcel_log[2]=e
+            xbee.send(xcel_log) 
             print(f'xcel_error:{xcel_log}')
+            import sys
+            sys.exit(1)  
+
+    def mxbee_send(data):
+        #フェーズ、故障した部品、エラー分
+        xbee_log = [12,None,None] #raspyのみ書く
+        try:
+            xbee.send(data)
+        except RuntimeError:
+            tools[5]=False
+        finally:
+            if len(xbee.error_counts):
+                xbee_log[2]=mget_time()
+                xbee_log[-1]=xbee.error_log
+                if 5 in xbee.error_counts:
+                    xbee_log[-2].appned("xbee")
+                mxcel(xbee_log)          
 
     def rog(log):
-        if tools[6]==True:
-            mxcel(log)
+        mxcel(log)
         print(log)
 
 
@@ -1019,3 +1048,5 @@ finally:
     motors.release()
     gps.delete()
     camera.release()
+    data=[9,'プログラムが終了しました']
+    mxbee_send(data)
