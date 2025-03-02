@@ -76,7 +76,7 @@ try:
                 tools[4]=False
     
     #サーボモーターが回転する時間
-    srote_time=10
+    srote_time=60
 
     try:
         gps=Gps()
@@ -139,6 +139,12 @@ try:
     ldir_1=23
     ldir_2=24
     lPWM=18
+    #機体の回転速度208度/s
+    turn_speed=208
+    #機体の前進速度20cm/s
+    go_speed=20
+    #９０度回転するときの待機時間
+    sttime_90=90/turn_speed
 
     try:
         motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory)
@@ -177,11 +183,6 @@ try:
     #ここで、ログを送信する
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
     rog(ins_log)       
-
-    if False in tools:
-        import sys
-        sys.exit(1)
-
 
     def nlog(ward):
         notice_log=[9,ward]
@@ -309,14 +310,14 @@ try:
                 rog(motor_log)
 
 
+
     def mget_frame():
         try:
             frame=camera.get_frame()
             return frame       
         except RuntimeError:
             tools[2]=False
-            import sys
-            sys.exit(1)
+            raise RuntimeError
         finally:
             if len(camera.error_counts):
                 camera_log[-1]=camera.error_log
@@ -338,8 +339,7 @@ try:
             return lat,lon
         except RuntimeError:
             tools[1]=False
-            import sys
-            sys.exit(1)
+            raise RuntimeError
         finally:
             if len(gps.error_counts):
                 gps_log[7]=gps.error_log
@@ -349,14 +349,14 @@ try:
 
     def m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon):
         #左からフェーズ、フェーズの分割番号、時間、進行方向、回転角度
-        gps_log = [5,1,None,None,None,None]
+        gps_log = [5,2,None,None,None,None]
         gps_log[2]=mget_time()
-        move_direction = gps.move_direction(pre_lat,pre_lon,now_lat,now_lon)
-        get_rotation_angle = get_rotation_angle(pre_lat,pre_lon,now_lat,now_lon,move_direction)   
-        gps_log[3] = move_direction
-        gps_log[4] = get_rotation_angle  
+        m_d = move_direction(pre_lat,pre_lon,now_lat,now_lon)
+        g_r = get_rotation_angle(goal_lat,goal_lon,now_lat,now_lon,m_d)   
+        gps_log[3] = m_d
+        gps_log[4] = g_r  
         rog(gps_log)
-        return get_rotation_angle       
+        return g_r          
       
 
     nlog("カメラの確認を開始します")
