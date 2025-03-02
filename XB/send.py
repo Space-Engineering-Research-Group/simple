@@ -36,7 +36,6 @@ class XBee(IXBee):
                 self.xbee_network = self.device.get_network()
                 self.remote_device = self.xbee_network.discover_device(self.REMOTE_NODE_ID)
                 if self.remote_device is None:
-                    print("Could not find the remote device")
                     raise Exception #ここは実験によって変えていく
                 
                 self.a = 0
@@ -58,10 +57,6 @@ class XBee(IXBee):
             sleep(1)    
 
     def send(self,DATA_TO_SEND):
-        print(" +--------------------------------------+")
-        print(" | XBee Python Library Send Data Sample |")
-        print(" +--------------------------------------+\n")
-
         self.error_counts = []
         self.error_messages = []
         self.error_log = "xbee Error Log"
@@ -70,17 +65,14 @@ class XBee(IXBee):
         while True:
             try: 
                 data = ",".join(map(str, DATA_TO_SEND)) 
-                print("Sending data to %s >> %s..." % (self.remote_device.get_64bit_addr(), DATA_TO_SEND))
                 self.device.send_data(self.remote_device, data)
 
-                print("Success")
                 self.a = 0
                 break
 
             except Exception as e:
                 error = f"Failed to send the XBee:---etail{e}"
                 self.handle_error(error)    
-                print(e)
             
             finally:
                     if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:
