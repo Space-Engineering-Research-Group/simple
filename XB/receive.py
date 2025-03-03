@@ -1,8 +1,13 @@
 #使う際
-# self.PORT = "COM6" 73    デバイスマネージャーの、ポートからチェック　
-#file_path = r"C:/Users/ookam/OneDrive/log.xlsx" 494 を#はるとのパスにする
+#行68
+# self.PORT = "COM6"   デバイスマネージャーの、ポートからチェック　
+
+#行490
+#file_path = r"C:/Users/ookam/OneDrive/log.xlsx" を#はるとのパスにする
 #を使うPCのPORTとPATHにする
+
 #word参照
+#これはPCで実行する
 
 import xlwings as xw
 import os
@@ -483,9 +488,9 @@ try:
     i = 1
     print("インスタンス化が完了")
     #はるとのパス
-    # file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
+    file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
     #ゆうまのパス
-    file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
+    # file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
 
     app, workbook, sheet = xcel.open_workbook(file_path)
 
