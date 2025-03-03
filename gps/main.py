@@ -217,6 +217,7 @@ class Gps(IGps):
         self.error_messages=[]
         self.error_log="gps Error Log"
         self.a=1
+        self.ini=False
         while True:
             self.sentence = None
         

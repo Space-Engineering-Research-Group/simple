@@ -61,6 +61,7 @@ class XBee(IXBee):
         self.error_messages = []
         self.error_log = "xbee Error Log"
         self.a = 1
+        self.ini=False
 
         while True:
             try: 
