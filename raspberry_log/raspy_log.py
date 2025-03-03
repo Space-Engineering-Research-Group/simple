@@ -6,7 +6,8 @@ class Xcel:
     def __init__(self):
         self.file = None
         self.writer = None
-        self.current_phase = None  # 現在のフェーズを追跡
+        self.current_phase = None # 現在のフェーズを追跡
+        self.current_phase_in = None # 現在のフェーズ中のフェーズを追跡
         self.file_path = r"/home/uchu/rog.csv"
 
     def open_workbook(self):
@@ -62,8 +63,14 @@ class Xcel:
             self.open_workbook()
         
         # フェーズが変わった場合のみヘッダーを書き込み
-        if data[0] != self.current_phase:
-            self.write_header(data)
-            self.current_phase = data[0]
+        if data[0] in [4,5,6]:
+            if data[1] != self.current_phase_in:
+                self.write_header(data)
+                self.current_phase_in = data[1]
+
+        else:
+            if data[0] != self.current_phase:
+                self.write_header(data)
+                self.current_phase = data[0]
 
         self.writer.writerow(data)    
