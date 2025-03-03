@@ -114,7 +114,7 @@ class Xbee():
             if device is not None and device.is_open():
                 device.close()   
 
-def is_row_empty(sheet, col_letter):
+def is_row_empty(sheet, num):
     print("空列判定")
     col_values = sheet.range(num,1).value
     print("col_values:")
@@ -125,6 +125,7 @@ def is_row_empty(sheet, col_letter):
         print(col_values)
         print("今から書く列は空白ではない")
         return False
+    
 def feeds_2(sheet,data,num):
     #最初num = 7 
     num_list = []
