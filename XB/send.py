@@ -2,6 +2,7 @@ from digi.xbee.devices import XBeeDevice
 import abc
 from time import sleep,time
 
+
 class IXBee(abc.ABC):
     @abc.abstractmethod
     def send(self):
@@ -43,9 +44,11 @@ class XBee(IXBee):
 
             except Exception as e:
                 # その他のエラー（MicropyGPS の初期化エラーなど）
+                print(e)
                 self.delete()
                 error = f"Failed to _init_ the XBee:--detail{e}"
                 self.handle_error(error)
+                print(error)
                                     #micropyGPS の設定やデータ受信に問題がある
                         
             finally:
@@ -64,16 +67,16 @@ class XBee(IXBee):
         self.ini=False
 
         while True:
-            try: 
+            try:    
                 data = ",".join(map(str, DATA_TO_SEND)) 
                 self.device.send_data(self.remote_device, data)
-
                 self.a = 0
                 break
 
             except Exception as e:
                 error = f"Failed to send the XBee:---etail{e}"
                 self.handle_error(error)    
+                print(xbee.error_messages)
             
             finally:
                     if (len(self.error_messages) and self.a == 0) or 5 in self.error_counts:

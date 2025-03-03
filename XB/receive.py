@@ -1,17 +1,8 @@
-
-
-#初めに。
-#謝罪があります。
-#なぜだか知らないが、どうしても、各ディレクトリに分けて、
-#大きなmain文で参照していきながら実行していくという形を取ろうとしても（simple/main.pyみたいなやつ）
-#できないので、一つのファイルに、すべてを書きます
-#とても見にくいと思いますが、ご了承ください
-#申し訳ございませんでした。
-
 #使う際
-# self.PORT = "COM9" 73
-#file_path = r"C:/Users/ookam/OneDrive/log.xlsx" 494
+# self.PORT = "COM6" 73    デバイスマネージャーの、ポートからチェック　
+#file_path = r"C:/Users/ookam/OneDrive/log.xlsx" 494 を#はるとのパスにする
 #を使うPCのPORTとPATHにする
+#word参照
 
 import xlwings as xw
 import os
@@ -70,7 +61,7 @@ import queue
 class Xbee():
     def __init__(self):
         # TODO: Replace with the serial port where your local module is connected to.
-        self.PORT = "COM6"
+        self.PORT = "COM9"
         # TODO: Replace with the baud rate of your local module.
         self.BAUD_RATE = 9600
 
@@ -491,9 +482,10 @@ try:
      #初めのfeeds
     i = 1
     print("インスタンス化が完了")
-
-    file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
-    #file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
+    #はるとのパス
+    # file_path = r"C:/Users/pekko/OneDrive/ドキュメント/rog.xlsx"
+    #ゆうまのパス
+    file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
 
     app, workbook, sheet = xcel.open_workbook(file_path)
 
@@ -517,7 +509,6 @@ while True:
             print("Excelが開かれています。")
             pass    
 
-        print(i)
         if data[0] != i:
             num += 2
             print("切り替わる")#以下の判断で使うため、ここになる   
