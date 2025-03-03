@@ -397,6 +397,7 @@ try:
         
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
+        tools[4]=False
         import sys
         sys.exit(1)
     finally:
@@ -411,7 +412,8 @@ try:
     try:
         servo.stop()
     except RuntimeError:
-        tools[0]=False
+        nlog("サーボモーターが使えなくなったため、コードを停止します。")
+        tools[4]=False
         import sys
         sys.exit(1)
     finally:
