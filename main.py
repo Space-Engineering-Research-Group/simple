@@ -242,6 +242,9 @@ try:
                 mxcel(xbee_log)          
 
     def rog(log):
+        if log[0]==10:
+            if log[2]==[]: #空のリストだったら送れないから、Noneにする
+                log[2]=None
         mxcel(log)
         print(log)
 
