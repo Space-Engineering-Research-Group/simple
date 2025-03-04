@@ -448,9 +448,8 @@ try:
         return g_r             
 
 
-
-    nxbee_log("箱入れ待機時間")        
     nlog("箱入れ待機時間")
+    nxbee_log("箱入れ待機時間")        
 
 
     #箱に入れるまでの時間を仮に一分と置き、その間ずっと明るさを取得して、xbeeで送るようにする。
@@ -856,7 +855,7 @@ try:
                             mstop()
                             mforward(go_time_5_4)
                             mstop()
-                            nlog("スタックしたので後進して前進した")  
+                            nlog(f"進まなかったので後進して前進した(スタック{stack_count}回目)")  
 
                             now_lat,now_lon = m5get_coodinate_xy()
 
@@ -878,7 +877,7 @@ try:
                             nlog("距離が2m以内")
 
                             if plan2 == "B": 
-                                nlog("planBより以下を行う")
+                                nlog("planBよりもう一度ゴールとの距離を測定")
                                 #カメラが壊れていた場合
                                 #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
                                 try:
@@ -914,7 +913,7 @@ try:
                                     
 
                                 if distance<=B_x2:#適当、必要に応じて変える
-                                    nlog("しかも距離が0.5m以内なのでgps終了")
+                                    nlog("距離が0.5m以内なのでgps終了")
                                     nxbee_log('プランBかつ距離が0.5m以内なのでgps終了')
                                     gps_seikou=True
                                     break
