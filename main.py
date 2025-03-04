@@ -231,6 +231,7 @@ try:
         xbee_log = [12,None,None] #raspyのみ書く
         try:
             xbee.send(data)
+            sleep(7)
         except RuntimeError:
             tools[5]=False
         finally:
@@ -245,15 +246,20 @@ try:
         mxcel(log)
         print(log)
 
-
+    
     #ここで、ログを送信する
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
     rog(ins_log)   
+    mxbee_send(ins_log)
 
 
     def nlog(ward):
         notice_log=[9,ward]
         rog(notice_log)
+
+    def nxbee_log(ward):
+        notice_log=[9,ward]
+        mxbee_send(notice_log)
       
 
     def mforward(wait_time):
@@ -440,8 +446,7 @@ try:
 
 
 
-                    
-
+    nxbee_log("箱入れ待機時間")        
     nlog("箱入れ待機時間")
 
 
@@ -477,6 +482,7 @@ try:
             
             if p==10:
                 nlog("箱に入ったことを認識しました。")
+                nxbee_log("箱に入ったことを認識しました。")
                 break
             keika=time()-now_time
             if keika<2:
@@ -485,6 +491,7 @@ try:
     start_time=time()
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
+        nxbee_log("cdsを用いた落下判定を開始します。")
         p=0
         while True:
             #左からフェーズ、時間、明るさ、明るさの評価、使えない部品、エラー文
@@ -492,6 +499,7 @@ try:
             now_time=time()
             if now_time-start_time>=land_time:
                 nlog("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
+                nxbee_log("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
                 break
             try:            
                 jp_time=mget_time()
@@ -518,6 +526,7 @@ try:
             if p==3:
                 fall_start_time=time()
                 nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
+                nxbee_log("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
                 while time()-fall_start_time<fall_time:
                     now_time=time()
                     #左からフェーズ、時間、残り時間
@@ -531,6 +540,7 @@ try:
                     if keika<2:
                         sleep(2-keika)
                 nlog("１分経過したため着地したと判定")
+                nxbee_log("１分経過したため着地したと判定")
                 break
 
             keika=time()-now_time
@@ -540,6 +550,7 @@ try:
         
     if tools[0]==False:
         nlog("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
+        nxbee_log("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
         while time()-start_time<land_time:
             #左からフェーズ、時間、残り時間
             time_log=[8,None,None]
@@ -553,12 +564,15 @@ try:
             if keika<2:
                 sleep(2-keika)
         nlog("起動から８分間経過したため、着地したとみなす。")
+        nxbee_log("起動から８分間経過したため、着地したとみなす。")
                 
                 
     if tools[4]==True:
         nlog("サーボモーターを用いてパラシュートの切り離しを行います。")
+        nxbee_log("サーボモーターを用いてパラシュートの切り離しを行います。")
     else:
-        nlog("サーボモーターが使えないため、コードを停止します。")      
+        nlog("サーボモーターが使えないため、コードを停止します。")     
+        nxbee_log("サーボモーターが使えないため、コードを停止します。") 
         import sys
         sys.exit(1)
 
@@ -582,6 +596,7 @@ try:
         
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
+        nxbee_log("サーボモーターが使えなくなったため、コードを停止します。")
         import sys
         sys.exit(1)
     finally:
@@ -607,15 +622,19 @@ try:
             rog(servo_log)
 
     nlog("パラシュートの切り離しを行いました。")
+    nxbee_log("パラシュートの切り離しを行いました。")
 
     if tools[3]==False:
         nlog("モーターが使えないため処理を停止します")
+        nxbee_log("モーターが使えないため処理を停止します")
         import sys
         sys.exit(1)
 
     if tools[2]==True and tools[1]==True:
         p=0
         try:
+            nxbee_log("パラシュートの回避を行います。")
+            nlog("パラシュートの回避を行います。")
             
             nlog("現在地の緯度経度を取得")
 
@@ -707,6 +726,9 @@ try:
             mforward(go_time_4_4)
             mstop()
 
+            nlog("パラシュートの回避が終わりました。")
+            nxbee_log("パラシュートの回避が終わりました。")
+
         except RuntimeError:
             pass   
 
@@ -714,11 +736,14 @@ try:
     if tools[2]==False:
         if tools[1]==True:
             nlog("カメラが使えないので、パラシュートの回避を実行しません")
+            nxbee_log("カメラが使えないので、パラシュートの回避を実行しません")
         else:
             nlog("カメラとgpsが使えないので、パラシュートの回避を実行しません")
+            nxbee_log("カメラとgpsが使えないので、パラシュートの回避を実行しません")
     else:
         if tools[1]==False:
             nlog("gpsが使えないので、パラシュートの回避を実行しません")
+            nxbee_log("gpsが使えないので、パラシュートの回避を実行しません")
 
 
 
@@ -726,27 +751,36 @@ try:
     gps_seikou=False
     cone_result=False
     while True:
+        nlog("コーンへの接近を行います。")
+        nxbee_log("コーンへの接近を行います。")
         if tools[1] is False:
             if tools[2] is True:
                 plan2="C"
                 nlog("GPSが使えないため、プランcです。")
+                nxbee_log("GPSが使えないため、プランcです。")
             else:
                 plan2="D"
                 nlog("カメラとGPS両方使えないため、プログラムを停止します。")
+                nxbee_log("カメラとGPS両方使えないため、プログラムを停止します。")
                 import sys
                 sys.exit(1)
         else:
             if tools[2] is False:
                 plan2="B"
                 nlog("カメラが使えないため、プランbです。")
+                nxbee_log("カメラが使えないため、プランbです。")
         
     #gps
 
 
         if plan2 in ["A","B"]:
+            nlog('gps開始')
+            nxbee_log('gps開始')
+            
             try:
                 while True:
                     #最初の緯度経度の取得は特別なので、関数化しない
+                    nlog('最初の緯度経度の取得を行う')
                     #フェーズ、フェーズの中のフェーズ、時間、緯度、経度,ゴールまでの距離,進行方向、回転角度、故障した部品、エラー文
                     gps_log = [5,0,None,None,None,None,None,None,None,None,None,None]
                     try: #nowlot,nowlat はfeeds4のときの緯度経度
@@ -785,7 +819,8 @@ try:
                             mforward(go_time_5_4)
                             mstop()
                             gps_seikou=True
-                            nlog("始めからコーンが近いので成功")
+                            nlog("始めからコーンが近いのでgps終了")
+                            nxbee_log('初めからコーンが近いのでgps終了')
                             break
                             
                         else:
@@ -808,6 +843,7 @@ try:
                             stack_count+=1
                             if stack_count==5:#必要に応じて増やす
                                 nlog("スタック5回目なので強制終了")
+                                nxbee_log("スタック5回目なので強制終了")
                                 import sys
                                 sys.exit(1)
 
@@ -830,7 +866,8 @@ try:
                             mforward(go_time_5_4)
                             mstop()
                             if plan2 == "A":
-                                nlog('planAより成功')
+                                nlog('planAよりgps終了')
+                                nxbee_log("プランAかつ距離が4m以内なのでgps終了")
                                 gps_seikou=True
                                 break
                             
@@ -864,6 +901,7 @@ try:
 
                                 except Exception :
                                     tools[1]=False
+                                    raise RuntimeError
                                 finally:
                                     if len(gps.error_counts):
                                         gps_log[7]=gps.error_log
@@ -873,7 +911,8 @@ try:
                                     
 
                                 if distance<=B_x2:#適当、必要に応じて変える
-                                    nlog("しかも距離が0.5m以内なので成功")
+                                    nlog("しかも距離が0.5m以内なのでgps終了")
+                                    nxbee_log('プランBかつ距離が0.5m以内なのでgps終了')
                                     gps_seikou=True
                                     break
                                     #成功したことを送る
@@ -888,11 +927,13 @@ try:
                                 mforward(go_dis_5_2) #1/208の単位と、2m移動にかかる時間計算
                                 mstop()
                                 nlog("2m進んだので成功")
+                                nxbee_log("プランBかつ距離が2m以内なので、2m進んでgps終了")
                                 gps_seikou=True
                                 break
 
                             else:#not B
                                 nlog("planAより成功")
+                                nxbee_log('プランAかつ距離が2m以内なのでgps終了')
                                 gps_seikou=True
                                 break
 
@@ -914,15 +955,10 @@ try:
                     break        
             
             except Exception :
-                tools[1]=False
-            finally:
-                if len(gps.error_counts):
-                    gps_log[7]=gps.error_log
-                    if 5 in gps.error_counts:
-                        gps_log[6]="gps"  
-                rog(gps_log)   
+                continue
 
-        nlog("gps終了")        
+        nlog("gps終了")   
+        nxbee_log("gps終了")     
         if plan2 == "B":
             break       
         
@@ -932,6 +968,8 @@ try:
             #ここに、回転を行うコードを書く
 
         if plan2 in ["A","C"]:
+            nlog("コーンによる接近を行う")
+            nxbee_log("コーンによる接近を行う")
             try:
                 while True:
                     if kazu == 1:
@@ -1037,6 +1075,7 @@ try:
                     if kazu==3:
                         #ここで終了したことを送る。
                         nlog("コーンに到着しました。")
+                        nxbee_log("コーンに到着しました。")
                         break
             
 
@@ -1050,5 +1089,4 @@ finally:
     motors.release()
     gps.delete()
     camera.release()
-    data=[9,'プログラムが終了しました']
-    mxbee_send(data)
+    nxbee_log("プログラムが終了しました。")
