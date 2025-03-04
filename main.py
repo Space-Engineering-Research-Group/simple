@@ -278,6 +278,8 @@ try:
                 sleep(wait_time)
         except RuntimeError:
             tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -303,6 +305,8 @@ try:
                 sleep(wait_time)
         except RuntimeError:
             tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -328,6 +332,8 @@ try:
                 sleep(wait_time)
         except RuntimeError:
             tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -354,6 +360,8 @@ try:
                 sleep(wait_time)
         except RuntimeError:
             tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -373,6 +381,8 @@ try:
             nlog("モーターの回転を止めました。")
         except RuntimeError:
             tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
