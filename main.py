@@ -842,14 +842,17 @@ try:
                             break
                             
                         else:
-                            nlog("コーンが遠いので前進")
                             mforward(go_time_5_5)
                             mstop()      
+                            nlog("コーンが遠いので前進")
+                            break
 
                     stack_count = 0
                     p=0
 
                     #loop started
+                    pre_lat=now_lat
+                    pre_lon=now_lon
                     now_lat,now_lon = m5get_coodinate_xy() 
                     while True:
                         p+=1
@@ -866,18 +869,16 @@ try:
                                 sys.exit(1)
 
                             mbackward(go_time_5_4)
-                            mstop()
                             mturn_left(sttime_90)  
-                            mstop()
                             mforward(go_time_5_4)
                             mstop()
                             nlog(f"進まなかったので後進して左回転して前進した(スタック{stack_count}回目)")  
 
                             now_lat,now_lon = m5get_coodinate_xy()
 
-                        #judge
-                        distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)     
-                        
+                            #judge
+                            distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)     
+                            
                         
                         if distance<=A_x and distance>B_x:
                             nlog("距離が4m以内")
@@ -941,7 +942,6 @@ try:
                                 else:
                                     z_rot = abs(rotation_angle)   
                                     mturn_left(z_rot/ turn_speed) 
-                                mstop()
                                 mforward(go_dis_5_2) #1/208の単位と、2m移動にかかる時間計算
                                 mstop()
                                 nlog("2m進んだので成功")
@@ -963,7 +963,6 @@ try:
                             z_rot = abs(rotation_angle)    
                             mturn_left(z_rot/turn_speed)
 
-                        mstop()
                         mforward(go_dis_5_4)#この4秒は適当　あとで計算
                         mstop()
                         nlog("距離が4m以上。前進してやり直し")

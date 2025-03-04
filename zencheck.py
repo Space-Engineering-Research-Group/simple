@@ -126,9 +126,6 @@ try:
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
     rog(ins_log)       
 
-    if False in tools:
-        import sys
-        sys.exit(1)
 
     def nlog(ward):
         notice_log=[9,ward]
