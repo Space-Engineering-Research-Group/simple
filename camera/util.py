@@ -51,7 +51,7 @@ def judge_cone(contour,frame_area,pettern=0):
     
     area=cv2.contourArea(contour)
 
-    raito=(area/frame_area)
+    raito=area/frame_area
 
     if pettern==0:
         #個々の値も適当
