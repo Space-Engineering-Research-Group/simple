@@ -91,10 +91,10 @@ try:
             tools[6]=False
             xcel_log[1]='csvファイル'
             xcel_log[2]=e
-            xbee.send(xcel_log) 
-            print(f'xcel_error:{xcel_log}')
-            import sys
-            sys.exit(1)  
+
+            if tools[5]==True:
+                xbee.send(xcel_log) 
+            print(f'xcel_error:{xcel_log}') 
 
     def mxbee_send(data):
         #フェーズ、故障した部品、エラー分
@@ -109,12 +109,15 @@ try:
                 xbee_log[-1]=xbee.error_log
                 if 5 in xbee.error_counts:
                     xbee_log[-2].appned("xbee")
-                mxcel(xbee_log)          
+                if tools[6]==True:
+                    mxcel(xbee_log)          
 
 
     def rog(log):
-        mxbee_send(log)
-        mxcel(log)
+        if tools[5]==True:
+            mxbee_send(log)
+        if tools[6]==True:
+            mxcel(log)
         print(log)
         sleep(7)
 
@@ -130,9 +133,6 @@ try:
     def nlog(ward):
         notice_log=[9,ward]
         rog(notice_log)
-      
-         
-
 
 
     nlog("GPSの確認を開始します。")
@@ -163,11 +163,8 @@ finally:
     gps.delete()
 
     if False in tools:
-        nlog("故障した部品があるため、ラズパイをシャットダウンさせます。")
-        xbee.delete()
-        import os
-        os.system("sudo shutdown now")
+        nlog("故障した部品があります。")
     else:
         nlog("全ての部品の確認が終了しました。")
-        nlog("待機モードに移ります。")    
-        xbee.delete()
+    nlog("待機モードに移ります。")    
+    xbee.delete()
