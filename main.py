@@ -855,7 +855,7 @@ try:
                             mstop()
                             mforward(go_time_5_4)
                             mstop()
-                            nlog(f"進まなかったので後進して前進した(スタック{stack_count}回目)")  
+                            nlog(f"進まなかったので後進して左回転して前進した(スタック{stack_count}回目)")  
 
                             now_lat,now_lon = m5get_coodinate_xy()
 
