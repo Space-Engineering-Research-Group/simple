@@ -8,7 +8,7 @@ class Xcel:
         self.writer = None
         self.current_phase = None # 現在のフェーズを追跡
         self.current_phase_in = None # 現在のフェーズ中のフェーズを追跡
-        self.file_path = r"/home/uchu/rog.csv"
+        self.file_path = r"/home/spacelab/rog.csv"
 
     def open_workbook(self):
         try:
