@@ -155,7 +155,9 @@ try:
 
     rog(gps_log)
     nlog('gps取得しました')
+    
        
+
 
 finally:        
     gps.delete()
