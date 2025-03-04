@@ -142,6 +142,7 @@ try:
                 gps_log[3]=lat
                 gps_log=[4]=lon
                 break
+            sleep(20)
         except RuntimeError:
             tools[1]=False
             import sys

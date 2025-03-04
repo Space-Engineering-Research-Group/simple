@@ -152,7 +152,7 @@ try:
     go_dis_4_4=200
     go_time_4_4=go_dis_4_4/go_speed
 
-    #フェーズ5、前進するときの距離,回転角度と、回転時間を定義
+    #フェーズ5、前進するときの距離,回転角度と、回転時間を定義 2mずつ進むとする
     roteangle_5=90
     sttime_5=roteangle_5/turn_speed
 
@@ -164,6 +164,9 @@ try:
 
     go_dis_5_5=500
     go_time_5_5=go_dis_5_5/go_speed
+
+    go_dis_5_gosa=0                      #←測る
+    go_time_5_gosa=go_dis_5_gosa/go_speed
 
 
     #フェーズ６、kazu=1のときの回転角度と、回転時間を定義
@@ -827,6 +830,13 @@ try:
                     distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
 
                     if plan2 == "A":
+                        rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                        if rotation_angle > 0:
+                            mturn_right(rotation_angle/turn_speed)  
+                        else:
+                            z_rot = abs(rotation_angle)    
+                            mturn_left(z_rot/turn_speed)
+
                         if distance<=A_x:
                             mforward(go_time_5_4)
                             mstop()
@@ -876,6 +886,12 @@ try:
                         
                         if distance<=A_x and distance>B_x:
                             nlog("距離が4m以内")
+                            rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                            if rotation_angle > 0:
+                                mturn_right(rotation_angle/turn_speed)  
+                            else:
+                                z_rot = abs(rotation_angle)    
+                                mturn_left(z_rot/turn_speed)
                             mforward(go_time_5_4)
                             mstop()
                             if plan2 == "A":
@@ -957,7 +973,7 @@ try:
                             z_rot = abs(rotation_angle)    
                             mturn_left(z_rot/turn_speed)
 
-                        mforward(go_dis_5_4)#この4秒は適当　あとで計算
+                        mforward(go_dis_5_2)
                         mstop()
                         nlog("距離が4m以上。前進してやり直し")
                         pre_lat=now_lat
