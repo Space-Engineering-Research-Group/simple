@@ -503,6 +503,12 @@ try:
             if keika<2:
                 sleep(2-keika)
 
+    if tools[0]==False:
+        nlog("cdsが使えないため処理を終了します。")
+        nxbee_log("cdsが使えないため処理を終了します。")
+        import sys
+        sys.exit(1)
+
     start_time=time()
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
@@ -995,8 +1001,8 @@ try:
             #ここに、回転を行うコードを書く
 
         if plan2 in ["A","C"]:
-            nlog("コーンによる接近を行う")
-            nxbee_log("コーンによる接近を行う")
+            nlog("カメラによる接近を行う")
+            nxbee_log("カメラによる接近を行う")
             try:
                 while True:
                     if kazu == 1:
