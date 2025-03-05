@@ -131,9 +131,9 @@ try:
     ldir_2=24
     lPWM=18
     #機体の回転速度208度/s
-    turn_speed=208
+    turn_speed=36
     #機体の前進速度20cm/s
-    go_speed=20
+    go_speed=6
     #９０度回転するときの待機時間
     sttime_90=90/turn_speed
     
@@ -160,7 +160,7 @@ try:
     go_time_5_2=go_dis_5_2/go_speed
 
     go_dis_5_4=400
-    go_time_5_4=go_dis_5_4/go_speed
+    go_time_5_4=go_dis_5_4/go_speed #兼進む距離
 
     go_dis_5_5=500
     go_time_5_5=go_dis_5_5/go_speed
