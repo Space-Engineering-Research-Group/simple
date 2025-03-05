@@ -166,7 +166,6 @@ class Gps(IGps):
                     latlist.append(self.latitude)
                     lonlist.append(self.longitude)
                     q+=1
-                    print('owaru')
      
             ave_lat = sum(latlist) / len(latlist)
             ave_lon = sum(lonlist) / len(lonlist)

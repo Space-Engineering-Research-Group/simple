@@ -835,27 +835,25 @@ try:
                         #初めからコーンが近い場合の処理     
                     distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
 
-                    if plan2 == "A":
-                        rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
-                        if rotation_angle > 0:
-                            mturn_right(rotation_angle/turn_speed)  
-                        else:
-                            z_rot = abs(rotation_angle)    
-                            mturn_left(z_rot/turn_speed)
+                    rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                    if rotation_angle > 0:
+                        mturn_right(rotation_angle/turn_speed)  
+                    else:
+                        z_rot = abs(rotation_angle)    
+                        mturn_left(z_rot/turn_speed)
 
-                        if distance<=A_x:
-                            mforward(go_time_5_4)
-                            mstop()
-                            gps_seikou=True
-                            nlog("始めからコーンが近いのでgps終了")
-                            nxbee_log('初めからコーンが近いのでgps終了')
-                            break
-                            
-                        else:
-                            mforward(go_time_5_5)
-                            mstop()      
-                            nlog("コーンが遠いので前進")
-                            break
+                    if distance<=A_x:
+                        mforward(go_time_5_4)
+                        mstop()
+                        gps_seikou=True
+                        nlog("始めからコーンが近いのでgps終了")
+                        nxbee_log('初めからコーンが近いのでgps終了')
+                        break
+                        
+                    else:
+                        mforward(go_time_5_5)
+                        mstop()      
+                        nlog("コーンが遠いので前進")
 
                     stack_count = 0
                     p=0
@@ -892,27 +890,12 @@ try:
                         
                         if distance<=A_x and distance>B_x:
                             nlog("距離が4m以内")
-                            rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
-                            if rotation_angle > 0:
-                                mturn_right(rotation_angle/turn_speed)  
-                            else:
-                                z_rot = abs(rotation_angle)    
-                                mturn_left(z_rot/turn_speed)
-                            mforward(go_time_5_4)
-                            mstop()
-                            if plan2 == "A":
-                                nlog('planAよりgps終了')
-                                nxbee_log("プランAかつ距離が4m以内なのでgps終了")
-                                gps_seikou=True
+                            if plan2=="A":
+                                nlog("planAかつ距離が4m以内なので終了")
+                                nxbee_log("planAかつ距離が4m以内なので終了")
+                                mstop()
                                 break
-                            
-                        if distance<=B_x and distance>s_x:
-                            nlog("距離が2m以内")
-
-                            if plan2 == "B": 
-                                nlog("planBよりもう一度ゴールとの距離を測定")
-                                #カメラが壊れていた場合
-                                #左からフェーズ、フェーズの分割番号、時間、緯度、経度,ゴールまでの距離、故障した部品、エラー文
+                            else:
                                 try:
                                     gps_log= [5,1,None,None,None,None,None,None]
                             
@@ -943,34 +926,20 @@ try:
                                         if 5 in gps.error_counts:
                                             gps_log[6]="gps"  
                                     rog(gps_log) #変則的なのでエラーつける
-                                    
 
-                                if distance<=B_x2:#適当、必要に応じて変える
-                                    nlog("距離が0.5m以内なのでgps終了")
-                                    nxbee_log('プランBかつ距離が0.5m以内なのでgps終了')
-                                    gps_seikou=True
-                                    break
-                                    #成功したことを送る
 
-                                rotation_angle = m5get_dire_rot(pre_lat,pre_lon,gps_B_lat_ave,gps_B_lon_ave) 
+                                rotation_angle = m5get_dire_rot(pre_lat,pre_lon,gps_B_lat_ave,gps_B_lon_ave)
                                 if rotation_angle > 0:
-                                    mturn_right(rotation_angle/ turn_speed)  
+                                    mturn_right(rotation_angle/turn_speed)  
                                 else:
-                                    z_rot = abs(rotation_angle)   
-                                    mturn_left(z_rot/ turn_speed) 
-                                mforward(go_dis_5_2) #1/208の単位と、2m移動にかかる時間計算
-                                mstop()
-                                nlog("2m進んだので成功")
-                                nxbee_log("プランBかつ距離が2m以内なので、2m進んでgps終了")
-                                gps_seikou=True
+                                    z_rot = abs(rotation_angle)    
+                                    mturn_left(z_rot/turn_speed)
+                                dis_cm=distance*100   
+                                go_5cm=dis_cm/go_speed
+                                mforward(go_5cm)
+                                nlog('プランがA以外なので進んでgps終了')
+                                nxbee_log("プランA以外かつ距離が4m以内なので進んでgps終了")
                                 break
-
-                            else:#not B
-                                nlog("planAより成功")
-                                nxbee_log('プランAかつ距離が2m以内なのでgps終了')
-                                gps_seikou=True
-                                break
-
                         #distanceが大きくてもまだ4m以上ある
                         rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
                         if rotation_angle > 0:
@@ -979,25 +948,23 @@ try:
                             z_rot = abs(rotation_angle)    
                             mturn_left(z_rot/turn_speed)
 
-                        mforward(go_dis_5_2)
+                        mforward(go_time_5_4)
                         mstop()
                         nlog("距離が4m以上。前進してやり直し")
                         pre_lat=now_lat
                         pre_lon=now_lon
                         now_lat,now_lon = m5get_coodinate_xy() 
+        
                     break        
-            
+        
             except Exception :
                 continue
 
         nlog("gps終了")   
         nxbee_log("gps終了")     
         if plan2 == "B":
-            break       
+            break          
         
-
-
-
 
             #ここに、回転を行うコードを書く
 
