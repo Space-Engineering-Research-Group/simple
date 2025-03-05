@@ -87,6 +87,7 @@ class Gps(IGps):
                 self.sentence = self.__gps_uart.readline()
 
                 if self.sentence:
+
                     while True:
                         try:
                             if self.sentence.decode('utf-8'):
@@ -99,8 +100,7 @@ class Gps(IGps):
                             self.__gps.update(x)
                             self.a = 0  
                             gpsjudge = True      
-                    break#これも大事          
-                       
+                    break#これも大事                   
 
             except serial.SerialException as e:
                 error = f"GPS communication error:--detail{e}"
@@ -137,21 +137,19 @@ class Gps(IGps):
         p=0
         while True:
             while q<31:
+                print(p)
                 while True:
                     try:
                         self.update_gps()
                         break
                     except Exception as e:
                         if gpsjudge == False:
-                            self.update_gps()
-                            
-                self.a = 1            
+                            self.update_gps()                 
                 while True:
-                    p+=1
                     try:
                         self.latitude = self.__gps.latitude[0]
                         self.longitude = self.__gps.longitude[0]
-                        self.a = 0    
+                        self.a = 0   
                         break
                     except Exception as e:
                         error = f"Failed to get latitude and longitude:--detail{e}"
@@ -162,12 +160,13 @@ class Gps(IGps):
                                 if hasattr(self, '_Gps__gps_uart') and self.__gps_uart and self.__gps_uart.is_open:
                                     self.__gps_uart.close()    
                             self.log_errors()
-                            break    
-        
+                            break            
+                print(self.latitude,self.longitude)
                 if gpsjudge == True and self.latitude != 0 and self.longitude != 0:
                     latlist.append(self.latitude)
                     lonlist.append(self.longitude)
                     q+=1
+                    print('owaru')
      
             ave_lat = sum(latlist) / len(latlist)
             ave_lon = sum(lonlist) / len(lonlist)
@@ -191,8 +190,7 @@ class Gps(IGps):
                     except Exception as e:
                         if gpsjudge == False:
                             self.update_gps()
-                            
-                self.a = 1            
+                   
                 while True:
                     p+=1
                     try:
