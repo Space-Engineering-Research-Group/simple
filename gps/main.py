@@ -91,7 +91,7 @@ class Gps(IGps):
                     while True:
                         try:
                             if self.sentence.decode('utf-8'):
-                                break#ここはめっちゃ大事
+                                break#ここめっちゃ大事
                         except UnicodeDecodeError:
                             self.sentence = self.__gps_uart.readline()
 

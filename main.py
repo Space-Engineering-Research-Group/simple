@@ -925,7 +925,7 @@ try:
                                         gps_log[7]=gps.error_log
                                         if 5 in gps.error_counts:
                                             gps_log[6]="gps"  
-                                    rog(gps_log) #変則的なのでエラーつける
+                                    rog(gps_log) #変則的なのでエラーつけru
 
 
                                 rotation_angle = m5get_dire_rot(pre_lat,pre_lon,gps_B_lat_ave,gps_B_lon_ave)
