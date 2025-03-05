@@ -108,8 +108,8 @@ class Motor(Imotor):
         
         while True:
             try:
-                self.right_in1.on()
-                self.right_in2.off()
+                self.right_in1.off()
+                self.right_in2.on()
                 self.right_PWM.value = speed
                 self.a=0
                 break
@@ -129,8 +129,8 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_in1.off()
-                self.left_in2.on()
+                self.left_in1.on()
+                self.left_in2.off()
                 self.left_PWM.value = speed
                 self.a=0
                 break
@@ -155,8 +155,8 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.right_in1.off()
-                self.right_in2.on()
+                self.right_in1.on()
+                self.right_in2.off()
                 self.right_PWM.value = speed
                 self.a=0
                 break
@@ -176,8 +176,8 @@ class Motor(Imotor):
 
         while True:
             try:
-                self.left_in1.on()
-                self.left_in2.off()
+                self.left_in1.off()
+                self.left_in2.on()
                 self.left_PWM.value = speed
                 self.a=0
                 break
