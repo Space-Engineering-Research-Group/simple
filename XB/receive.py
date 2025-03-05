@@ -493,6 +493,15 @@ try:
     # file_path = r"C:/Users/ookam/OneDrive/log.xlsx"
 
     app, workbook, sheet = xcel.open_workbook(file_path)
+    if xcel.is_workbook_closed(file_path):
+            #閉じていたら
+            print("Excelが閉じられています。再接続します。")
+            app, workbook, sheet = xcel.reconnect_excel(file_path)
+            if app is None or workbook is None:
+                print("Excelへの再接続に失敗しました。終了します。")
+                
+    else:#開いていたら
+        print("Excelが開かれています。")    
 
 except FileNotFoundError as e:
     print(f"エラー: {e}")
@@ -503,16 +512,6 @@ except Exception as e:
 while True:
     try:
         data = xbee.main()
-        if xcel.is_workbook_closed(file_path):
-            #閉じていたら
-            print("Excelが閉じられています。再接続します。")
-            app, workbook, sheet = xcel.reconnect_excel(file_path)
-            if app is None or workbook is None:
-                print("Excelへの再接続に失敗しました。終了します。")
-                break    
-        else:#開いていたら
-            print("Excelが開かれています。")
-            pass    
 
         if data[0] != i:
             num += 2
