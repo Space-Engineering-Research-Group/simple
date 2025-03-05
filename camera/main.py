@@ -33,6 +33,12 @@ class Camera(ICamera):
         self.ini=True
         while True:
             try:
+                date=dt.now().strftime("%Y%m%d_%H%M")
+                self.save_cone_dir=os.path.join(self.oya_cone_dir,date)
+                self.save_parachute_dir=os.path.join(self.oya_parachute_dir,date)
+                os.mkdir(self.save_cone_dir)
+                os.mkdir(self.save_parachute_dir)
+                
                 self.capture=Picamera2()
                 # 解像度とFPSを設定
                 config = self.capture.create_preview_configuration(
@@ -41,12 +47,6 @@ class Camera(ICamera):
                 )
                 self.capture.configure(config)
                 self.capture.start()
-
-                date=dt.now().strftime("%Y%m%d_%H%M")
-                self.save_cone_dir=os.path.join(self.oya_cone_dir,date)
-                self.save_parachute_dir=os.path.join(self.oya_parachute_dir,date)
-                os.mkdir(self.save_cone_dir)
-                os.mkdir(self.save_parachute_dir)
                 self.a = 0
                 break
             except Exception as e:
