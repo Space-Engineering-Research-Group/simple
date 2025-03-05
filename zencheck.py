@@ -142,7 +142,6 @@ try:
                 gps_log[3]=lat
                 gps_log[4]=lon
                 break
-            sleep(20)
         except RuntimeError:
             tools[1]=False
             import sys
@@ -155,9 +154,7 @@ try:
 
     rog(gps_log)
     nlog('gps取得しました')
-    
        
-
 
 finally:        
     gps.delete()
@@ -168,3 +165,4 @@ finally:
         nlog("全ての部品の確認が終了しました。")
     nlog("待機モードに移ります。")    
     xbee.delete()
+    
