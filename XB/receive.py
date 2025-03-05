@@ -66,7 +66,7 @@ import queue
 class Xbee():
     def __init__(self):
         # TODO: Replace with the serial port where your local module is connected to.
-        self.PORT = "COM9"
+        self.PORT = "COM6"
         # TODO: Replace with the baud rate of your local module.
         self.BAUD_RATE = 9600
 
