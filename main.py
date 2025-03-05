@@ -793,154 +793,49 @@ try:
         
     #gps
 
-
+        kaz5=False
         if plan2 in ["A","B"]:
             nlog('gps開始')
             nxbee_log('gps開始')
             
             try:
                 while True:
-                    #最初の緯度経度の取得は特別なので、関数化しない
-                    nlog('最初の緯度経度の取得を行う')
-                    #フェーズ、フェーズの中のフェーズ、時間、緯度、経度,ゴールまでの距離,進行方向、回転角度、故障した部品、エラー文
-                    gps_log = [5,0,None,None,None,None,None,None,None,None,None,None]
-                    try: #nowlot,nowlat はfeeds4のときの緯度経度
-                        pre_nowlat = nowlat
-                        pre_nowlon = nowlon
-                        gps_log[2]=mget_time()
-                        now_lat,now_lon = gps.get_coordinate_xy()
-                        gps_log[3]=pre_lat
-                        gps_log[4]=pre_lon
+                    if kaz5==False:
+                        #最初の緯度経度の取得は特別なので、関数化しない
+                        nlog('最初の緯度経度の取得を行う')
+                        #フェーズ、フェーズの中のフェーズ、時間、緯度、経度,ゴールまでの距離,進行方向、回転角度、故障した部品、エラー文
+                        gps_log = [5,0,None,None,None,None,None,None,None,None,None,None]
+                        try: #nowlot,nowlat はfeeds4のときの緯度経度
+                            pre_lat = nowlat
+                            pre_lon = nowlon
+                            gps_log[2]=mget_time()
+                            now_lat,now_lon = gps.get_coordinate_xy()
+                            gps_log[3]=now_lat
+                            gps_log[4]=now_lon
 
+                            distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
+                            gps_log[5]=distance
+
+                            md=move_direction(pre_lat, pre_lon, now_lat, now_lon)
+                            gps_log[6]=md
+
+                            rot=get_rotation_angle(goal_lat,goal_lon,pre_lat,pre_lon,md)
+                            gps_log[7]=rot
+
+                        except RuntimeError:
+                            tools[1]=False
+                            raise RuntimeError
+                        finally:
+                            if len(gps.error_counts):
+                                gps_log[9]=gps.error_log
+                                if 5 in gps.error_counts:
+                                    gps_log[8]="gps"  
+                            rog(gps_log)
+
+
+                            #初めからコーンが近い場合の処理     
                         distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
-                        gps_log[5]=distance
 
-                        md=move_direction(pre_lat, pre_lon, now_lat, now_lon)
-                        gps_log[6]=md
-
-                        rot=get_rotation_angle(goal_lat,goal_lon,pre_lat,pre_lon,md)
-                        gps_log[7]=rot
-
-                    except RuntimeError:
-                        tools[1]=False
-                        raise RuntimeError
-                    finally:
-                        if len(gps.error_counts):
-                            gps_log[9]=gps.error_log
-                            if 5 in gps.error_counts:
-                                gps_log[8]="gps"  
-                        rog(gps_log)
-
-
-                        #初めからコーンが近い場合の処理     
-                    distance=get_distance(goal_lat,goal_lon,now_lat,now_lon)
-
-                    rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
-                    if rotation_angle > 0:
-                        mturn_right(rotation_angle/turn_speed)  
-                    else:
-                        z_rot = abs(rotation_angle)    
-                        mturn_left(z_rot/turn_speed)
-
-                    if distance<=A_x:
-                        mforward(go_time_5_4)
-                        mstop()
-                        gps_seikou=True
-                        nlog("始めからコーンが近いのでgps終了")
-                        nxbee_log('初めからコーンが近いのでgps終了')
-                        break
-                        
-                    else:
-                        mforward(go_time_5_5)
-                        mstop()      
-                        nlog("コーンが遠いので前進")
-
-                    stack_count = 0
-                    p=0
-
-                    #loop started
-                    pre_lat=now_lat
-                    pre_lon=now_lon
-                    now_lat,now_lon = m5get_coodinate_xy() 
-                    while True:
-                        p+=1
-                
-                        distance = get_distance(goal_lat,goal_lon,now_lat,now_lon)    
-
-                        if distance<=s_x:
-                            #stuckした場合の処理
-                            stack_count+=1
-                            if stack_count==5:#必要に応じて増やす
-                                nlog("スタック5回目なので強制終了")
-                                nxbee_log("スタック5回目なので強制終了")
-                                import sys
-                                sys.exit(1)
-
-                            mbackward(go_time_5_4)
-                            mturn_left(sttime_90)  
-                            mforward(go_time_5_4)
-                            mstop()
-                            nlog(f"進まなかったので後進して左回転して前進した(スタック{stack_count}回目)")  
-
-                            now_lat,now_lon = m5get_coodinate_xy()
-
-                            #judge
-                            distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)     
-                            
-                        
-                        if distance<=A_x and distance>B_x:
-                            nlog("距離が4m以内")
-                            if plan2=="A":
-                                nlog("planAかつ距離が4m以内なので終了")
-                                nxbee_log("planAかつ距離が4m以内なので終了")
-                                mstop()
-                                break
-                            else:
-                                try:
-                                    gps_log= [5,1,None,None,None,None,None,None]
-                            
-                                    gps_log[2] =mget_time()
-                                    gps_B_lat = []
-                                    gps_B_lon = []
-                                
-                                    for i in range(2):
-                                        lat,lon = gps.get_coordinate_xy()
-                                        gps_B_lat.append(lat)
-                                        gps_B_lon.append(lon)
-                                        sleep(0.1)
-
-                                    gps_B_lat_ave = sum(gps_B_lat)/2
-                                    gps_B_lon_ave = sum(gps_B_lon)/2   
-                                    gps_log[3]=gps_B_lat_ave
-                                    gps_log[4]=gps_B_lon_ave  #60回の平均
-
-                                    distance = get_distance(goal_lat,goal_lon,gps_B_lat_ave,gps_B_lon_ave)
-                                    gps_log[5] = distance
-
-                                except Exception :
-                                    tools[1]=False
-                                    raise RuntimeError
-                                finally:
-                                    if len(gps.error_counts):
-                                        gps_log[7]=gps.error_log
-                                        if 5 in gps.error_counts:
-                                            gps_log[6]="gps"  
-                                    rog(gps_log) #変則的なのでエラーつけru
-
-
-                                rotation_angle = m5get_dire_rot(pre_lat,pre_lon,gps_B_lat_ave,gps_B_lon_ave)
-                                if rotation_angle > 0:
-                                    mturn_right(rotation_angle/turn_speed)  
-                                else:
-                                    z_rot = abs(rotation_angle)    
-                                    mturn_left(z_rot/turn_speed)
-                                dis_cm=distance*100   
-                                go_5cm=dis_cm/go_speed
-                                mforward(go_5cm)
-                                nlog('プランがA以外なので進んでgps終了')
-                                nxbee_log("プランA以外かつ距離が4m以内なので進んでgps終了")
-                                break
-                        #distanceが大きくてもまだ4m以上ある
                         rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
                         if rotation_angle > 0:
                             mturn_right(rotation_angle/turn_speed)  
@@ -948,17 +843,126 @@ try:
                             z_rot = abs(rotation_angle)    
                             mturn_left(z_rot/turn_speed)
 
-                        mforward(go_time_5_4)
-                        mstop()
-                        nlog("距離が4m以上。前進してやり直し")
+                        if distance<=A_x:
+                            mforward(go_time_5_4)
+                            mstop()
+                            nlog("始めからコーンが近いのでgps終了")
+                            nxbee_log('初めからコーンが近いのでgps終了')
+                            kaz5=True
+                            break
+                            
+                        else:
+                            mforward(go_time_5_5)
+                            mstop()      
+                            nlog("コーンが遠いので前進")
+
+                        stack_count = 0
+                        p=0
+
+                        #loop started
                         pre_lat=now_lat
                         pre_lon=now_lon
                         now_lat,now_lon = m5get_coodinate_xy() 
+                        while True:
+                            p+=1
+                    
+                            distance = get_distance(goal_lat,goal_lon,now_lat,now_lon)    
+
+                            if distance<=s_x:
+                                #stuckした場合の処理
+                                stack_count+=1
+                                if stack_count==5:#必要に応じて増やす
+                                    nlog("スタック5回目なので強制終了")
+                                    nxbee_log("スタック5回目なので強制終了")
+                                    kaz5=True
+                                    import sys
+                                    sys.exit(1)
+
+                                mbackward(go_time_5_4)
+                                mturn_left(sttime_90)  
+                                mforward(go_time_5_4)
+                                mstop()
+                                nlog(f"進まなかったので後進して左回転して前進した(スタック{stack_count}回目)")  
+
+                                now_lat,now_lon = m5get_coodinate_xy()
+
+                                #judge
+                                distance = get_distance(goal_lat, goal_lon, now_lat, now_lon)     
+                                
+                            
+                            if distance<=A_x and distance>B_x:
+                                nlog("距離が4m以内")
+                                if plan2=="A":
+                                    nlog("planAかつ距離が4m以内なので終了")
+                                    nxbee_log("planAかつ距離が4m以内なので終了")
+                                    kaz5=True
+                                    mstop()
+                                    break
+                                else:
+                                    try:
+                                        gps_log= [5,1,None,None,None,None,None,None]
+                                
+                                        gps_log[2] =mget_time()
+                                        gps_B_lat = []
+                                        gps_B_lon = []
+                                    
+                                        for i in range(2):
+                                            lat,lon = gps.get_coordinate_xy()
+                                            gps_B_lat.append(lat)
+                                            gps_B_lon.append(lon)
+                                            sleep(0.1)
+
+                                        gps_B_lat_ave = sum(gps_B_lat)/2
+                                        gps_B_lon_ave = sum(gps_B_lon)/2   
+                                        gps_log[3]=gps_B_lat_ave
+                                        gps_log[4]=gps_B_lon_ave  #60回の平均
+
+                                        distance = get_distance(goal_lat,goal_lon,gps_B_lat_ave,gps_B_lon_ave)
+                                        gps_log[5] = distance
+
+                                    except Exception :
+                                        tools[1]=False
+                                        raise RuntimeError
+                                    finally:
+                                        if len(gps.error_counts):
+                                            gps_log[7]=gps.error_log
+                                            if 5 in gps.error_counts:
+                                                gps_log[6]="gps"  
+                                        rog(gps_log) #変則的なのでエラーつけru
+
+
+                                    rotation_angle = m5get_dire_rot(pre_lat,pre_lon,gps_B_lat_ave,gps_B_lon_ave)
+                                    if rotation_angle > 0:
+                                        mturn_right(rotation_angle/turn_speed)  
+                                    else:
+                                        z_rot = abs(rotation_angle)    
+                                        mturn_left(z_rot/turn_speed)
+                                    dis_cm=distance*100   
+                                    go_5cm=dis_cm/go_speed
+                                    mforward(go_5cm)
+                                    nlog('プランがA以外なので進んでgps終了')
+                                    nxbee_log("プランA以外かつ距離が4m以内なので進んでgps終了")
+                                    kaz5=True
+                                    break
+                            #distanceが大きくてもまだ4m以上ある
+                            rotation_angle = m5get_dire_rot(pre_lat,pre_lon,now_lat,now_lon)
+                            if rotation_angle > 0:
+                                mturn_right(rotation_angle/turn_speed)  
+                            else:
+                                z_rot = abs(rotation_angle)    
+                                mturn_left(z_rot/turn_speed)
+
+                            mforward(go_time_5_4)
+                            mstop()
+                            nlog("距離が4m以上。前進してやり直し")
+                            pre_lat=now_lat
+                            pre_lon=now_lon
+                            now_lat,now_lon = m5get_coodinate_xy() 
         
                     break        
         
             except Exception :
-                continue
+                pass
 
         nlog("gps終了")   
         nxbee_log("gps終了")     
