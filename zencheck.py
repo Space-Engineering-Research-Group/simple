@@ -140,7 +140,7 @@ try:
             lat,lon = gps.get_xy_ceak()
             if lat != 0 and lon != 0:
                 gps_log[3]=lat
-                gps_log=[4]=lon
+                gps_log[4]=lon
                 break
             sleep(20)
         except RuntimeError:
