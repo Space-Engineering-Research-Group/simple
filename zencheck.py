@@ -12,7 +12,6 @@ try:
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
     from gps import *
-    from XB import *
     from raspberry_log import *
     from time import sleep,time
     from datetime import datetime, timedelta, timezone
@@ -68,15 +67,6 @@ try:
 
 
     try:
-        xbee=XBee()
-    finally:
-        if len(xbee.error_counts)>0:
-            ins_error.append(xbee.error_log)
-            if 5 in xbee.error_counts:
-                ins_error_tool.append("xbee")
-                tools[5]=False
-
-    try:
         xcel = Xcel() #deleteの時に使う
     except RuntimeError:
         tools[6]=False #ここの部分は要検討
@@ -91,35 +81,14 @@ try:
             tools[6]=False
             xcel_log[1]='csvファイル'
             xcel_log[2]=e
-
-            if tools[5]==True:
-                xbee.send(xcel_log) 
             print(f'xcel_error:{xcel_log}') 
-
-    def mxbee_send(data):
-        #フェーズ、故障した部品、エラー分
-        xbee_log = [12,None,None] #raspyのみ書く
-        try:
-            xbee.send(data)
-        except RuntimeError:
-            tools[5]=False
-        finally:
-            if len(xbee.error_counts):
-                xbee_log[2]=mget_time()
-                xbee_log[-1]=xbee.error_log
-                if 5 in xbee.error_counts:
-                    xbee_log[-2].appned("xbee")
-                if tools[6]==True:
-                    mxcel(xbee_log)          
+         
 
 
     def rog(log):
-        if tools[5]==True:
-            mxbee_send(log)
         if tools[6]==True:
             mxcel(log)
         print(log)
-        sleep(7)
 
 
     #ここで、ログを送信する
@@ -162,7 +131,5 @@ finally:
     if False in tools:
         nlog("故障した部品があります。")
     else:
-        nlog("全ての部品の確認が終了しました。")
-    nlog("待機モードに移ります。")    
-    xbee.delete()
+        nlog("全ての部品の確認が終了しました。") 
     
