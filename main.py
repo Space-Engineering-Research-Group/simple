@@ -908,6 +908,7 @@ try:
         if plan2 == "B":
             goal_time=mget_time()
             nlog(f"コーンに到着しました。時刻{goal_time}")
+            mturn_right(sttime_syuuryou)
             break          
         
 
@@ -1015,6 +1016,7 @@ try:
                         #ここで終了したことを送る。
                         goal_time=mget_time()
                         nlog(f"コーンに到着しました。時刻{goal_time}")
+                        mturn_right(sttime_syuuryou)
                         break
             
 
@@ -1023,8 +1025,7 @@ try:
 
         if cone_result:
             break
-    
-    mturn_right(sttime_syuuryou)
+
 finally:    
     nlog("プログラムを終了します")
     mturn_left(sttime_syuuryou)    
