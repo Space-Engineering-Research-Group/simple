@@ -135,6 +135,12 @@ try:
     go_speed=6
     #９０度回転するときの待機時間
     sttime_90=90/turn_speed
+
+    #３６０度回転するときの待機時間
+    sttime_360=360/turn_speed
+
+    #正常に終了したとき、コードが終わるときに回転する時間
+    sttime_syuuryou=sttime_360*2
     
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -875,7 +881,7 @@ try:
                                     dis_cm=distance*100   
                                     go_5cm=dis_cm/go_speed
                                     mforward(go_5cm)
-                                    nlog('プランがA以外なので進んでgps終了')
+                                    nlog('プランがBなので進んでgps終了')
                                     kaz5=True
                                     break
                             #distanceが大きくてもまだ4m以上ある
@@ -900,6 +906,8 @@ try:
 
         nlog("gps終了")      
         if plan2 == "B":
+            goal_time=mget_time()
+            nlog(f"コーンに到着しました。時刻{goal_time}")
             break          
         
 
@@ -1005,7 +1013,8 @@ try:
                             
                     if kazu==3:
                         #ここで終了したことを送る。
-                        nlog("コーンに到着しました。")
+                        goal_time=mget_time()
+                        nlog(f"コーンに到着しました。時刻{goal_time}")
                         break
             
 
@@ -1014,9 +1023,11 @@ try:
 
         if cone_result:
             break
-    #エラー起きてるけど、finallyとか使うのは確実なのでとりあえずつけとく
-finally:        
+    
+    mturn_right(sttime_syuuryou)
+finally:    
+    nlog("プログラムを終了します")
+    mturn_left(sttime_syuuryou)    
     motors.release()
     gps.delete()
     camera.release()
-    nlog("プログラムが終了しました。")
