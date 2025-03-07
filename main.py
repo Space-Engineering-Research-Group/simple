@@ -5,7 +5,6 @@ try:
     from motor import *
     from gpiozero.pins.pigpio import PiGPIOFactory
     from cds import *
-    from XB import *
     from servo import *
     from raspberry_log import *
     from time import sleep,time
@@ -200,16 +199,6 @@ try:
                 ins_error_tool.append("right motor")
                 tools[3]=False
 
-
-    try:
-        xbee=XBee()
-    finally:
-        if len(xbee.error_counts)>0:
-            ins_error.append(xbee.error_log)
-            if 5 in xbee.error_counts:
-                ins_error_tool.append("xbee")
-                tools[5]=False
-
     try:
         xcel = Xcel() #deleteの時に使う
     except RuntimeError:
@@ -224,26 +213,10 @@ try:
             tools[6]=False
             xcel_log[1]='csvファイル'
             xcel_log[2]=e
-            xbee.send(xcel_log) 
             print(f'xcel_error:{xcel_log}')
             import sys
             sys.exit(1)  
-
-    def mxbee_send(data):
-        #フェーズ、故障した部品、エラー分
-        xbee_log = [12,None,None] #raspyのみ書く
-        try:
-            xbee.send(data)
-            sleep(7)
-        except RuntimeError:
-            tools[5]=False
-        finally:
-            if len(xbee.error_counts):
-                xbee_log[2]=mget_time()
-                xbee_log[-1]=xbee.error_log
-                if 5 in xbee.error_counts:
-                    xbee_log[-2].appned("xbee")
-                mxcel(xbee_log)          
+       
 
     def rog(log):
         if log[0]==10:
@@ -256,17 +229,11 @@ try:
     #ここで、ログを送信する
     ins_log=[1,mget_time(),tools[0],tools[1],tools[2],tools[3],tools[4],tools[5],tools[6],ins_error_tool,ins_error]
     rog(ins_log)   
-    mxbee_send(ins_log)
 
 
     def nlog(ward):
         notice_log=[9,ward]
         rog(notice_log)
-
-    def nxbee_log(ward):
-        notice_log=[9,ward]
-        mxbee_send(notice_log)
-      
 
     def mforward(wait_time):
         if wait_time>0:
@@ -282,7 +249,6 @@ try:
         except RuntimeError:
             tools[3]=False
             nlog("モーターが使えないのでコードを停止します。")
-            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -309,7 +275,6 @@ try:
         except RuntimeError:
             tools[3]=False
             nlog("モーターが使えないのでコードを停止します。")
-            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -336,7 +301,6 @@ try:
         except RuntimeError:
             tools[3]=False
             nlog("モーターが使えないのでコードを停止します。")
-            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -364,7 +328,6 @@ try:
         except RuntimeError:
             tools[3]=False
             nlog("モーターが使えないのでコードを停止します。")
-            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -385,7 +348,6 @@ try:
         except RuntimeError:
             tools[3]=False
             nlog("モーターが使えないのでコードを停止します。")
-            nxbee_log("モーターが使えないのでコードを停止します。")
             import sys
             sys.exit(1)
         finally:
@@ -461,8 +423,7 @@ try:
         return g_r             
 
 
-    nlog("箱入れ待機時間")
-    nxbee_log("箱入れ待機時間")        
+    nlog("箱入れ待機時間")     
 
 
     #箱に入れるまでの時間を仮に一分と置き、その間ずっと明るさを取得して、xbeeで送るようにする。
@@ -497,7 +458,6 @@ try:
             
             if p==10:
                 nlog("箱に入ったことを認識しました。")
-                nxbee_log("箱に入ったことを認識しました。")
                 break
             keika=time()-now_time
             if keika<2:
@@ -505,14 +465,12 @@ try:
 
     if tools[0]==False:
         nlog("cdsが使えないため処理を終了します。")
-        nxbee_log("cdsが使えないため処理を終了します。")
         import sys
         sys.exit(1)
 
     start_time=time()
     if tools[0]==True:
         nlog("cdsを用いた落下判定を開始します。")
-        nxbee_log("cdsを用いた落下判定を開始します。")
         p=0
         while True:
             #左からフェーズ、時間、明るさ、明るさの評価、使えない部品、エラー文
@@ -520,7 +478,6 @@ try:
             now_time=time()
             if now_time-start_time>=land_time:
                 nlog("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
-                nxbee_log("８分間一定以上の明るさを検知できなかったため、着地したと判定する。")
                 break
             try:            
                 jp_time=mget_time()
@@ -547,7 +504,6 @@ try:
             if p==3:
                 fall_start_time=time()
                 nlog("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
-                nxbee_log("一定以上の明るさを検知したため現在落下していると判定する。後１分経過したら着地したと判定")
                 while time()-fall_start_time<fall_time:
                     now_time=time()
                     #左からフェーズ、時間、残り時間
@@ -561,7 +517,6 @@ try:
                     if keika<2:
                         sleep(2-keika)
                 nlog("１分経過したため着地したと判定")
-                nxbee_log("１分経過したため着地したと判定")
                 break
 
             keika=time()-now_time
@@ -571,7 +526,6 @@ try:
         
     if tools[0]==False:
         nlog("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
-        nxbee_log("cdsが使えないため、起動してからの時間経過での着地判定に切り替えます。")
         while time()-start_time<land_time:
             #左からフェーズ、時間、残り時間
             time_log=[8,None,None]
@@ -585,15 +539,12 @@ try:
             if keika<2:
                 sleep(2-keika)
         nlog("起動から８分間経過したため、着地したとみなす。")
-        nxbee_log("起動から８分間経過したため、着地したとみなす。")
                 
                 
     if tools[4]==True:
         nlog("サーボモーターを用いてパラシュートの切り離しを行います。")
-        nxbee_log("サーボモーターを用いてパラシュートの切り離しを行います。")
     else:
         nlog("サーボモーターが使えないため、コードを停止します。")     
-        nxbee_log("サーボモーターが使えないため、コードを停止します。") 
         import sys
         sys.exit(1)
 
@@ -617,7 +568,6 @@ try:
         
     except RuntimeError:
         nlog("サーボモーターが使えなくなったため、コードを停止します。")
-        nxbee_log("サーボモーターが使えなくなったため、コードを停止します。")
         import sys
         sys.exit(1)
     finally:
@@ -643,18 +593,15 @@ try:
             rog(servo_log)
 
     nlog("パラシュートの切り離しを行いました。")
-    nxbee_log("パラシュートの切り離しを行いました。")
 
     if tools[3]==False:
         nlog("モーターが使えないため処理を停止します")
-        nxbee_log("モーターが使えないため処理を停止します")
         import sys
         sys.exit(1)
 
     if tools[2]==True and tools[1]==True:
         p=0
         try:
-            nxbee_log("パラシュートの回避を行います。")
             nlog("パラシュートの回避を行います。")
             
             nlog("現在地の緯度経度を取得")
@@ -748,7 +695,6 @@ try:
             mstop()
 
             nlog("パラシュートの回避が終わりました。")
-            nxbee_log("パラシュートの回避が終わりました。")
 
         except RuntimeError:
             pass   
@@ -757,14 +703,11 @@ try:
     if tools[2]==False:
         if tools[1]==True:
             nlog("カメラが使えないので、パラシュートの回避を実行しません")
-            nxbee_log("カメラが使えないので、パラシュートの回避を実行しません")
         else:
             nlog("カメラとgpsが使えないので、パラシュートの回避を実行しません")
-            nxbee_log("カメラとgpsが使えないので、パラシュートの回避を実行しません")
     else:
         if tools[1]==False:
             nlog("gpsが使えないので、パラシュートの回避を実行しません")
-            nxbee_log("gpsが使えないので、パラシュートの回避を実行しません")
 
 
 
@@ -773,30 +716,25 @@ try:
     cone_result=False
     while True:
         nlog("コーンへの接近を行います。")
-        nxbee_log("コーンへの接近を行います。")
         if tools[1] is False:
             if tools[2] is True:
                 plan2="C"
                 nlog("GPSが使えないため、プランcです。")
-                nxbee_log("GPSが使えないため、プランcです。")
             else:
                 plan2="D"
                 nlog("カメラとGPS両方使えないため、プログラムを停止します。")
-                nxbee_log("カメラとGPS両方使えないため、プログラムを停止します。")
                 import sys
                 sys.exit(1)
         else:
             if tools[2] is False:
                 plan2="B"
                 nlog("カメラが使えないため、プランbです。")
-                nxbee_log("カメラが使えないため、プランbです。")
         
     #gps
 
         kaz5=False
         if plan2 in ["A","B"]:
             nlog('gps開始')
-            nxbee_log('gps開始')
             
             try:
                 while True:
@@ -847,7 +785,6 @@ try:
                             mforward(go_time_5_4)
                             mstop()
                             nlog("始めからコーンが近いのでgps終了")
-                            nxbee_log('初めからコーンが近いのでgps終了')
                             kaz5=True
                             break
                             
@@ -873,7 +810,6 @@ try:
                                 stack_count+=1
                                 if stack_count==5:#必要に応じて増やす
                                     nlog("スタック5回目なので強制終了")
-                                    nxbee_log("スタック5回目なので強制終了")
                                     kaz5=True
                                     import sys
                                     sys.exit(1)
@@ -894,7 +830,6 @@ try:
                                 nlog("距離が4m以内")
                                 if plan2=="A":
                                     nlog("planAかつ距離が4m以内なので終了")
-                                    nxbee_log("planAかつ距離が4m以内なので終了")
                                     kaz5=True
                                     mstop()
                                     break
@@ -941,7 +876,6 @@ try:
                                     go_5cm=dis_cm/go_speed
                                     mforward(go_5cm)
                                     nlog('プランがA以外なので進んでgps終了')
-                                    nxbee_log("プランA以外かつ距離が4m以内なので進んでgps終了")
                                     kaz5=True
                                     break
                             #distanceが大きくてもまだ4m以上ある
@@ -964,8 +898,7 @@ try:
             except Exception :
                 pass
 
-        nlog("gps終了")   
-        nxbee_log("gps終了")     
+        nlog("gps終了")      
         if plan2 == "B":
             break          
         
@@ -974,7 +907,6 @@ try:
 
         if plan2 in ["A","C"]:
             nlog("カメラによる接近を行う")
-            nxbee_log("カメラによる接近を行う")
             try:
                 while True:
                     if kazu == 1:
@@ -1080,7 +1012,6 @@ try:
                     if kazu==3:
                         #ここで終了したことを送る。
                         nlog("コーンに到着しました。")
-                        nxbee_log("コーンに到着しました。")
                         break
             
 
@@ -1094,4 +1025,4 @@ finally:
     motors.release()
     gps.delete()
     camera.release()
-    nxbee_log("プログラムが終了しました。")
+    nlog("プログラムが終了しました。")
