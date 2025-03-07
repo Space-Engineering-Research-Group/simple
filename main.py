@@ -102,7 +102,7 @@ try:
     #カメラの画角（実験値）
     view_angle=120
     #ここは機体が組みあがった後に実験して決める
-    parea_threshold=0.04
+    parea_threshold=0.002
     try:
         camera=Camera(width,height,fps)
     finally:
@@ -178,7 +178,7 @@ try:
     go_time_6_1=go_dis6_1/go_speed
 
     #フェーズ６，kazu=2の時の回転角度と、回転時間を定義
-    roteangle_6_2=1
+    roteangle_6_2=5
     sttime_6_2=roteangle_6_2/turn_speed
 
     #フェーズ６，kazu=2の時の前進する時間と回転角度を定義
@@ -979,7 +979,6 @@ try:
                 while True:
                     if kazu == 1:
                         p = 0
-                        q = 0
                         while True:
                             nlog("コーンの検出を行う。")
                             # 左から、フェーズ、フェーズの中のフェーズ、時間、コーン検知、故障した部品、エラー文
@@ -1004,11 +1003,6 @@ try:
                                 mturn_right(sttime_6_1)
                                 mstop()
                                 if p == int(360 / roteangle_6_1):
-                                    q += 1
-                                    if q == 5:
-                                        nlog(f"{q}回してもコーンが検出されなかったので、不可能と判断して停止します。")
-                                        tools[2]=False
-                                        raise RuntimeError
                                     nlog("一周してもコーンが認識されないため、一度前進して動いてから、もう一度取得を始めます。")
                                     mforward(go_time_6_1)
                                     mstop()
@@ -1020,7 +1014,7 @@ try:
 
                         while True:
                             sippai_6_2=0
-                            for i in range(3):
+                            for i in range(10):
                                 #左から、フェーズ、フェーズのフェーズ、時間、コーン検出、コーンの位置判定、故障した部品、エラー文
                                 camera_log=[6,2,None,False,None,None,None]
                                 camera_log[2]=mget_time()
@@ -1044,7 +1038,7 @@ try:
 
                                     sippai_6_2+=1
 
-                            if sippai_6_2==3:
+                            if sippai_6_2==10:
                                 nlog("三回コーンが検出できなかったため、もう一度回転してコーンを探します。")
                                 kazu=1
                                 break
