@@ -11,6 +11,8 @@ try:
 
     #~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+    from motor import *
+    from gpiozero.pins.pigpio import PiGPIOFactory
     from gps import *
     from raspberry_log import *
     from time import sleep,time
@@ -40,6 +42,38 @@ try:
 
     ins_error_tool=[]
     ins_error=[]
+
+    factory = PiGPIOFactory()
+        #pin,pwmの値は決まった
+    rdir_1=19
+    rdir_2=26
+    rPWM=13
+    ldir_1=23
+    ldir_2=24
+    lPWM=18
+
+    #機体の回転速度36度/s
+    turn_speed=36
+    #機体の前進速度6cm/s
+    go_speed=6
+
+    #一周するのにかかる時間
+    sttime_360=360/turn_speed
+
+    #コード終了するときに回る時間
+    sttime_syuuryou=sttime_360*2
+
+    try:
+        motors=Motor(rdir_1,rdir_2,rPWM,ldir_1,ldir_2,lPWM,factory)
+    finally:
+        if len(motors.left_error_counts)>0 or len(motors.right_error_counts)>0:
+            ins_error.append(motors.error_log)
+            if 5 in motors.left_error_counts:
+                ins_error_tool.append("left motor")
+                tools[3]=False
+            if 5 in motors.right_error_counts:
+                ins_error_tool.append("right motor")
+                tools[3]=False
 
 
     try:
@@ -100,6 +134,79 @@ try:
         notice_log=[9,ward]
         rog(notice_log)
 
+    def mturn_left(wait_time):
+        if wait_time>0:
+            nlog(f"右モーターの正転、左モーターの正転を{wait_time}秒間続けて、機体を反時計回りに回転させます。")
+        else:
+            nlog("右モーターの正転、左モーターの正転をして、機体を反時計回りに回転させます。")
+        #フェーズ、時間、故障した部品、エラー文
+        motor_log=[10,None,[],None]
+        try:
+            motors.turn_left()
+            if wait_time>0:
+                sleep(wait_time)
+        except RuntimeError:
+            tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            import sys
+            sys.exit(1)
+        finally:
+            if len(motors.right_error_counts) or len(motors.left_error_counts):
+                motor_log[1]=mget_time()
+                motor_log[-1]=motors.error_log
+                if 5 in motors.right_error_counts:
+                    motor_log[-2].append("right motor")
+                if 5 in motors.left_error_counts:
+                    motor_log[-2].append("left motor")
+                rog(motor_log)
+
+
+
+    def mturn_right(wait_time):
+        if wait_time>0:
+            nlog(f"右モーターの逆転、左モーターの逆転を{wait_time}秒間続けて、機体を時計回りに回転させます。")
+        else:
+            nlog("右モーターの逆転、左モーターの逆転を行います。")
+        motor_log=[10,None,[],None]
+        try:
+            motors.turn_right()
+            if wait_time>0:
+                sleep(wait_time)
+        except RuntimeError:
+            tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            import sys
+            sys.exit(1)
+        finally:
+            if len(motors.right_error_counts) or len(motors.left_error_counts):
+                motor_log[1]=mget_time()
+                motor_log[-1]=motors.error_log
+                if 5 in motors.right_error_counts:
+                    motor_log[-2].append("right motor")
+                if 5 in motors.left_error_counts:
+                    motor_log[-2].append("left motor")
+                rog(motor_log)
+
+    def mstop():
+        motor_log=[10,None,[],None]
+        try:
+            motors.stop()
+            nlog("モーターの回転を止めました。")
+        except RuntimeError:
+            tools[3]=False
+            nlog("モーターが使えないのでコードを停止します。")
+            import sys
+            sys.exit(1)
+        finally:
+            if len(motors.right_error_counts) or len(motors.left_error_counts):
+                motor_log[1]=mget_time()
+                motor_log[-1]=motors.error_log
+                if 5 in motors.right_error_counts:
+                    motor_log[-2].append("right motor")
+                if 5 in motors.left_error_counts:
+                    motor_log[-2].append("left motor")
+                rog(motor_log)
+
 
     nlog("GPSの確認を開始します。")
     while True:
@@ -131,6 +238,11 @@ finally:
 
     if False in tools:
         nlog("故障した部品があります。")
+        mturn_left(sttime_syuuryou)
     else:
         nlog("全ての部品の確認が終了しました。") 
+        mturn_right(sttime_syuuryou)
+
+    mstop()
+    motors.release()
     
