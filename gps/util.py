@@ -38,7 +38,7 @@ def move_direction(past_lat, past_lon, now_lat, now_lon):
         bearing = math.atan2(delta_lon, delta_lat)
         bearing = math.degrees(bearing)  # ラジアンから度に変換
 
-        return bearing 
+        return bearing (2025のメモ:ここの計算番うかも)
 
 
 def get_rotation_angle(goal_lat,goal_lon,latitude,longitude,move_direction): 
